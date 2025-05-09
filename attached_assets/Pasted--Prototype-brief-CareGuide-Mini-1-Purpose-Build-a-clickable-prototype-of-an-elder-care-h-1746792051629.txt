@@ -1,0 +1,111 @@
+# Prototype brief  ·  “CareGuide Mini”
+
+## 1. Purpose
+Build a clickable prototype of an elder‑care helper.  
+Caregivers answer 15 quick questions, see a short list of matching resources, pick the ones they like, and send a single “story e‑mail” to each.
+
+## 2. User flow
+1. Welcome page ➜ CTA “Start 15‑question wizard”.
+2. Intake wizard **with a progress bar** (15 filler questions – see §7).
+3. Result screen: “Based on your answers you may find these resources helpful. **Which resources would you like your email to be sent to?**”
+4. User selects any two resources (pre‑populate with Resources 1–3 in §6).
+5. App shows **preview e‑mail** (auto‑filled from answers & resource data).
+6. Buttons: “Send e‑mail now” or “Edit first”.
+7. Confirmation screen: “Your message was sent!” (actual sending can be stubbed).
+
+## 3. Visual vibe
+* Friendly, caring, large font, uncluttered.
+* Light colour palette (soft blues / greens).  
+* Mobile‑first layout but desktop should look good too.
+
+## 4. Tech constraints for the prototype
+* Front‑end: any stack the builder prefers (React/Vite, Vue, or HTML+Tailwind).
+* Back‑end: in‑memory JSON objects are fine; no real database needed.
+* “Send e‑mail” can simply console‑log the payload or show a toast; no SMTP integration required.
+* Keep code readable – I will copy pieces into a Django project later.
+
+## 5. Data model for this mock
+```json
+{
+  "resources": [
+    {
+      "id": 1,
+      "category": "Financial Solutions",
+      "name": "Second Act Bank",
+      "address": "1600 Diagonal Road, Suite 600, Alexandria, VA 22314",
+      "email": "elias@secondactfs.com",
+      "hours": "9 AM – 5 PM Monday–Friday"
+    },
+    {
+      "id": 2,
+      "category": "Home Sale Solutions",
+      "name": "Second Act Bank",
+      "address": "1600 Diagonal Road, Suite 600, Alexandria, VA 22314",
+      "email": "elias@secondactfs.com",
+      "hours": "9 AM – 5 PM Monday–Friday"
+    },
+    {
+      "id": 3,
+      "category": "Insurance Solutions",
+      "name": "Second Act Bank",
+      "address": "1600 Diagonal Road, Suite 600, Alexandria, VA 22314",
+      "email": "elias@secondactfs.com",
+      "hours": "9 AM – 5 PM Monday–Friday"
+    }
+  ]
+}
+```
+
+## 6. Business logic
+* After the wizard, show **all three** resources.  
+* Pre‑select Resources 1 & 2 by default.  
+* When user toggles selections and clicks “Continue”, generate one e‑mail per selected resource via this template:
+
+```
+Subject: Seeking {{category}} help for my parent
+
+Hi {{name}},
+
+I’m looking after my <relation> and, based on the following details,
+I think your {{category}} services might help.
+
+Quick snapshot from your intake:
+• Living situation: {{q5}}
+• Primary concern: {{q7}}
+• Budget thoughts: {{q9}}
+• Timeline: {{q12}}
+
+Could we schedule a brief call?
+
+Thank you!
+```
+
+* Show one textarea with the generated e‑mail. Allow edits before sending.
+
+## 7. Wizard questions (placeholder labels)
+1. Your first name  
+2. Your e‑mail  
+3. Care recipient’s age  
+4. Relationship to care recipient  
+5. Living situation  
+6. ZIP / location  
+7. Biggest current challenge  
+8. Monthly budget target  
+9. Health conditions of concern  
+10. Level of daily assistance needed  
+11. Safety concerns (yes/no)  
+12. Desired timeline for solutions  
+13. Family members involved in decisions  
+14. Has the care recipient served in the military?  
+15. Anything else we should know?
+
+## 8. Stretch (only if trivial)
+* Basic form validation (required fields, e‑mail pattern).  
+* LocalStorage so answers persist on refresh.
+
+## 9. Deliverables
+* Live preview URL.  
+* Git repo / Replit project with README.  
+* Clear instructions to run locally (`npm install && npm run dev` or similar).
+
+### That’s all—feel free to surprise me with delightful UI!
