@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,36 +15,37 @@ export default function Results() {
   const { toast } = useToast();
   const { state, updateState } = useWizardState();
   
-  // Fetch resources using TanStack Query v5
-  const { data: resources, isLoading, error } = useQuery({
-    queryKey: ['/api/resources']
-  });
+  // Use state for loading status and resources
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   
-  // Log state for debugging
-  console.log("Current state:", { 
-    resources, 
-    isLoading, 
-    error, 
-    selectedIds: state.selectedResourceIds 
-  });
-  
-  // Log success or error for debugging
+  // Directly fetch resources using fetch instead of React Query
   useEffect(() => {
-    if (resources) {
-      console.log("Successfully fetched resources:", resources);
-    }
-    if (error) {
-      console.error("Error fetching resources:", error);
-    }
-  }, [resources, error]);
-  
-  // Update resources in state when they load
-  useEffect(() => {
-    if (resources && Array.isArray(resources)) {
-      console.log("Updating state with resources:", resources);
-      updateState({ resources: resources as Resource[] });
-    }
-  }, [resources]);
+    const fetchResources = async () => {
+      try {
+        console.log("Fetching resources...");
+        setIsLoading(true);
+        const response = await fetch('/api/resources');
+        
+        if (!response.ok) {
+          throw new Error(`Error fetching resources: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Successfully fetched resources:", data);
+        
+        // Update the state with the fetched resources
+        updateState({ resources: data });
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error fetching resources:", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setIsLoading(false);
+      }
+    };
+    
+    fetchResources();
+  }, []);
   
   // Handle resource selection
   const toggleResource = (id: number) => {
