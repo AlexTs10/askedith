@@ -29,8 +29,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock email sending endpoint
-  app.post("/api/send-email", (req, res) => {
+  // Email sending endpoint
+  app.post("/api/send-email", async (req, res) => {
     try {
       const { to, subject, body } = req.body;
       
@@ -38,16 +38,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required email fields" });
       }
       
-      // Log the email data as specified in the requirements
-      console.log("SENDING EMAIL:", { to, subject, body });
+      // Import the email service
+      const { sendEmail } = await import('./emailService');
       
-      // Return success response
-      res.json({ 
-        success: true, 
-        message: "Email sent successfully (simulation)"
-      });
+      // Send the email
+      const result = await sendEmail({ to, subject, body });
+      
+      // Return response based on the result
+      res.json(result);
     } catch (error) {
-      res.status(500).json({ message: "Failed to send email" });
+      console.error("Email sending error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : "Failed to send email" 
+      });
     }
   });
 

@@ -54,6 +54,7 @@ export default function EmailPreview() {
   // Send email function
   const sendEmail = async () => {
     try {
+      console.log("Sending email to:", currentEmail.to);
       setIsSending(true);
       
       // Update the email in state with edited content
@@ -66,27 +67,36 @@ export default function EmailPreview() {
       
       updateState({ emailsToSend: updatedEmails });
       
+      // Prepare the email data
+      const emailData = {
+        to: currentEmail.to,
+        subject: emailSubject,
+        body: emailBody
+      };
+      
+      console.log("Email data being sent:", emailData);
+      
       // Send the email via API
       const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          to: currentEmail.to,
-          subject: emailSubject,
-          body: emailBody
-        })
+        body: JSON.stringify(emailData)
       });
       
-      if (!response.ok) {
-        throw new Error(`Failed to send email: ${response.status}`);
+      // Parse the response
+      const result = await response.json();
+      console.log("Server response:", result);
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || `Failed to send email: ${response.status}`);
       }
       
       // Show success toast
       toast({
         title: "Email Sent",
-        description: "Your email has been sent successfully."
+        description: result.message || "Your email has been sent successfully."
       });
       
       // Navigate to the next email or confirmation using direct redirection
@@ -96,6 +106,7 @@ export default function EmailPreview() {
         window.location.href = `/email-preview/${currentIndex + 1}`;
       }
     } catch (error) {
+      console.error("Error sending email:", error);
       toast({
         title: "Error",
         description: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`,
