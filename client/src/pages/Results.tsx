@@ -15,31 +15,31 @@ export default function Results() {
   const { toast } = useToast();
   const { state, updateState } = useWizardState();
   
-  // Use state for loading status and resources
+  // Local state
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [resources, setResources] = useState<Resource[]>([]);
   
-  // Directly fetch resources using fetch instead of React Query
+  // Fetch resources
   useEffect(() => {
     const fetchResources = async () => {
       try {
         console.log("Fetching resources...");
-        setIsLoading(true);
         const response = await fetch('/api/resources');
         
         if (!response.ok) {
-          throw new Error(`Error fetching resources: ${response.status}`);
+          throw new Error(`Error: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log("Successfully fetched resources:", data);
+        console.log("Resources fetched:", data);
         
-        // Update the state with the fetched resources
+        setResources(data);
         updateState({ resources: data });
         setIsLoading(false);
       } catch (err) {
-        console.error("Error fetching resources:", err);
-        setError(err instanceof Error ? err : new Error(String(err)));
+        console.error("Error:", err);
+        setError(err instanceof Error ? err : new Error("Unknown error"));
         setIsLoading(false);
       }
     };
@@ -61,7 +61,7 @@ export default function Results() {
     updateState({ selectedResourceIds: newSelectedIds });
   };
   
-  // Handle continue button - generate emails and navigate to preview
+  // Handle continue button
   const handleContinue = () => {
     if (state.selectedResourceIds.length === 0) {
       toast({
@@ -72,15 +72,15 @@ export default function Results() {
       return;
     }
     
-    // Find the selected resources
-    const selectedResources = state.resources.filter(
+    // Find selected resources
+    const selectedResources = resources.filter(
       resource => state.selectedResourceIds.includes(resource.id)
     );
     
-    // Generate the email templates
+    // Generate emails
     const emailsToSend = generateEmails(selectedResources, state.answers);
     
-    // Update state and navigate to email preview
+    // Update state and navigate
     updateState({ 
       emailsToSend,
       currentEmailIndex: 0
@@ -89,7 +89,7 @@ export default function Results() {
     navigate('/email-preview/0');
   };
   
-  // Handle loading and error states
+  // Loading state
   if (isLoading) {
     return (
       <Card className="bg-white rounded-xl shadow-md">
@@ -115,18 +115,21 @@ export default function Results() {
     );
   }
   
+  // Error state
   if (error) {
     return (
       <Card className="bg-white rounded-xl shadow-md">
         <CardContent className="p-6 md:p-8 space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold text-neutral-dark mb-6">Error Loading Resources</h2>
           <p className="text-error">Sorry, we couldn't load the recommended resources. Please try again later.</p>
+          <p className="text-neutral-medium">{error.message}</p>
           <Button onClick={() => navigate('/')}>Return Home</Button>
         </CardContent>
       </Card>
     );
   }
   
+  // Success state
   return (
     <Card className="bg-white rounded-xl shadow-md">
       <CardContent className="p-6 md:p-8 space-y-6">
@@ -138,7 +141,7 @@ export default function Results() {
         </p>
         
         <div className="space-y-4">
-          {state.resources.map(resource => (
+          {resources.map(resource => (
             <div 
               key={resource.id} 
               className={`border ${state.selectedResourceIds.includes(resource.id) ? 'border-primary' : 'border-neutral-light'} rounded-lg p-5 hover:border-primary transition-colors`}

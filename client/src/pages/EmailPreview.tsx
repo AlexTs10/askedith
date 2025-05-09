@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
-import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Edit, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import useWizardState from '@/lib/useWizardState';
 
 export default function EmailPreview() {
@@ -17,8 +15,9 @@ export default function EmailPreview() {
   const { toast } = useToast();
   const { state, updateState } = useWizardState();
   
-  // Local state for editing
+  // Local state for editing and send status
   const [isEditing, setIsEditing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   
@@ -35,48 +34,6 @@ export default function EmailPreview() {
     }
   }, [currentEmail]);
   
-  // Send email mutation
-  const { mutate: sendEmail, isPending } = useMutation({
-    mutationFn: async () => {
-      // Update the email in state with edited content
-      const updatedEmails = [...state.emailsToSend];
-      updatedEmails[currentIndex] = {
-        ...currentEmail,
-        subject: emailSubject,
-        body: emailBody
-      };
-      
-      updateState({ emailsToSend: updatedEmails });
-      
-      // Send the email via API
-      return apiRequest('POST', '/api/send-email', {
-        to: currentEmail.to,
-        subject: emailSubject,
-        body: emailBody
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Email Sent",
-        description: "Your email has been sent successfully."
-      });
-      
-      // Navigate to the next email or confirmation
-      if (isLastEmail) {
-        navigate('/confirmation');
-      } else {
-        navigate(`/email-preview/${currentIndex + 1}`);
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        variant: "destructive"
-      });
-    }
-  });
-  
   // Toggle edit mode
   const toggleEdit = () => {
     if (isEditing) {
@@ -92,6 +49,61 @@ export default function EmailPreview() {
     }
     
     setIsEditing(!isEditing);
+  };
+  
+  // Send email function
+  const sendEmail = async () => {
+    try {
+      setIsSending(true);
+      
+      // Update the email in state with edited content
+      const updatedEmails = [...state.emailsToSend];
+      updatedEmails[currentIndex] = {
+        ...currentEmail,
+        subject: emailSubject,
+        body: emailBody
+      };
+      
+      updateState({ emailsToSend: updatedEmails });
+      
+      // Send the email via API
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: currentEmail.to,
+          subject: emailSubject,
+          body: emailBody
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to send email: ${response.status}`);
+      }
+      
+      // Show success toast
+      toast({
+        title: "Email Sent",
+        description: "Your email has been sent successfully."
+      });
+      
+      // Navigate to the next email or confirmation
+      if (isLastEmail) {
+        navigate('/confirmation');
+      } else {
+        navigate(`/email-preview/${currentIndex + 1}`);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
   
   // Redirect if no emails
@@ -152,7 +164,7 @@ export default function EmailPreview() {
               variant="outline"
               className="order-2 md:order-1"
               onClick={toggleEdit}
-              disabled={isPending}
+              disabled={isSending}
             >
               {isEditing ? (
                 <>
@@ -169,11 +181,11 @@ export default function EmailPreview() {
             
             <Button 
               className="order-1 md:order-2 flex-1 bg-primary hover:bg-primary-dark"
-              onClick={() => sendEmail()}
-              disabled={isPending}
+              onClick={sendEmail}
+              disabled={isSending}
             >
               <Send className="mr-2 h-5 w-5" />
-              {isPending ? 'Sending...' : 'Send Email Now'}
+              {isSending ? 'Sending...' : 'Send Email Now'}
             </Button>
           </div>
         </div>
