@@ -160,54 +160,72 @@ export default function Wizard() {
   };
 
   return (
-    <Card className="bg-white rounded-xl shadow-md">
-      <CardContent className="p-6 md:p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-dark">Care Assessment</h2>
-        </div>
-        
-        <ProgressBar currentStep={currentStep} totalSteps={wizardQuestions.length} />
-        
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 min-h-[300px]">
-          <div className="question-container">
-            <h3 className="text-xl font-medium text-neutral-dark mb-3">{question.text}</h3>
-            {renderInput()}
-            {errors.answer && (
-              <p className="text-error text-sm mt-2">{errors.answer.message as string}</p>
-            )}
+    <div className="fade-in">
+      <Card className="card bg-card/80 backdrop-blur-sm border-0">
+        <CardContent className="p-6 md:p-8 space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+              <span className="text-primary">Care</span>Guide Assessment
+            </h2>
+            <div className="text-sm text-muted-foreground bg-background/60 px-3 py-1.5 rounded-full">
+              Question {currentStep} of {wizardQuestions.length}
+            </div>
           </div>
           
-          <div className="flex justify-between mt-8">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBack}
-              className="px-6 py-3 rounded-lg font-medium"
-              disabled={currentStep === 1}
-            >
-              <ArrowLeft className="mr-2 h-5 w-5" />
-              Back
-            </Button>
-            
-            <Button
-              type="submit"
-              className="ml-auto px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark"
-            >
-              {currentStep === wizardQuestions.length ? (
-                <>
-                  See Results
-                  <Check className="ml-2 h-5 w-5" />
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </>
+          <ProgressBar currentStep={currentStep} totalSteps={wizardQuestions.length} />
+          
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 min-h-[300px]">
+            <div className="question-container bg-background/50 p-6 rounded-xl border border-border/50">
+              <h3 className="text-xl font-medium text-foreground mb-6">{question.text}</h3>
+              
+              <div className="transition-all duration-300 ease-in-out transform hover:translate-y-[-2px]">
+                {renderInput()}
+              </div>
+              
+              {errors.answer && (
+                <div className="flex items-center mt-3 text-destructive text-sm bg-destructive/10 px-3 py-2 rounded-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  {errors.answer.message as string}
+                </div>
               )}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+            </div>
+            
+            <div className="flex justify-between mt-10">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                className="px-6 py-3 transition-all duration-200 ease-in-out hover:bg-accent hover:text-accent-foreground"
+                disabled={currentStep === 1}
+              >
+                <ArrowLeft className="mr-2 h-5 w-5" />
+                Back
+              </Button>
+              
+              <Button
+                type="submit"
+                className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
+              >
+                {currentStep === wizardQuestions.length ? (
+                  <div className="flex items-center">
+                    <span>See Results</span>
+                    <Check className="ml-2 h-5 w-5" />
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <span>Continue</span>
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

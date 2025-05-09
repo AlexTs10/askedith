@@ -113,89 +113,174 @@ export default function Results() {
   // Loading state
   if (isLoading) {
     return (
-      <Card className="bg-white rounded-xl shadow-md">
-        <CardContent className="p-6 md:p-8 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-dark mb-6">Loading Resources...</h2>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="border border-neutral-light rounded-lg p-5">
-                <div className="flex items-start">
-                  <Skeleton className="h-5 w-5 rounded mr-3" />
-                  <div className="w-full">
-                    <Skeleton className="h-7 w-48 mb-3" />
-                    <Skeleton className="h-5 w-full mb-2" />
-                    <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-5 w-1/2" />
+      <div className="fade-in">
+        <Card className="card border-0">
+          <CardContent className="p-8 md:p-10 space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Finding Your Resources</h2>
+              <div className="animate-pulse">
+                <svg className="w-6 h-6 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"></path>
+                  <path d="M12 6v6l4 2"></path>
+                </svg>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-background/70 backdrop-blur-sm rounded-xl p-6 overflow-hidden relative animate-pulse">
+                  <div className="flex items-start gap-4">
+                    <Skeleton className="h-6 w-6 rounded-full flex-shrink-0" />
+                    <div className="w-full space-y-3">
+                      <Skeleton className="h-7 w-48" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-5 w-1/2" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+            
+            <div className="text-sm text-muted-foreground text-center pt-4">
+              Analyzing your responses and matching with available resources...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
   
   // Error state
   if (error) {
     return (
-      <Card className="bg-white rounded-xl shadow-md">
-        <CardContent className="p-6 md:p-8 space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-dark mb-6">Error Loading Resources</h2>
-          <p className="text-error">Sorry, we couldn't load the recommended resources. Please try again later.</p>
-          <p className="text-neutral-medium">{error.message}</p>
-          <Button onClick={() => navigate('/')}>Return Home</Button>
-        </CardContent>
-      </Card>
+      <div className="fade-in">
+        <Card className="card border-0">
+          <CardContent className="p-8 md:p-10 space-y-6">
+            <div className="flex items-center justify-center mb-6">
+              <div className="bg-destructive/10 p-4 rounded-full">
+                <svg className="text-destructive w-10 h-10" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">Unable to Load Resources</h2>
+              <p className="text-destructive font-medium mb-2">We encountered a problem while finding resources for you.</p>
+              <p className="text-muted-foreground mb-8">{error.message}</p>
+              
+              <Button 
+                onClick={() => navigate('/')}
+                className="bg-background border border-border hover:bg-accent transition-all duration-200"
+              >
+                Return to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
   
   // Success state
   return (
-    <Card className="bg-white rounded-xl shadow-md">
-      <CardContent className="p-6 md:p-8 space-y-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-neutral-dark mb-6">Recommended Resources</h2>
-        
-        <p className="text-lg text-neutral-medium mb-6">
-          Based on your answers, we found these resources that may be helpful. 
-          Which resources would you like your email to be sent to?
-        </p>
-        
-        <div className="space-y-4">
-          {resources.map(resource => (
-            <div 
-              key={resource.id} 
-              className={`border ${state.selectedResourceIds.includes(resource.id) ? 'border-primary' : 'border-neutral-light'} rounded-lg p-5 hover:border-primary transition-colors`}
-            >
-              <div className="flex items-start">
-                <Checkbox 
-                  id={`resource-${resource.id}`}
-                  checked={state.selectedResourceIds.includes(resource.id)}
-                  onCheckedChange={() => toggleResource(resource.id)}
-                  className="mt-1 h-5 w-5"
-                />
-                <div className="ml-3 flex-1">
-                  <h3 className="text-xl font-medium text-neutral-dark">{resource.category}</h3>
-                  <div className="mt-2 space-y-1 text-neutral-medium">
-                    <p className="font-medium">{resource.name}</p>
-                    <p>{resource.address}</p>
-                    <p>Hours: {resource.hours}</p>
-                    <p className="text-primary">{resource.email}</p>
+    <div className="fade-in">
+      <Card className="card border-0">
+        <CardContent className="p-0">
+          {/* Header section */}
+          <div className="bg-primary/10 p-8 pt-10 pb-12 md:p-10 rounded-t-2xl">
+            <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">Your Matched Resources</h2>
+            <p className="text-lg text-foreground/80 leading-relaxed max-w-xl">
+              Based on your assessment, we've identified these resources that may help.
+              Select the ones you'd like to contact.
+            </p>
+          </div>
+          
+          {/* Resources list */}
+          <div className="p-8 md:p-10 pt-0 md:pt-0">
+            <div className="space-y-4 -mt-6">
+              {resources.map(resource => (
+                <div 
+                  key={resource.id} 
+                  className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 shadow-sm
+                   ${state.selectedResourceIds.includes(resource.id) 
+                     ? 'ring-2 ring-primary/20 border-primary/40 shadow-lg transform -translate-y-1' 
+                     : 'hover:border-border/80 hover:shadow-md'}`}
+                  onClick={() => toggleResource(resource.id)}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1">
+                      <Checkbox 
+                        id={`resource-${resource.id}`}
+                        checked={state.selectedResourceIds.includes(resource.id)}
+                        onCheckedChange={() => toggleResource(resource.id)}
+                        className="h-5 w-5"
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
+                        <h3 className="text-xl font-medium text-foreground">{resource.category}</h3>
+                        <div className="text-xs font-medium text-primary bg-primary/10 py-1 px-3 rounded-full md:ml-auto inline-block">
+                          Recommended Match
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 text-muted-foreground">
+                        <p className="font-medium text-foreground">{resource.name}</p>
+                        <p className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                            <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                            <path d="m2 8 4-4"></path>
+                            <path d="m22 8-4-4"></path>
+                            <path d="m2 16 4 4"></path>
+                            <path d="m22 16-4 4"></path>
+                            <path d="M8 2h8"></path>
+                            <path d="M12 10v4"></path>
+                            <path d="M12 18h.01"></path>
+                          </svg>
+                          {resource.address}
+                        </p>
+                        <p className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          Hours: {resource.hours}
+                        </p>
+                        <p className="flex items-center gap-2 text-primary">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                          </svg>
+                          {resource.email}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-        
-        <Button 
-          onClick={handleContinue}
-          className="mt-8 w-full px-8 py-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark"
-        >
-          Continue
-          <ArrowRight className="ml-2 h-5 w-5" />
-        </Button>
-      </CardContent>
-    </Card>
+            
+            <div className="mt-10 space-y-4">
+              <Button 
+                onClick={handleContinue}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 px-8 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
+              >
+                Continue with Selected Resources
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              
+              <p className="text-center text-sm text-muted-foreground">
+                You'll have a chance to review and edit your message before sending
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
