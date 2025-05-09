@@ -69,11 +69,17 @@ export function useWizardState() {
 
   // Method to update the state
   const updateState = (newState: Partial<WizardState>) => {
-    setState(currentState => ({ ...currentState, ...newState }));
+    console.log("Updating wizard state with:", newState);
+    setState(currentState => {
+      const updatedState = { ...currentState, ...newState };
+      console.log("New wizard state:", updatedState);
+      return updatedState;
+    });
   };
 
   // Method to reset the state
   const resetState = () => {
+    console.log("Resetting wizard state");
     localStorage.removeItem(STORAGE_KEY);
     setState({
       currentQuestion: 1,

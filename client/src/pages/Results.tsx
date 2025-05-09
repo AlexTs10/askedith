@@ -16,15 +16,34 @@ export default function Results() {
   const { toast } = useToast();
   const { state, updateState } = useWizardState();
   
-  // Fetch resources
-  const { data: resources, isLoading, error } = useQuery<Resource[]>({
-    queryKey: ['/api/resources'],
+  // Fetch resources using TanStack Query v5
+  const { data: resources, isLoading, error } = useQuery({
+    queryKey: ['/api/resources']
   });
+  
+  // Log state for debugging
+  console.log("Current state:", { 
+    resources, 
+    isLoading, 
+    error, 
+    selectedIds: state.selectedResourceIds 
+  });
+  
+  // Log success or error for debugging
+  useEffect(() => {
+    if (resources) {
+      console.log("Successfully fetched resources:", resources);
+    }
+    if (error) {
+      console.error("Error fetching resources:", error);
+    }
+  }, [resources, error]);
   
   // Update resources in state when they load
   useEffect(() => {
-    if (resources) {
-      updateState({ resources });
+    if (resources && Array.isArray(resources)) {
+      console.log("Updating state with resources:", resources);
+      updateState({ resources: resources as Resource[] });
     }
   }, [resources]);
   
@@ -54,9 +73,9 @@ export default function Results() {
     }
     
     // Find the selected resources
-    const selectedResources = resources?.filter(
+    const selectedResources = state.resources.filter(
       resource => state.selectedResourceIds.includes(resource.id)
-    ) || [];
+    );
     
     // Generate the email templates
     const emailsToSend = generateEmails(selectedResources, state.answers);
@@ -119,7 +138,7 @@ export default function Results() {
         </p>
         
         <div className="space-y-4">
-          {resources?.map(resource => (
+          {state.resources.map(resource => (
             <div 
               key={resource.id} 
               className={`border ${state.selectedResourceIds.includes(resource.id) ? 'border-primary' : 'border-neutral-light'} rounded-lg p-5 hover:border-primary transition-colors`}
