@@ -89,11 +89,11 @@ export default function EmailPreview() {
         description: "Your email has been sent successfully."
       });
       
-      // Navigate to the next email or confirmation
+      // Navigate to the next email or confirmation using direct redirection
       if (isLastEmail) {
-        navigate('/confirmation');
+        window.location.href = '/confirmation';
       } else {
-        navigate(`/email-preview/${currentIndex + 1}`);
+        window.location.href = `/email-preview/${currentIndex + 1}`;
       }
     } catch (error) {
       toast({
@@ -108,7 +108,8 @@ export default function EmailPreview() {
   
   // Redirect if no emails
   if (!currentEmail) {
-    navigate('/results');
+    console.log("No current email found, redirecting to results");
+    window.location.href = '/results';
     return null;
   }
   

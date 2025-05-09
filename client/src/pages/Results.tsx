@@ -63,6 +63,8 @@ export default function Results() {
   
   // Handle continue button
   const handleContinue = () => {
+    console.log("Continue button clicked");
+    
     if (state.selectedResourceIds.length === 0) {
       toast({
         title: "Selection Required",
@@ -72,21 +74,40 @@ export default function Results() {
       return;
     }
     
-    // Find selected resources
-    const selectedResources = resources.filter(
-      resource => state.selectedResourceIds.includes(resource.id)
-    );
-    
-    // Generate emails
-    const emailsToSend = generateEmails(selectedResources, state.answers);
-    
-    // Update state and navigate
-    updateState({ 
-      emailsToSend,
-      currentEmailIndex: 0
-    });
-    
-    navigate('/email-preview/0');
+    try {
+      console.log("Selected IDs:", state.selectedResourceIds);
+      console.log("All resources:", resources);
+      
+      // Find selected resources
+      const selectedResources = resources.filter(
+        resource => state.selectedResourceIds.includes(resource.id)
+      );
+      
+      console.log("Selected resources:", selectedResources);
+      
+      // Generate emails
+      const emailsToSend = generateEmails(selectedResources, state.answers);
+      
+      console.log("Generated emails:", emailsToSend);
+      
+      // Update state
+      updateState({ 
+        emailsToSend,
+        currentEmailIndex: 0
+      });
+      
+      console.log("State updated, navigating to email preview");
+      
+      // Force navigation
+      window.location.href = '/email-preview/0';
+    } catch (error) {
+      console.error("Error in handleContinue:", error);
+      toast({
+        title: "Error",
+        description: "Something went wrong preparing your emails. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Loading state
