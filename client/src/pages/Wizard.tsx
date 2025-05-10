@@ -51,8 +51,11 @@ export default function Wizard() {
       // For contact info, ensure we have a valid JSON object
       const currentValue = state.answers[`q${currentStep}`];
       
+      console.log(`Question ${currentStep} type: contact_info, current value:`, currentValue);
+      
       // If we don't have a value yet, initialize with empty fields
       if (!currentValue) {
+        console.log('No contact value, initializing empty object');
         const emptyContactInfo = { 
           zipcode: '', 
           email: '', 
@@ -63,18 +66,40 @@ export default function Wizard() {
         setContactFormData(emptyContactInfo);
       } 
       // If we have a value that's already a JSON string
-      else if (typeof currentValue === 'string' && currentValue.startsWith('{')) {
+      else if (typeof currentValue === 'string' && currentValue.trim().startsWith('{')) {
+        console.log('Value is JSON string, parsing');
         // Update the form value and contactFormData state
         setValue('answer', currentValue);
         try {
           const parsedData = JSON.parse(currentValue);
-          setContactFormData(parsedData);
+          
+          // Make sure all required fields exist
+          const updatedData = {
+            zipcode: parsedData.zipcode || '',
+            email: parsedData.email || '',
+            phone: parsedData.phone || '',
+            lastname: parsedData.lastname || ''
+          };
+          
+          setContactFormData(updatedData);
+          console.log('Updated contact form data:', updatedData);
         } catch (e) {
           console.error("Error updating contact form data:", e);
+          
+          // If parsing fails, initialize with empty values
+          const emptyContactInfo = { 
+            zipcode: '', 
+            email: '', 
+            phone: '', 
+            lastname: '' 
+          };
+          setValue('answer', JSON.stringify(emptyContactInfo));
+          setContactFormData(emptyContactInfo);
         }
       } 
       // If we have a value that's plain text (migrating from old format)
       else {
+        console.log('Value is plain text, creating new contact info');
         // Create a contact info object with the proper fields
         const newContactInfo = { 
           zipcode: state.answers.q6 || '', 
@@ -82,6 +107,7 @@ export default function Wizard() {
           phone: '', 
           lastname: '' 
         };
+        console.log('New contact info:', newContactInfo);
         setValue('answer', JSON.stringify(newContactInfo));
         setContactFormData(newContactInfo);
       }
@@ -100,40 +126,58 @@ export default function Wizard() {
     // Validate contact info if applicable
     if (question.type === 'contact_info') {
       try {
-        const contactData = JSON.parse(data.answer);
-        // Check if all required fields are filled
-        const allFieldsFilled = question.subfields?.every(field => 
-          field.required ? !!contactData[field.name] : true
-        );
+        // Log the data for debugging
+        console.log('Contact form data:', data.answer);
         
-        if (!allFieldsFilled) {
-          toast({
-            title: "Missing Information",
-            description: "Please fill in all required contact fields",
-            variant: "destructive"
+        // Ensure data is not empty or null
+        if (!data.answer || data.answer === '{}') {
+          // Create a default contact info object with empty values
+          answerValue = JSON.stringify({ 
+            zipcode: '', 
+            email: '', 
+            phone: '', 
+            lastname: '' 
           });
-          return;
-        }
-        
-        // If email field exists, validate email format
-        if (contactData.email) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(contactData.email)) {
+        } else {
+          // Parse the JSON data
+          const contactData = JSON.parse(data.answer);
+          
+          // Check if all required fields are filled
+          const requiredFields = ['zipcode', 'email', 'phone', 'lastname'];
+          const missingFields = requiredFields.filter(field => 
+            !contactData[field] || contactData[field].trim() === ''
+          );
+          
+          if (missingFields.length > 0) {
             toast({
-              title: "Invalid Email",
-              description: "Please enter a valid email address",
+              title: "Missing Information",
+              description: `Please fill in these required fields: ${missingFields.join(', ')}`,
               variant: "destructive"
             });
             return;
           }
+          
+          // Validate email format
+          if (contactData.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(contactData.email)) {
+              toast({
+                title: "Invalid Email",
+                description: "Please enter a valid email address",
+                variant: "destructive"
+              });
+              return;
+            }
+          }
+          
+          // Use the stringified data
+          answerValue = data.answer;
         }
-        
-        // Use the stringified data
-        answerValue = data.answer;
       } catch (error) {
+        console.error("Error parsing contact data:", error, data.answer);
         toast({
           title: "Form Error",
-          description: "There was a problem with the contact information",
+          description: "There was a problem with the contact information. Please check your inputs.",
           variant: "destructive"
         });
         return;
@@ -167,13 +211,21 @@ export default function Wizard() {
   const parseContactInfo = () => {
     try {
       if (state.answers[`q${currentStep}`] && 
-          typeof state.answers[`q${currentStep}`] === 'string' && 
-          state.answers[`q${currentStep}`].startsWith('{')) {
-        return JSON.parse(state.answers[`q${currentStep}`]);
+          typeof state.answers[`q${currentStep}`] === 'string') {
+          
+        // For debugging
+        console.log(`Parsing contact info for q${currentStep}:`, state.answers[`q${currentStep}`]);
+        
+        // Only try to parse if it looks like JSON (starts with {)
+        if (state.answers[`q${currentStep}`].trim().startsWith('{')) {
+          return JSON.parse(state.answers[`q${currentStep}`]);
+        }
       }
     } catch (e) {
-      console.error("Error parsing contact info:", e);
+      console.error("Error parsing contact info:", e, state.answers[`q${currentStep}`]);
     }
+    
+    // Default empty contact info
     return { 
       zipcode: '', 
       email: '', 
@@ -199,10 +251,11 @@ export default function Wizard() {
     switch (type) {
       case 'contact_info':
         // Handle the combined contact information fields
+        // Force rerender with key to ensure ContactInfo fields are updated
         return (
-          <div className="space-y-4">
+          <div className="space-y-4" key={`contactinfo-${currentStep}`}>
             {subfields?.map((field, index) => (
-              <div key={index} className="space-y-2">
+              <div key={`field-${field.name}-${index}`} className="space-y-2">
                 <Label htmlFor={`contact-${field.name}`} className="text-sm font-medium">
                   {field.placeholder}
                 </Label>
