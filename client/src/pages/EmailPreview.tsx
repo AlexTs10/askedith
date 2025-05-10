@@ -129,8 +129,13 @@ export default function EmailPreview() {
     <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen py-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-serif text-teal-600 mb-2">AskCara</h1>
-        <p className="text-gray-600">Share Once. Reach Many.</p>
+        <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">
+          <span>A</span>
+          <span style={{ fontSize: 'calc(100% - 2pt)' }}>sk</span>
+          <span>C</span>
+          <span style={{ fontSize: 'calc(100% - 2pt)' }}>ara</span>
+        </h1>
+        <p className="text-2xl md:text-3xl text-gray-600 font-light mb-2">Share Once. Reach Many.</p>
       </div>
       
       <Card className="card bg-transparent border-0 shadow-none max-w-6xl mx-auto">
