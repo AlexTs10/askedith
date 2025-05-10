@@ -61,9 +61,12 @@ export function generateEmails(
   selectedResources: Resource[], 
   answers: WizardAnswers
 ): EmailTemplate[] {
+  // Get the relationship from the correct question ID (now q3 in the new format)
+  const relationship = answers.q3?.toLowerCase() || 'parent';
+  
   return selectedResources.map(resource => ({
     to: resource.email,
-    subject: `Seeking ${resource.category} help for my ${answers.q4?.toLowerCase() || 'parent'}`,
+    subject: `Seeking ${resource.category} help for my ${relationship}`,
     body: generateEmailBody(resource, answers)
   }));
 }

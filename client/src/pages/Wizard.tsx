@@ -45,10 +45,24 @@ export default function Wizard() {
     if (question.type === 'contact_info') {
       // For contact info, ensure we have a valid JSON object
       const currentValue = state.answers[`q${currentStep}`];
+      
+      // If we don't have a value yet, initialize with empty fields
       if (!currentValue) {
         setValue('answer', JSON.stringify({ name: '', email: '', zipcode: '' }));
-      } else {
+      } 
+      // If we have a value that's already a JSON string
+      else if (typeof currentValue === 'string' && currentValue.startsWith('{')) {
+        // Just keep it as is
         setValue('answer', currentValue);
+      } 
+      // If we have a value that's plain text (migrating from old format)
+      else {
+        // Try to create a contact info object with the name field populated
+        setValue('answer', JSON.stringify({ 
+          name: currentValue || '', 
+          email: state.answers.q2 || '', 
+          zipcode: state.answers.q6 || '' 
+        }));
       }
     } else {
       // For other question types, just set the value directly
@@ -135,12 +149,21 @@ export default function Wizard() {
     switch (type) {
       case 'contact_info':
         // Handle the combined contact information fields
-        const contactInfo = state.answers[`q${currentStep}`] ? 
-          JSON.parse(state.answers[`q${currentStep}`]) : 
-          { name: '', email: '', zipcode: '' };
+        const parseContactInfo = () => {
+          try {
+            if (state.answers[`q${currentStep}`] && 
+                typeof state.answers[`q${currentStep}`] === 'string' && 
+                state.answers[`q${currentStep}`].startsWith('{')) {
+              return JSON.parse(state.answers[`q${currentStep}`]);
+            }
+          } catch (e) {
+            console.error("Error parsing contact info:", e);
+          }
+          return { name: '', email: '', zipcode: '' };
+        };
         
         // Local state for contact info fields
-        const [contactFormData, setContactFormData] = useState(contactInfo);
+        const [contactFormData, setContactFormData] = useState(parseContactInfo());
         
         // Update form value when contact info changes
         const updateContactInfo = (field: string, value: string) => {
