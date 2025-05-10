@@ -563,7 +563,7 @@ export default function Wizard() {
   };
 
   return (
-    <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen py-8">
+    <div className="fade-in bg-background min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -576,69 +576,67 @@ export default function Wizard() {
           <p className="text-2xl md:text-3xl text-gray-600 font-light mb-2">Share Once. Reach Many.</p>
         </div>
         
-        {/* Question Card - Removed border */}
-        <Card className="shadow-sm border-0 bg-transparent">
-          <CardContent className="p-6 md:p-8 space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h2 className="text-xl font-serif text-teal-600">
-                Question {currentStep} of {wizardQuestions.length}
-              </h2>
-            </div>
-            
-            <ProgressBar currentStep={currentStep} totalSteps={wizardQuestions.length} />
-            
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 min-h-[300px]">
-              <div className="question-container p-2">
-                <h3 className="text-2xl font-serif text-teal-600 mb-6">{question.text}</h3>
-                
-                <div className="transition-all duration-300 ease-in-out">
-                  {renderInput()}
-                </div>
-                
-                {errors.answer && (
-                  <div className="flex items-center justify-center mt-4 mx-auto max-w-md text-red-500 text-sm bg-red-50 px-4 py-3 rounded-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    {errors.answer.message as string}
-                  </div>
-                )}
+        {/* Question Container */}
+        <div className="py-6 md:py-8 space-y-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 className="text-xl font-serif text-teal-600">
+              Question {currentStep} of {wizardQuestions.length}
+            </h2>
+          </div>
+          
+          <ProgressBar currentStep={currentStep} totalSteps={wizardQuestions.length} />
+          
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 min-h-[300px]">
+            <div className="question-container p-2">
+              <h3 className="text-2xl font-serif text-teal-600 mb-6">{question.text}</h3>
+              
+              <div className="transition-all duration-300 ease-in-out">
+                {renderInput()}
               </div>
               
-              <div className="flex justify-between mt-10">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  className="border-teal-600 text-teal-600 hover:bg-teal-50 px-6 py-2"
-                  disabled={currentStep === 1}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Previous
-                </Button>
-                
-                <Button
-                  type="submit"
-                  className="ml-auto bg-teal-600 hover:bg-teal-700 text-white px-8 py-2"
-                >
-                  {currentStep === wizardQuestions.length ? (
-                    <div className="flex items-center">
-                      <span>See Results</span>
-                      <Check className="ml-2 h-4 w-4" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <span>Next</span>
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+              {errors.answer && (
+                <div className="flex items-center justify-center mt-4 mx-auto max-w-md text-red-500 text-sm bg-red-50 px-4 py-3 rounded-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  {errors.answer.message as string}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between mt-10">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                className="border-teal-600 text-teal-600 hover:bg-teal-50 px-6 py-2"
+                disabled={currentStep === 1}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+              
+              <Button
+                type="submit"
+                className="ml-auto bg-teal-600 hover:bg-teal-700 text-white px-8 py-2"
+              >
+                {currentStep === wizardQuestions.length ? (
+                  <div className="flex items-center">
+                    <span>See Results</span>
+                    <Check className="ml-2 h-4 w-4" />
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <span>Next</span>
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </div>
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

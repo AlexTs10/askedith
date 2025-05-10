@@ -13,7 +13,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white flex flex-col items-center">
+    <div className="min-h-screen bg-background flex flex-col items-center">
       {/* Main content area */}
       <main className="flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center">
         <div className="text-center mb-10">

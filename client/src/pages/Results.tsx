@@ -113,9 +113,9 @@ export default function Results() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="fade-in">
-        <Card className="card border-0">
-          <CardContent className="p-8 md:p-10 space-y-8">
+      <div className="fade-in bg-background min-h-screen py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="p-8 md:p-10 space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Finding Your Resources</h2>
               <div className="animate-pulse">
@@ -145,8 +145,8 @@ export default function Results() {
             <div className="text-sm text-muted-foreground text-center pt-4">
               Analyzing your responses and matching with available resources...
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -154,9 +154,9 @@ export default function Results() {
   // Error state
   if (error) {
     return (
-      <div className="fade-in">
-        <Card className="card border-0">
-          <CardContent className="p-8 md:p-10 space-y-6">
+      <div className="fade-in bg-background min-h-screen py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="p-8 md:p-10 space-y-6">
             <div className="flex items-center justify-center mb-6">
               <div className="bg-destructive/10 p-4 rounded-full">
                 <svg className="text-destructive w-10 h-10" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -179,8 +179,8 @@ export default function Results() {
                 Return to Home
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
@@ -199,7 +199,7 @@ export default function Results() {
   
   // Success state
   return (
-    <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen">
+    <div className="fade-in bg-background min-h-screen">
       {/* Header */}
       <div className="text-center pt-8 mb-4">
         <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">
@@ -211,8 +211,8 @@ export default function Results() {
         <p className="text-2xl md:text-3xl text-gray-600 font-light mb-2">Share Once. Reach Many.</p>
       </div>
 
-      <Card className="card bg-transparent border-0 shadow-none max-w-6xl mx-auto">
-        <CardContent className="p-0">
+      <div className="max-w-6xl mx-auto">
+        <div className="p-0">
           {/* Header section */}
           <div className="bg-teal-50 p-8 pt-10 pb-12 md:p-10 rounded-t-lg">
             <h2 className="text-2xl md:text-3xl font-serif text-teal-600 mb-4">Your Matched Resources</h2>
@@ -321,8 +321,8 @@ export default function Results() {
               </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
