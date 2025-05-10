@@ -170,7 +170,7 @@ export default function EmailPreview() {
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4 bg-destructive/10">
+                  <div className="backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4">
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-from">From:</Label>
                       <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function EmailPreview() {
                     </div>
                   </div>
                   
-                  <div className="backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4 bg-destructive/10 mt-4">
+                  <div>
                     <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-subject">Subject:</Label>
                     <Input 
                       id="email-subject" 
@@ -205,7 +205,7 @@ export default function EmailPreview() {
                     />
                   </div>
                   
-                  <div className="backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4 bg-destructive/10">
+                  <div>
                     <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-body">Message:</Label>
                     <div className={`transition-all duration-200 rounded-xl overflow-hidden ${isEditing ? 'ring-2 ring-primary/10' : ''}`}>
                       <Textarea 
