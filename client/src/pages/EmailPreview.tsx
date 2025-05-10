@@ -200,7 +200,7 @@ export default function EmailPreview() {
                       id="email-subject" 
                       value={emailSubject} 
                       onChange={(e) => setEmailSubject(e.target.value)}
-                      className={`w-full transition-all duration-200 ${!isEditing ? 'bg-background/40 text-foreground border-transparent' : 'bg-background'}`}
+                      className={`w-full transition-all duration-200 ${!isEditing ? 'text-foreground border-transparent' : 'bg-transparent'}`}
                       readOnly={!isEditing} 
                     />
                   </div>
@@ -212,7 +212,7 @@ export default function EmailPreview() {
                         id="email-body" 
                         value={emailBody} 
                         onChange={(e) => setEmailBody(e.target.value)}
-                        className={`w-full min-h-[240px] transition-all duration-200 ${!isEditing ? 'bg-background/40 text-foreground border-transparent resize-none' : 'bg-background'}`}
+                        className={`w-full min-h-[240px] transition-all duration-200 ${!isEditing ? 'text-foreground border-transparent resize-none' : 'bg-transparent'}`}
                         style={{ lineHeight: '1.6' }}
                         readOnly={!isEditing} 
                       />
