@@ -235,20 +235,24 @@ export default function Wizard() {
         return;
       }
     }
-    // Handle required fields for other question types
-    else if (question.required && (!answerValue || (typeof answerValue === 'string' && answerValue.trim() === ''))) {
-      toast({
-        title: "Please Complete",
-        description: "This field needs to be filled in",
-        variant: "destructive"
-      });
-      return;
+    // Skip validation for select type - handled by onValueChange
+    else if (question.type === 'select') {
+      // No need to validate here since we're auto-advancing on selection
     }
-    
-    // Fix for text inputs - ensure value isn't blank
-    if ((question.type === 'text' || question.type === 'email') && 
-        (typeof answerValue === 'string' && answerValue.trim() === '')) {
-      if (question.required) {
+    // For regular fields like text or number
+    else if (question.required) {
+      // Check for null, undefined, or empty values
+      if (!answerValue) {
+        toast({
+          title: "Please Complete",
+          description: "This field needs to be filled in",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // For text inputs, ensure value isn't just whitespace
+      if (typeof answerValue === 'string' && answerValue.trim() === '') {
         toast({
           title: "Missing Information",
           description: "Please provide an answer",
@@ -515,19 +519,30 @@ export default function Wizard() {
             )}
             
             <Select
-              defaultValue={state.answers[`q${currentStep}`] || ''}
+              value={state.answers[`q${currentStep}`] || ''}
               onValueChange={(value) => {
+                // Update form state
                 setValue('answer', value);
-                // Immediately save this value to state to prevent validation errors
+                
+                // Save to wizard state
                 const updatedAnswers = {...state.answers};
                 updatedAnswers[`q${currentStep}`] = value;
                 updateState({...state, answers: updatedAnswers});
                 
-                // Navigate to the next question directly
+                // Wait a bit to ensure state is updated, then navigate
                 if (value) {
-                  setTimeout(() => {
-                    navigate(`/wizard/${currentStep + 1}`);
-                  }, 100);
+                  // Submit the form to advance
+                  const updatedState = {
+                    ...state,
+                    answers: {
+                      ...state.answers,
+                      [`q${currentStep}`]: value 
+                    }
+                  };
+                  
+                  // Save state and navigate
+                  updateState(updatedState);
+                  navigate(`/wizard/${currentStep + 1}`);
                 }
               }}
             >
