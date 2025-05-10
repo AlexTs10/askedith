@@ -1,20 +1,21 @@
 export interface Question {
   id: number;
   text: string;
-  type: "text" | "email" | "number" | "select" | "radio" | "textarea" | "contact_info";
+  type: "text" | "email" | "number" | "select" | "radio" | "textarea" | "contact_info" | "multiselect" | "checkbox_group";
   required: boolean;
   placeholder?: string;
   options?: string[];
   category?: string; // Hidden field for categorizing questions
+  subtext?: string; // Additional explanatory text for the question
   subfields?: {
     name: string;
-    type: "text" | "email" | "number";
+    type: "text" | "email" | "number" | "tel";
     placeholder: string;
     required: boolean;
   }[];
 }
 
-// Updated questions for the wizard with reorganized structure
+// Updated questions for the wizard with reorganized structure and new requirements
 export const wizardQuestions: Question[] = [
   { 
     id: 1, 
@@ -30,7 +31,17 @@ export const wizardQuestions: Question[] = [
     type: "number", 
     required: true, 
     placeholder: "Enter age",
-    category: "recipient_info" 
+    category: "recipient_info",
+    subtext: "If multiple people need care such as a couple, add the second person's age below" 
+  },
+  // Second age field for multiple care recipients
+  {
+    id: 15, // New ID for the second person
+    text: "Second care recipient's age (if applicable)", 
+    type: "number", 
+    required: false, 
+    placeholder: "Enter age of second person",
+    category: "recipient_info_additional"
   },
   { 
     id: 3, 
@@ -42,18 +53,37 @@ export const wizardQuestions: Question[] = [
   },
   { 
     id: 4, 
-    text: "Living situation", 
-    type: "select", 
+    text: "Living situation (Select all that apply)", 
+    type: "checkbox_group", 
     required: true, 
-    options: ["Independent living", "Independent living with assistance", "Assisted living facility", "Nursing home", "Living with family"],
+    options: [
+      "Independent living", 
+      "Independent living with assistance", 
+      "Assisted living facility", 
+      "Nursing home", 
+      "Living with family",
+      "Looking to move",
+      "Need housing options"
+    ],
     category: "housing" 
   },
   { 
     id: 5, 
-    text: "Biggest current challenge", 
-    type: "select", 
+    text: "Biggest current challenges (Check all that apply)", 
+    type: "checkbox_group", 
     required: true, 
-    options: ["Mobility issues", "Memory care", "Financial planning", "Daily assistance", "Medical coordination"],
+    options: [
+      "Mobility issues", 
+      "Memory care", 
+      "Financial planning", 
+      "Daily assistance", 
+      "Medical coordination",
+      "Transportation",
+      "Medication management",
+      "Social isolation",
+      "Home modifications",
+      "Legal matters (POA, wills, etc.)"
+    ],
     category: "needs" 
   },
   { 
@@ -84,7 +114,7 @@ export const wizardQuestions: Question[] = [
     id: 9, 
     text: "Health conditions of concern", 
     type: "text", 
-    required: false, 
+    required: true, 
     placeholder: "List any major health concerns",
     category: "health" 
   },
@@ -108,17 +138,18 @@ export const wizardQuestions: Question[] = [
     id: 12, 
     text: "Family members involved in decisions", 
     type: "text", 
-    required: false, 
+    required: true, 
     placeholder: "List family members involved",
     category: "family_involvement" 
   },
   { 
     id: 13, 
-    text: "Anything else we should know?", 
+    text: "Anything else you think these professionals ought to know about your situation and needs?", 
     type: "textarea", 
-    required: false, 
+    required: true, 
     placeholder: "Additional information",
-    category: "additional_info" 
+    category: "additional_info",
+    subtext: "For example, if you need help understanding Medicare, obtaining a Power of Attorney, are thinking about care possibilities, share it all here."
   },
   { 
     id: 14, 
@@ -128,9 +159,9 @@ export const wizardQuestions: Question[] = [
     category: "contact_details",
     subfields: [
       {
-        name: "zipcode",
+        name: "lastname",
         type: "text",
-        placeholder: "Your ZIP code",
+        placeholder: "Your last name",
         required: true
       },
       {
@@ -140,15 +171,15 @@ export const wizardQuestions: Question[] = [
         required: true
       },
       {
-        name: "phone",
+        name: "zipcode",
         type: "text",
-        placeholder: "Your phone number",
+        placeholder: "Your ZIP code",
         required: true
       },
       {
-        name: "lastname",
-        type: "text",
-        placeholder: "Your last name",
+        name: "phone",
+        type: "tel",
+        placeholder: "Your phone number",
         required: true
       }
     ]
