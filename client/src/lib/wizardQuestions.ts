@@ -27,11 +27,20 @@ export const wizardQuestions: Question[] = [
   },
   { 
     id: 2, 
-    text: "Care recipient's age", 
+    text: "Age of first person who needs senior living or care?", 
     type: "number", 
     required: true, 
-    placeholder: "Enter age",
-    category: "recipient_info"
+    placeholder: "Enter age of first person",
+    category: "recipient_info",
+    subtext: "If there is a second person, their age is:",
+    subfields: [
+      {
+        name: "secondPersonAge",
+        type: "number",
+        placeholder: "Age of second person (if applicable)",
+        required: false
+      }
+    ]
   },
   { 
     id: 3, 

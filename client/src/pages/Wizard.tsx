@@ -466,22 +466,41 @@ export default function Wizard() {
         return (
           <div>
             {/* Show any subtext/explanation if provided */}
-            {subtext && (
-              <div className="mb-4 text-sm text-muted-foreground">
-                {subtext}
-              </div>
-            )}
-            
             <Input
               id={`q${currentStep}`}
               type="number"
               placeholder={placeholder}
-              className="w-full p-4 text-lg"
+              className="w-full p-4 text-lg mb-4"
               {...register('answer', { 
                 required: required && 'This field is required',
                 valueAsNumber: true
               })}
             />
+            
+            {/* Display subfields if available (like second person age) */}
+            {subtext && (
+              <div className="mb-2 text-sm text-muted-foreground mt-6">
+                {subtext}
+              </div>
+            )}
+            
+            {/* Render subfields (like second person age) */}
+            {question.subfields?.map((subfield, idx) => (
+              <div key={idx} className="mt-2">
+                <Input
+                  id={`q${currentStep}_${subfield.name}`}
+                  type={subfield.type}
+                  placeholder={subfield.placeholder}
+                  className="w-full p-4 text-lg"
+                  onChange={(e) => {
+                    // Store subfield value in wizard state
+                    const updatedAnswers = {...state.answers};
+                    updatedAnswers[`q${currentStep}_${subfield.name}`] = e.target.value;
+                    setState({...state, answers: updatedAnswers});
+                  }}
+                />
+              </div>
+            ))}
           </div>
         );
         
