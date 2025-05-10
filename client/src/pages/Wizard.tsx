@@ -399,7 +399,7 @@ export default function Wizard() {
                       placeholder={field.placeholder}
                       value={contactFormData[field.name] || ''}
                       onChange={(e) => updateContactInfo(field.name, e.target.value)}
-                      className="w-full transition-all duration-200"
+                      className="w-full p-4 text-lg font-normal text-gray-700 transition-all duration-200"
                       required={field.required}
                     />
                   </div>
@@ -419,7 +419,7 @@ export default function Wizard() {
                       placeholder={field.type === 'tel' ? '(555) 555-5555' : field.placeholder}
                       value={contactFormData[field.name] || ''}
                       onChange={(e) => updateContactInfo(field.name, e.target.value)}
-                      className="w-full transition-all duration-200"
+                      className="w-full p-4 text-lg font-normal text-gray-700 transition-all duration-200"
                       required={field.required}
                       // For phone numbers, add pattern for better mobile input
                       {...(field.type === 'tel' ? {
@@ -495,7 +495,7 @@ export default function Wizard() {
               id={`q${currentStep}`}
               type={type}
               placeholder={placeholder}
-              className="w-full p-4 text-lg"
+              className="w-full p-4 text-lg font-normal text-gray-700"
               {...register('answer', { 
                 required: required && 'This field is required',
                 ...(type === 'email' && {
@@ -517,7 +517,7 @@ export default function Wizard() {
               id={`q${currentStep}`}
               type="number"
               placeholder={placeholder}
-              className="w-full p-4 text-lg mb-4"
+              className="w-full p-4 text-lg font-normal text-gray-700 mb-4"
               {...register('answer', { 
                 required: required && 'This field is required',
                 valueAsNumber: true
@@ -538,7 +538,7 @@ export default function Wizard() {
                   id={`q${currentStep}_${subfield.name}`}
                   type={subfield.type}
                   placeholder={subfield.placeholder}
-                  className="w-full p-4 text-lg"
+                  className="w-full p-4 text-lg font-normal text-gray-700"
                   onChange={(e) => {
                     // Store subfield value in wizard state
                     const updatedAnswers = {...state.answers};
@@ -639,7 +639,7 @@ export default function Wizard() {
             <Textarea
               id={`q${currentStep}`}
               placeholder={placeholder}
-              className="w-full p-4 text-lg min-h-[150px]"
+              className="w-full p-4 text-lg font-normal text-gray-700 min-h-[150px]"
               rows={6}
               {...register('answer', { 
                 required: required && 'This field is required'

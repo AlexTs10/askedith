@@ -226,9 +226,9 @@ export default function Results() {
           <div className="p-8 md:p-10 pt-0 md:pt-0">
             <div className="space-y-8 -mt-6">
               {Object.entries(groupResourcesByCategory()).map(([category, categoryResources]) => (
-                <div key={category} className="category-section">
+                <div key={category} className="category-section mb-12">
                   {/* Category header */}
-                  <div className="mb-4 mt-8">
+                  <div className="mb-5 mt-8">
                     <h3 className="text-lg font-semibold text-foreground/90 flex items-center">
                       <div className="h-4 w-4 bg-primary rounded-full mr-2"></div>
                       {category}
