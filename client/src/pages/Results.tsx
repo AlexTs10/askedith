@@ -199,13 +199,13 @@ export default function Results() {
   
   // Success state
   return (
-    <div className="fade-in">
-      <Card className="card border-0">
+    <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen">
+      <Card className="card bg-white border-gray-100 shadow-sm max-w-6xl mx-auto">
         <CardContent className="p-0">
           {/* Header section */}
-          <div className="bg-primary/10 p-8 pt-10 pb-12 md:p-10 rounded-t-2xl">
-            <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-4">Your Matched Resources</h2>
-            <p className="text-lg text-foreground/80 leading-relaxed max-w-xl">
+          <div className="bg-teal-50 p-8 pt-10 pb-12 md:p-10 rounded-t-lg">
+            <h2 className="text-2xl md:text-3xl font-serif text-teal-600 mb-4">Your Matched Resources</h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
               Based on your assessment, we've identified these resources that may help.
               Select the ones you'd like to contact.
             </p>
@@ -227,15 +227,15 @@ export default function Results() {
                     </h3>
                   </div>
                   
-                  {/* Card Grid Layout for Resources */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Card Grid Layout for Resources - Changed to 2 cards per row as requested */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {categoryResources.map(resource => (
                       <div 
                         key={resource.id} 
-                        className={`bg-card border border-border rounded-xl p-5 transition-all duration-300 shadow-sm h-full
+                        className={`bg-white border border-gray-100 rounded-lg p-5 transition-all duration-300 shadow-sm h-full
                          ${state.selectedResourceIds.includes(resource.id) 
-                           ? 'ring-2 ring-primary/30 border-primary/50 shadow-lg transform -translate-y-1' 
-                           : 'hover:border-border/80 hover:shadow-md hover:bg-card/90'}`}
+                           ? 'ring-2 ring-teal-600/30 border-teal-600/30 shadow-md' 
+                           : 'hover:border-teal-100 hover:shadow-md hover:bg-amber-50/20'}`}
                         onClick={() => toggleResource(resource.id)}
                       >
                         <div className="flex flex-col h-full">
@@ -245,46 +245,46 @@ export default function Results() {
                               id={`resource-${resource.id}`}
                               checked={state.selectedResourceIds.includes(resource.id)}
                               onCheckedChange={() => toggleResource(resource.id)}
-                              className="h-5 w-5 mt-1"
+                              className="h-4 w-4 mt-1"
                             />
                             
                             <div>
-                              <h3 className="text-lg font-medium text-foreground line-clamp-1">{resource.name}</h3>
-                              <div className="mt-1 text-xs font-medium text-primary bg-primary/10 py-1 px-2 rounded-full inline-block">
+                              <h3 className="text-lg font-serif text-teal-600 line-clamp-1">{resource.name}</h3>
+                              <div className="mt-1 text-xs font-medium text-teal-600 bg-teal-50 py-1 px-2 rounded-full inline-block">
                                 Recommended Match
                               </div>
                             </div>
                           </div>
                           
-                          {/* Resource details in a compact format */}
-                          <div className="mt-2 text-sm text-muted-foreground space-y-2 flex-grow">
+                          {/* Resource details with smaller font size as requested */}
+                          <div className="mt-2 text-xs text-gray-600 space-y-2 flex-grow">
                             <p className="flex items-start gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0 mt-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0 mt-1">
                                 <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
                                 <path d="M8 2h8"></path>
                                 <path d="M12 10v4"></path>
                                 <path d="M12 18h.01"></path>
                               </svg>
-                              <span className="line-clamp-2">{resource.address}</span>
+                              <span>{resource.address}</span>
                             </p>
                             
                             <p className="flex items-start gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0 mt-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0 mt-1">
                                 <circle cx="12" cy="12" r="10"></circle>
                                 <polyline points="12 6 12 12 16 14"></polyline>
                               </svg>
-                              <span className="line-clamp-2">{resource.hours}</span>
+                              <span>{resource.hours}</span>
                             </p>
                           </div>
                           
                           {/* Email at the bottom */}
-                          <div className="mt-3 pt-3 border-t border-border/50">
-                            <p className="flex items-center gap-2 text-primary text-sm">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <p className="flex items-center gap-2 text-teal-600 text-xs">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-600">
                                 <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                               </svg>
-                              <span className="truncate">{resource.email}</span>
+                              <span>{resource.email}</span>
                             </p>
                           </div>
                         </div>

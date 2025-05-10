@@ -13,34 +13,24 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
   
   return (
     <div className="space-y-3">
-      {/* Progress bar with animation */}
-      <div className="relative h-2.5 bg-muted overflow-hidden rounded-full">
+      {/* Progress bar with animation - Using AskCara teal colors */}
+      <div className="relative h-1.5 bg-gray-200 overflow-hidden rounded-full">
         <div 
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-500 ease-out" 
+          className="absolute top-0 left-0 h-full bg-teal-600 transition-all duration-500 ease-out" 
           style={{ width: `${progress}%` }}
-        >
-          {/* Animated shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/20 to-transparent animate-shimmer" 
-            style={{ 
-              '--shimmer-size': '150%',
-              animationDuration: '1.5s', 
-              backgroundSize: '150% 100%',
-              backgroundPosition: '-50% 0'
-            } as React.CSSProperties}
-          />
-        </div>
+        />
       </div>
       
-      {/* Step indicators */}
-      <div className="hidden md:flex justify-between px-2">
-        {steps.map(step => (
+      {/* Step indicators - Mobile and desktop friendly */}
+      <div className="hidden md:flex justify-between px-2 max-w-lg mx-auto">
+        {steps.slice(0, Math.min(10, totalSteps)).map(step => (
           <div key={step} className="flex flex-col items-center">
-            <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
               step < currentStep 
-                ? 'bg-primary scale-75' 
+                ? 'bg-teal-600' 
                 : step === currentStep 
-                  ? 'bg-primary scale-100 ring-2 ring-primary/30' 
-                  : 'bg-muted scale-75'
+                  ? 'bg-teal-600 ring-2 ring-teal-200' 
+                  : 'bg-gray-200'
             }`} />
           </div>
         ))}

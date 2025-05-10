@@ -120,7 +120,7 @@ function categorizeResources(resources: Resource[]): Record<string, Resource[]> 
 
 /**
  * Generates email templates for the selected resources
- * Groups resources by category and creates one template per category
+ * Creates ONE template per category instead of one per resource
  */
 export function generateEmails(
   selectedResources: Resource[], 
@@ -135,26 +135,35 @@ export function generateEmails(
   // Group resources by category
   const categorizedResources = categorizeResources(selectedResources);
   
-  // Array to collect all email templates
+  // Array to collect all email templates - ONE per category
   const emails: EmailTemplate[] = [];
   
-  // For each category, create a template
+  // For each category, create a SINGLE template
   Object.entries(categorizedResources).forEach(([category, resources]) => {
     // Get the first resource to use as a template
     const templateResource = resources[0];
     
-    // Generate the standard email body
-    const emailBody = generateEmailBody(templateResource, answers);
+    // List all resources in this category in the email body
+    const resourceList = resources.map(r => 
+      `- ${r.name} (${r.email})`
+    ).join('\n');
     
-    // Create an email template for each resource in this category
-    resources.forEach(resource => {
-      emails.push({
-        to: resource.email,
-        // Include full name in the from field, but also store the actual email for sending
-        from: `${userInfo.fullName} <${userInfo.email}>`,
-        subject: `Seeking ${category} help for my ${relationship}`,
-        body: emailBody
-      });
+    // Generate the standard email body
+    let emailBody = generateEmailBody(templateResource, answers);
+    
+    // Add a list of all recipients (for demonstration purposes)
+    // In a production app, we'd configure BCC or proper mail distribution
+    if (resources.length > 1) {
+      emailBody += `\n\nNote: This email is being sent to the following providers in this category:\n${resourceList}`;
+    }
+    
+    // Create just ONE email template for the entire category
+    emails.push({
+      to: templateResource.email,
+      // Include full name in the from field, but also store the actual email for sending
+      from: `${userInfo.fullName} <${userInfo.email}>`,
+      subject: `Seeking ${category} assistance for my ${relationship}`,
+      body: emailBody
     });
   });
   
