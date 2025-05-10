@@ -238,8 +238,8 @@ export default function Wizard() {
     // Handle required fields for other question types
     else if (question.required && (!answerValue || (typeof answerValue === 'string' && answerValue.trim() === ''))) {
       toast({
-        title: "Required Field",
-        description: "Please provide an answer to continue",
+        title: "Please Complete",
+        description: "This field needs to be filled in",
         variant: "destructive"
       });
       return;
@@ -250,8 +250,8 @@ export default function Wizard() {
         (typeof answerValue === 'string' && answerValue.trim() === '')) {
       if (question.required) {
         toast({
-          title: "Required Field",
-          description: "Please provide an answer to continue",
+          title: "Missing Information",
+          description: "Please provide an answer",
           variant: "destructive"
         });
         return;
@@ -523,10 +523,11 @@ export default function Wizard() {
                 updatedAnswers[`q${currentStep}`] = value;
                 updateState({...state, answers: updatedAnswers});
                 
-                // Auto-advance to next question when option selected
+                // Navigate to the next question directly
                 if (value) {
-                  const form = document.querySelector('form');
-                  if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                  setTimeout(() => {
+                    navigate(`/wizard/${currentStep + 1}`);
+                  }, 100);
                 }
               }}
             >
