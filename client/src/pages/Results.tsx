@@ -113,7 +113,7 @@ export default function Results() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="fade-in bg-background min-h-screen py-8">
+      <div className="fade-in bg-amber-50 min-h-screen py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="p-8 md:p-10 space-y-8">
             <div className="flex items-center justify-between">
@@ -154,7 +154,7 @@ export default function Results() {
   // Error state
   if (error) {
     return (
-      <div className="fade-in bg-background min-h-screen py-8">
+      <div className="fade-in bg-amber-50 min-h-screen py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="p-8 md:p-10 space-y-6">
             <div className="flex items-center justify-center mb-6">
@@ -199,7 +199,7 @@ export default function Results() {
   
   // Success state
   return (
-    <div className="fade-in bg-background min-h-screen">
+    <div className="fade-in bg-amber-50 min-h-screen">
       {/* Header */}
       <div className="text-center pt-8 mb-4">
         <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">

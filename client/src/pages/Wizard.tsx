@@ -563,7 +563,7 @@ export default function Wizard() {
   };
 
   return (
-    <div className="fade-in bg-background min-h-screen py-8">
+    <div className="fade-in bg-amber-50 min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
