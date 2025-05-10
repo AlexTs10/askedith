@@ -496,7 +496,7 @@ export default function Wizard() {
                     // Store subfield value in wizard state
                     const updatedAnswers = {...state.answers};
                     updatedAnswers[`q${currentStep}_${subfield.name}`] = e.target.value;
-                    setState({...state, answers: updatedAnswers});
+                    updateState({...state, answers: updatedAnswers});
                   }}
                 />
               </div>
@@ -516,7 +516,19 @@ export default function Wizard() {
             
             <Select
               defaultValue={state.answers[`q${currentStep}`] || ''}
-              onValueChange={(value) => setValue('answer', value)}
+              onValueChange={(value) => {
+                setValue('answer', value);
+                // Immediately save this value to state to prevent validation errors
+                const updatedAnswers = {...state.answers};
+                updatedAnswers[`q${currentStep}`] = value;
+                updateState({...state, answers: updatedAnswers});
+                
+                // Auto-advance to next question when option selected
+                if (value) {
+                  const form = document.querySelector('form');
+                  if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+              }}
             >
               <SelectTrigger className="w-full p-4 text-lg">
                 <SelectValue placeholder="Select an option" />
