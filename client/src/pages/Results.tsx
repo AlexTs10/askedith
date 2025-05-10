@@ -227,64 +227,65 @@ export default function Results() {
                     </h3>
                   </div>
                   
-                  {/* Resources in this category */}
-                  <div className="space-y-4">
+                  {/* Card Grid Layout for Resources */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categoryResources.map(resource => (
                       <div 
                         key={resource.id} 
-                        className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 shadow-sm
+                        className={`bg-card border border-border rounded-xl p-5 transition-all duration-300 shadow-sm h-full
                          ${state.selectedResourceIds.includes(resource.id) 
-                           ? 'ring-2 ring-primary/20 border-primary/40 shadow-lg transform -translate-y-1' 
-                           : 'hover:border-border/80 hover:shadow-md'}`}
+                           ? 'ring-2 ring-primary/30 border-primary/50 shadow-lg transform -translate-y-1' 
+                           : 'hover:border-border/80 hover:shadow-md hover:bg-card/90'}`}
                         onClick={() => toggleResource(resource.id)}
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="mt-1">
+                        <div className="flex flex-col h-full">
+                          {/* Header with checkbox and name */}
+                          <div className="flex items-start gap-3 mb-3">
                             <Checkbox 
                               id={`resource-${resource.id}`}
                               checked={state.selectedResourceIds.includes(resource.id)}
                               onCheckedChange={() => toggleResource(resource.id)}
-                              className="h-5 w-5"
+                              className="h-5 w-5 mt-1"
                             />
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
-                              <h3 className="text-xl font-medium text-foreground">{resource.name}</h3>
-                              <div className="text-xs font-medium text-primary bg-primary/10 py-1 px-3 rounded-full md:ml-auto inline-block">
+                            
+                            <div>
+                              <h3 className="text-lg font-medium text-foreground line-clamp-1">{resource.name}</h3>
+                              <div className="mt-1 text-xs font-medium text-primary bg-primary/10 py-1 px-2 rounded-full inline-block">
                                 Recommended Match
                               </div>
                             </div>
+                          </div>
+                          
+                          {/* Resource details in a compact format */}
+                          <div className="mt-2 text-sm text-muted-foreground space-y-2 flex-grow">
+                            <p className="flex items-start gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0 mt-1">
+                                <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                                <path d="M8 2h8"></path>
+                                <path d="M12 10v4"></path>
+                                <path d="M12 18h.01"></path>
+                              </svg>
+                              <span className="line-clamp-2">{resource.address}</span>
+                            </p>
                             
-                            <div className="space-y-2 text-muted-foreground">
-                              <p className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                                  <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                                  <path d="m2 8 4-4"></path>
-                                  <path d="m22 8-4-4"></path>
-                                  <path d="m2 16 4 4"></path>
-                                  <path d="m22 16-4 4"></path>
-                                  <path d="M8 2h8"></path>
-                                  <path d="M12 10v4"></path>
-                                  <path d="M12 18h.01"></path>
-                                </svg>
-                                {resource.address}
-                              </p>
-                              <p className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                                  <circle cx="12" cy="12" r="10"></circle>
-                                  <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                Hours: {resource.hours}
-                              </p>
-                              <p className="flex items-center gap-2 text-primary">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                                </svg>
-                                {resource.email}
-                              </p>
-                            </div>
+                            <p className="flex items-start gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0 mt-1">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                              </svg>
+                              <span className="line-clamp-2">{resource.hours}</span>
+                            </p>
+                          </div>
+                          
+                          {/* Email at the bottom */}
+                          <div className="mt-3 pt-3 border-t border-border/50">
+                            <p className="flex items-center gap-2 text-primary text-sm">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                              </svg>
+                              <span className="truncate">{resource.email}</span>
+                            </p>
                           </div>
                         </div>
                       </div>

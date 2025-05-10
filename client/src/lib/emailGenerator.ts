@@ -15,12 +15,16 @@ function extractUserInfo(answers: WizardAnswers) {
   let phone = '';
   
   try {
-    if (answers.q14 && typeof answers.q14 === 'string' && answers.q14.startsWith('{')) {
-      const contactInfo = JSON.parse(answers.q14);
-      lastName = contactInfo.lastname || '';
-      email = contactInfo.email || '';
-      zipcode = contactInfo.zipcode || '';
-      phone = contactInfo.phone || '';
+    if (answers.q14 && typeof answers.q14 === 'string') {
+      // Only try to parse if it looks like JSON
+      if (answers.q14.trim().startsWith('{')) {
+        console.log('Parsing contact info from q14:', answers.q14);
+        const contactInfo = JSON.parse(answers.q14);
+        lastName = contactInfo.lastname || '';
+        email = contactInfo.email || '';
+        zipcode = contactInfo.zipcode || '';
+        phone = contactInfo.phone || '';
+      }
     }
   } catch (e) {
     console.error("Error parsing contact information:", e);
@@ -28,12 +32,25 @@ function extractUserInfo(answers: WizardAnswers) {
   
   // For backward compatibility with old data format
   if (!email && answers.q2) {
-    email = answers.q2;
+    if (typeof answers.q2 === 'string') {
+      email = answers.q2;
+    } else if (typeof answers.q2 === 'number') {
+      // Convert to string if somehow a number got stored
+      email = String(answers.q2);
+    }
   }
   
   if (!zipcode && answers.q6) {
-    zipcode = answers.q6;
+    zipcode = String(answers.q6 || '');
   }
+  
+  // Construct a proper full name
+  let fullName = firstName || 'User';
+  if (lastName) {
+    fullName = `${firstName} ${lastName}`;
+  }
+  
+  console.log('Extracted user info:', { firstName, lastName, email, fullName });
   
   return {
     firstName,
@@ -42,7 +59,7 @@ function extractUserInfo(answers: WizardAnswers) {
     zipcode,
     phone,
     // Full name for display purposes
-    fullName: firstName + (lastName ? ` ${lastName}` : '')
+    fullName: fullName
   };
 }
 
@@ -55,21 +72,31 @@ export function generateEmailBody(resource: Resource, answers: WizardAnswers): s
   
   // Get relationship from q3
   const relation = answers.q3 ? answers.q3.toLowerCase() : 'parent';
+  
+  // Get other information from answers for a more conversational email
+  const livingArrangement = answers.q4 || '';
+  const mainConcern = answers.q5 || '';
+  const budget = answers.q7 || '';
+  const timeline = answers.q8 || '';
+  const healthConditions = answers.q9 || '';
+  const hasVeteranStatus = answers.q11 === 'Yes' ? true : false;
 
+  // Create a more conversational, human-sounding email
   return `Hi ${resource.name},
 
-I'm looking after my ${relation} and, based on the following details,
-I think your ${resource.category} services might help.
+I hope this email finds you well. My name is ${userInfo.fullName}, and I'm reaching out because I'm currently caring for my ${relation} who needs some additional support.
 
-Quick snapshot from your intake:
-• Living situation: ${answers.q4 || 'Not specified'}
-• Primary concern: ${answers.q5 || 'Not specified'}
-• Budget thoughts: ${answers.q7 || 'Not specified'}
-• Timeline: ${answers.q8 || 'Not specified'}
+I came across your ${resource.category} services and believe you might be able to help us. My ${relation} is currently ${livingArrangement.toLowerCase()}, and we're primarily concerned about ${mainConcern.toLowerCase()}. 
 
-Could we schedule a brief call?
+${hasVeteranStatus ? `I should mention that my ${relation} has served in the military, if that's relevant to available services. ` : ''}${healthConditions ? `We're also managing some health issues, specifically ${healthConditions.toLowerCase()}.` : ''}
 
-Thank you!
+In terms of timing, we're looking for assistance ${timeline.toLowerCase()} and have a monthly budget of approximately ${budget}. 
+
+Would it be possible to schedule a brief call to discuss how your services might fit our needs? I'm available most days and can adjust my schedule to accommodate yours.
+
+Thank you for your time and consideration.
+
+Best regards,
 ${userInfo.fullName}`;
 }
 
