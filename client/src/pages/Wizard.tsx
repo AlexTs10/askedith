@@ -620,8 +620,8 @@ export default function Wizard() {
             <Textarea
               id={`q${currentStep}`}
               placeholder={placeholder}
-              className="w-full p-4 text-lg"
-              rows={4}
+              className="w-full p-4 text-lg min-h-[150px]"
+              rows={6}
               {...register('answer', { 
                 required: required && 'This field is required'
               })}
