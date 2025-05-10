@@ -241,24 +241,39 @@ export default function Wizard() {
     }
     // For regular fields like text or number
     else if (question.required) {
-      // Check for null, undefined, or empty values
-      if (!answerValue) {
-        toast({
-          title: "Please Complete",
-          description: "This field needs to be filled in",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // For text inputs, ensure value isn't just whitespace
-      if (typeof answerValue === 'string' && answerValue.trim() === '') {
-        toast({
-          title: "Missing Information",
-          description: "Please provide an answer",
-          variant: "destructive"
-        });
-        return;
+      // For question #9 (health conditions), allow any input
+      if (currentStep === 9) {
+        // Allow any non-null input for this question, even empty strings
+        if (answerValue === null || answerValue === undefined) {
+          toast({
+            title: "Please Complete",
+            description: "This field needs to be filled in",
+            variant: "destructive"
+          });
+          return;
+        }
+      } 
+      // For all other questions, do normal validation
+      else {
+        // Check for null, undefined, or empty values
+        if (!answerValue) {
+          toast({
+            title: "Please Complete",
+            description: "This field needs to be filled in",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // For text inputs, ensure value isn't just whitespace
+        if (typeof answerValue === 'string' && answerValue.trim() === '') {
+          toast({
+            title: "Missing Information",
+            description: "Please provide an answer",
+            variant: "destructive"
+          });
+          return;
+        }
       }
     }
     

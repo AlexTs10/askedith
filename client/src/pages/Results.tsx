@@ -238,15 +238,15 @@ export default function Results() {
                     </h3>
                   </div>
                   
-                  {/* Card Grid Layout for Resources - Changed to 2 cards per row as requested */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Card Grid Layout for Resources - Changed to 3 cards per row as requested */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {categoryResources.map(resource => (
                       <div 
                         key={resource.id} 
-                        className={`rounded-lg p-5 transition-all duration-300 h-full
+                        className={`rounded-lg p-4 transition-all duration-300 h-full border border-teal-200
                          ${state.selectedResourceIds.includes(resource.id) 
-                           ? 'ring-2 ring-teal-600/30 bg-amber-50/30' 
-                           : 'hover:bg-amber-50/20'}`}
+                           ? 'ring-1 ring-teal-600/30 bg-gray-50/60' 
+                           : 'bg-gray-50/60 hover:bg-gray-50/80'}`}
                         onClick={() => toggleResource(resource.id)}
                       >
                         <div className="flex flex-col h-full">
@@ -260,15 +260,15 @@ export default function Results() {
                             />
                             
                             <div>
-                              <h3 className="text-lg font-serif text-teal-600 line-clamp-1">{resource.name}</h3>
-                              <div className="mt-1 text-xs font-medium text-teal-600 bg-teal-50 py-1 px-2 rounded-full inline-block">
+                              <h3 className="text-base font-serif text-teal-600 line-clamp-1">{resource.name}</h3>
+                              <div className="mt-1 text-[10px] font-medium text-teal-600 bg-teal-50 py-1 px-2 rounded-full inline-block">
                                 Recommended Match
                               </div>
                             </div>
                           </div>
                           
                           {/* Resource details with smaller font size as requested */}
-                          <div className="mt-2 text-xs text-gray-600 space-y-2 flex-grow">
+                          <div className="mt-2 text-[11px] text-gray-600 space-y-2 flex-grow">
                             <p className="flex items-start gap-2">
                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0 mt-1">
                                 <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
