@@ -417,17 +417,26 @@ export default function Wizard() {
                   ${selectedOptions.includes(option) 
                     ? 'border-primary/40 bg-primary/5' 
                     : 'border-border hover:border-border/80 hover:bg-accent/50'}`}
-                  onClick={() => toggleOption(option)}
                 >
                   <Checkbox 
                     id={`checkbox-${option}`}
                     checked={selectedOptions.includes(option)} 
-                    onCheckedChange={() => toggleOption(option)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedOptions(prev => [...prev, option]);
+                      } else {
+                        setSelectedOptions(prev => prev.filter(item => item !== option));
+                      }
+                    }}
                     className="mt-1"
                   />
                   <Label 
                     htmlFor={`checkbox-${option}`} 
                     className="text-base cursor-pointer flex-1"
+                    onClick={(e) => {
+                      // Prevent bubbling to avoid double toggling
+                      e.stopPropagation();
+                    }}
                   >
                     {option}
                   </Label>
