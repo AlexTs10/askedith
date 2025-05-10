@@ -158,6 +158,8 @@ export default function Wizard() {
     // For other question types, just use the answer directly
     let answerValue = data.answer;
     
+    console.log(`Processing question ${currentStep}, type: ${question.type}, value:`, answerValue);
+    
     // For checkbox groups and multiselect, save the selected options
     if (question.type === 'checkbox_group' || question.type === 'multiselect') {
       // Make sure required question has at least one selection
@@ -241,6 +243,18 @@ export default function Wizard() {
         variant: "destructive"
       });
       return;
+    }
+    
+    // Fix for text inputs - ensure value isn't blank
+    if ((question.type === 'text' || question.type === 'email') && answerValue.trim() === '') {
+      if (question.required) {
+        toast({
+          title: "Required Field",
+          description: "Please provide an answer to continue",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     // Save the answer to the state
@@ -554,11 +568,11 @@ export default function Wizard() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-serif text-teal-600 mb-2">AskCara</h1>
-          <p className="text-gray-600">Help us understand your needs</p>
+          <p className="text-gray-600">Share Once. Reach Many.</p>
         </div>
         
-        {/* Question Card */}
-        <Card className="shadow-sm border-gray-100">
+        {/* Question Card - Removed border */}
+        <Card className="shadow-sm border-0 bg-transparent">
           <CardContent className="p-6 md:p-8 space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <h2 className="text-xl font-serif text-teal-600">
@@ -577,7 +591,7 @@ export default function Wizard() {
                 </div>
                 
                 {errors.answer && (
-                  <div className="flex items-center mt-3 text-destructive text-sm bg-destructive/10 px-3 py-2 rounded-lg">
+                  <div className="flex items-center justify-center mt-4 mx-auto max-w-md text-red-500 text-sm bg-red-50 px-4 py-3 rounded-md">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                       <circle cx="12" cy="12" r="10"></circle>
                       <line x1="12" y1="8" x2="12" y2="12"></line>

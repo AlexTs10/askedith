@@ -16,18 +16,24 @@ export default function Confirmation() {
   };
   
   return (
-    <div className="fade-in">
-      <Card className="card border-0 overflow-hidden">
+    <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen py-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-serif text-teal-600 mb-2">AskCara</h1>
+        <p className="text-gray-600">Share Once. Reach Many.</p>
+      </div>
+      
+      <Card className="card bg-transparent border-0 shadow-none max-w-xl mx-auto">
         <CardContent className="p-0">
           {/* Success indicator with animation */}
-          <div className="bg-gradient-to-b from-success/10 to-success/5 p-10 md:p-12 text-center">
+          <div className="bg-gradient-to-b from-teal-50 to-teal-50/70 p-10 md:p-12 text-center rounded-t-lg">
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="rounded-full bg-success/10 w-28 h-28 animate-ping opacity-50"></div>
+                <div className="rounded-full bg-teal-500/10 w-28 h-28 animate-ping opacity-50"></div>
               </div>
               <div className="relative flex items-center justify-center">
-                <div className="rounded-full bg-success/20 p-6">
-                  <CheckCircle className="h-14 w-14 text-success" />
+                <div className="rounded-full bg-teal-500/20 p-6">
+                  <CheckCircle className="h-14 w-14 text-teal-600" />
                 </div>
               </div>
             </div>

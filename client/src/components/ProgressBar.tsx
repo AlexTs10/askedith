@@ -21,20 +21,7 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
         />
       </div>
       
-      {/* Step indicators - Mobile and desktop friendly */}
-      <div className="hidden md:flex justify-between px-2 max-w-lg mx-auto">
-        {steps.slice(0, Math.min(10, totalSteps)).map(step => (
-          <div key={step} className="flex flex-col items-center">
-            <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              step < currentStep 
-                ? 'bg-teal-600' 
-                : step === currentStep 
-                  ? 'bg-teal-600 ring-2 ring-teal-200' 
-                  : 'bg-gray-200'
-            }`} />
-          </div>
-        ))}
-      </div>
+      {/* Removed step indicators as requested to reduce mental stress */}
     </div>
   );
 }

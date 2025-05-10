@@ -200,7 +200,13 @@ export default function Results() {
   // Success state
   return (
     <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen">
-      <Card className="card bg-white border-gray-100 shadow-sm max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="text-center pt-8 mb-4">
+        <h1 className="text-4xl font-serif text-teal-600 mb-2">AskCara</h1>
+        <p className="text-gray-600">Share Once. Reach Many.</p>
+      </div>
+
+      <Card className="card bg-transparent border-0 shadow-none max-w-6xl mx-auto">
         <CardContent className="p-0">
           {/* Header section */}
           <div className="bg-teal-50 p-8 pt-10 pb-12 md:p-10 rounded-t-lg">

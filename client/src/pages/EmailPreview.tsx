@@ -126,20 +126,26 @@ export default function EmailPreview() {
   }
   
   return (
-    <div className="fade-in">
-      <Card className="card border-0">
+    <div className="fade-in bg-gradient-to-b from-amber-50 to-white min-h-screen py-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-serif text-teal-600 mb-2">AskCara</h1>
+        <p className="text-gray-600">Share Once. Reach Many.</p>
+      </div>
+      
+      <Card className="card bg-transparent border-0 shadow-none max-w-6xl mx-auto">
         <CardContent className="p-0">
           {/* Header section */}
-          <div className="bg-primary/10 p-8 pt-10 pb-10 md:p-10 rounded-t-2xl">
+          <div className="bg-teal-50 p-8 pt-10 pb-10 md:p-10 rounded-t-lg">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">Email Preview</h2>
-                <p className="text-foreground/80">
+                <h2 className="text-2xl md:text-3xl font-serif text-teal-600 mb-2">Email Preview</h2>
+                <p className="text-gray-600">
                   Review and personalize your message before sending
                 </p>
               </div>
               
-              <div className="px-4 py-2 bg-background/80 backdrop-blur-sm rounded-full text-sm font-medium text-muted-foreground">
+              <div className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
                 Email {currentIndex + 1} of {state.emailsToSend.length}
               </div>
             </div>
