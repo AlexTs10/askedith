@@ -185,6 +185,18 @@ export default function Results() {
     );
   }
   
+  // Function to group resources by category for display
+  const groupResourcesByCategory = () => {
+    const grouped: Record<string, Resource[]> = {};
+    resources.forEach(resource => {
+      if (!grouped[resource.category]) {
+        grouped[resource.category] = [];
+      }
+      grouped[resource.category].push(resource);
+    });
+    return grouped;
+  };
+  
   // Success state
   return (
     <div className="fade-in">
@@ -199,67 +211,84 @@ export default function Results() {
             </p>
           </div>
           
-          {/* Resources list */}
+          {/* Resources list - grouped by category */}
           <div className="p-8 md:p-10 pt-0 md:pt-0">
-            <div className="space-y-4 -mt-6">
-              {resources.map(resource => (
-                <div 
-                  key={resource.id} 
-                  className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 shadow-sm
-                   ${state.selectedResourceIds.includes(resource.id) 
-                     ? 'ring-2 ring-primary/20 border-primary/40 shadow-lg transform -translate-y-1' 
-                     : 'hover:border-border/80 hover:shadow-md'}`}
-                  onClick={() => toggleResource(resource.id)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">
-                      <Checkbox 
-                        id={`resource-${resource.id}`}
-                        checked={state.selectedResourceIds.includes(resource.id)}
-                        onCheckedChange={() => toggleResource(resource.id)}
-                        className="h-5 w-5"
-                      />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
-                        <h3 className="text-xl font-medium text-foreground">{resource.category}</h3>
-                        <div className="text-xs font-medium text-primary bg-primary/10 py-1 px-3 rounded-full md:ml-auto inline-block">
-                          Recommended Match
+            <div className="space-y-8 -mt-6">
+              {Object.entries(groupResourcesByCategory()).map(([category, categoryResources]) => (
+                <div key={category} className="category-section">
+                  {/* Category header */}
+                  <div className="mb-4 mt-8">
+                    <h3 className="text-lg font-semibold text-foreground/90 flex items-center">
+                      <div className="h-4 w-4 bg-primary rounded-full mr-2"></div>
+                      {category}
+                      <span className="text-sm ml-2 text-muted-foreground">
+                        ({categoryResources.length} {categoryResources.length === 1 ? 'resource' : 'resources'})
+                      </span>
+                    </h3>
+                  </div>
+                  
+                  {/* Resources in this category */}
+                  <div className="space-y-4">
+                    {categoryResources.map(resource => (
+                      <div 
+                        key={resource.id} 
+                        className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 shadow-sm
+                         ${state.selectedResourceIds.includes(resource.id) 
+                           ? 'ring-2 ring-primary/20 border-primary/40 shadow-lg transform -translate-y-1' 
+                           : 'hover:border-border/80 hover:shadow-md'}`}
+                        onClick={() => toggleResource(resource.id)}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="mt-1">
+                            <Checkbox 
+                              id={`resource-${resource.id}`}
+                              checked={state.selectedResourceIds.includes(resource.id)}
+                              onCheckedChange={() => toggleResource(resource.id)}
+                              className="h-5 w-5"
+                            />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
+                              <h3 className="text-xl font-medium text-foreground">{resource.name}</h3>
+                              <div className="text-xs font-medium text-primary bg-primary/10 py-1 px-3 rounded-full md:ml-auto inline-block">
+                                Recommended Match
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2 text-muted-foreground">
+                              <p className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                                  <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                                  <path d="m2 8 4-4"></path>
+                                  <path d="m22 8-4-4"></path>
+                                  <path d="m2 16 4 4"></path>
+                                  <path d="m22 16-4 4"></path>
+                                  <path d="M8 2h8"></path>
+                                  <path d="M12 10v4"></path>
+                                  <path d="M12 18h.01"></path>
+                                </svg>
+                                {resource.address}
+                              </p>
+                              <p className="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                Hours: {resource.hours}
+                              </p>
+                              <p className="flex items-center gap-2 text-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                </svg>
+                                {resource.email}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2 text-muted-foreground">
-                        <p className="font-medium text-foreground">{resource.name}</p>
-                        <p className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                            <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                            <path d="m2 8 4-4"></path>
-                            <path d="m22 8-4-4"></path>
-                            <path d="m2 16 4 4"></path>
-                            <path d="m22 16-4 4"></path>
-                            <path d="M8 2h8"></path>
-                            <path d="M12 10v4"></path>
-                            <path d="M12 18h.01"></path>
-                          </svg>
-                          {resource.address}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          Hours: {resource.hours}
-                        </p>
-                        <p className="flex items-center gap-2 text-primary">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                          </svg>
-                          {resource.email}
-                        </p>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -269,6 +298,7 @@ export default function Results() {
               <Button 
                 onClick={handleContinue}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 px-8 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
+                disabled={state.selectedResourceIds.length === 0}
               >
                 Continue with Selected Resources
                 <ArrowRight className="ml-2 h-5 w-5" />

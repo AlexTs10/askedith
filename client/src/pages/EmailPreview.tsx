@@ -70,6 +70,7 @@ export default function EmailPreview() {
       // Prepare the email data
       const emailData = {
         to: currentEmail.to,
+        from: currentEmail.from,
         subject: emailSubject,
         body: emailBody
       };
@@ -158,14 +159,27 @@ export default function EmailPreview() {
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="bg-background/40 backdrop-blur-sm p-4 md:p-5 rounded-lg">
-                    <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-to">To:</Label>
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                      </svg>
-                      <span className="font-medium">{currentEmail.to}</span>
+                  <div className="bg-background/40 backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-from">From:</Label>
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span className="font-medium">{currentEmail.from}</span>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-to">To:</Label>
+                      <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                          <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                        <span className="font-medium">{currentEmail.to}</span>
+                      </div>
                     </div>
                   </div>
                   

@@ -7,6 +7,7 @@
 
 interface EmailData {
   to: string;
+  from?: string; // Now includes the sender's name and email
   subject: string;
   body: string;
 }
@@ -21,6 +22,7 @@ export async function sendEmail(data: EmailData): Promise<{ success: boolean; me
     setTimeout(() => {
       // Log the email data to console for demonstration purposes
       console.log('==== SIMULATED EMAIL SENT ====');
+      console.log(`From: ${data.from || 'noreply@careguide.example.com'}`);
       console.log(`To: ${data.to}`);
       console.log(`Subject: ${data.subject}`);
       console.log(`Body: \n${data.body}`);
