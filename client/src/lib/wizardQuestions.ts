@@ -31,17 +31,7 @@ export const wizardQuestions: Question[] = [
     type: "number", 
     required: true, 
     placeholder: "Enter age",
-    category: "recipient_info",
-    subtext: "If multiple people need care such as a couple, add the second person's age below" 
-  },
-  // Second age field for multiple care recipients
-  {
-    id: 15, // New ID for the second person
-    text: "Second care recipient's age (if applicable)", 
-    type: "number", 
-    required: false, 
-    placeholder: "Enter age of second person",
-    category: "recipient_info_additional"
+    category: "recipient_info"
   },
   { 
     id: 3, 

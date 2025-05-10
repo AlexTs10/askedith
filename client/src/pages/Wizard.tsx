@@ -236,7 +236,7 @@ export default function Wizard() {
       }
     }
     // Handle required fields for other question types
-    else if (question.required && (!answerValue || answerValue.trim() === '')) {
+    else if (question.required && (!answerValue || (typeof answerValue === 'string' && answerValue.trim() === ''))) {
       toast({
         title: "Required Field",
         description: "Please provide an answer to continue",
@@ -246,7 +246,8 @@ export default function Wizard() {
     }
     
     // Fix for text inputs - ensure value isn't blank
-    if ((question.type === 'text' || question.type === 'email') && answerValue.trim() === '') {
+    if ((question.type === 'text' || question.type === 'email') && 
+        (typeof answerValue === 'string' && answerValue.trim() === '')) {
       if (question.required) {
         toast({
           title: "Required Field",
