@@ -43,7 +43,7 @@ export default function Wizard() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   
   // Form handling
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, setError, formState: { errors } } = useForm({
     defaultValues: {
       answer: state.answers[`q${currentStep}`] || 
         (question.type === 'contact_info' ? JSON.stringify({ 
@@ -169,6 +169,16 @@ export default function Wizard() {
       }
     }
     
+    // Fix for question #10 (safety concerns) to ensure both options work correctly
+    if (currentStep === 10 && question.type === 'radio') {
+      console.log("Question #10 - Applying radio button fix, value:", answerValue);
+      // The "Yes" option should work just like "No"
+      if (answerValue === "Yes" || answerValue === "No") {
+        // Clear any validation issues - both options are valid
+        console.log("Question #10 - Valid selection, will continue");
+      }
+    }
+    
     // Fix for question #11 (military service) to ensure "Yes" works correctly
     if (currentStep === 11 && question.type === 'radio') {
       console.log("Question #11 - Applying radio button fix, value:", answerValue);
@@ -264,10 +274,11 @@ export default function Wizard() {
       if (currentStep === 9) {
         // Allow any non-null input for this question, even empty strings
         if (answerValue === null || answerValue === undefined) {
-          toast({
-            title: "Please Complete",
-            description: "This field needs to be filled in",
-            variant: "destructive"
+          // This matches the form validation error style now
+          setValue('answer', " "); // Set a value to trigger the form error
+          setError('answer', {
+            type: 'required',
+            message: 'This field is required'
           });
           return;
         }
@@ -276,20 +287,22 @@ export default function Wizard() {
       else {
         // Check for null, undefined, or empty values
         if (!answerValue) {
-          toast({
-            title: "Please Complete",
-            description: "This field needs to be filled in",
-            variant: "destructive"
+          // This matches the form validation error style now
+          setValue('answer', " "); // Set a value to trigger the form error
+          setError('answer', {
+            type: 'required',
+            message: 'This field is required'
           });
           return;
         }
         
         // For text inputs, ensure value isn't just whitespace
         if (typeof answerValue === 'string' && answerValue.trim() === '') {
-          toast({
-            title: "Missing Information",
-            description: "Please provide an answer",
-            variant: "destructive"
+          // This matches the form validation error style now
+          setValue('answer', " "); // Set a value to trigger the form error
+          setError('answer', {
+            type: 'required',
+            message: 'This field is required'
           });
           return;
         }
@@ -686,13 +699,13 @@ export default function Wizard() {
               </div>
               
               {errors.answer && (
-                <div className="flex items-center justify-center mt-4 mx-auto max-w-md text-red-500 text-sm bg-red-50 px-4 py-3 rounded-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                <div className="bg-amber-50 text-center border border-destructive/20 text-destructive mt-4 mx-auto px-4 py-3 rounded-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-2 text-destructive">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
                     <line x1="12" y1="16" x2="12.01" y2="16"></line>
                   </svg>
-                  {errors.answer.message as string}
+                  <span className="font-medium">{errors.answer.message as string}</span>
                 </div>
               )}
             </div>

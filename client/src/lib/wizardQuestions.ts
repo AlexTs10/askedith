@@ -136,7 +136,7 @@ export const wizardQuestions: Question[] = [
   { 
     id: 12, 
     text: "Family members involved in decisions", 
-    type: "text", 
+    type: "textarea", 
     required: true, 
     placeholder: "List family members involved",
     category: "family_involvement" 
