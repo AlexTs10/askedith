@@ -67,14 +67,14 @@ export default function Confirmation() {
                 </div>
               </div>
               
-              <p className="text-muted-foreground mb-8">
-                Thank you for using CareGuide. Check your email for a confirmation and summary of your requests.
+              <p className="text-gray-600 mb-8">
+                Thank you for using AskCara. Check your email for a confirmation and summary of your requests.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   variant="outline"
-                  className="bg-background border-border hover:bg-accent transition-all duration-200"
+                  className="bg-white border-teal-100 hover:bg-teal-50 text-teal-600 transition-all duration-200"
                   onClick={() => window.location.href = '/'}
                 >
                   <Home className="mr-2 h-4 w-4" />
@@ -83,7 +83,7 @@ export default function Confirmation() {
                 
                 <Button 
                   onClick={handleStartOver}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
+                  className="bg-teal-600 hover:bg-teal-700 text-white transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
                 >
                   <Redo className="mr-2 h-4 w-4" />
                   Start New Assessment
