@@ -35,21 +35,80 @@ export default function Wizard() {
   // Form handling
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
-      answer: state.answers[`q${currentStep}`] || ''
+      answer: state.answers[`q${currentStep}`] || 
+        (question.type === 'contact_info' ? JSON.stringify({ name: '', email: '', zipcode: '' }) : '')
     }
   });
 
   // Update form value when step changes
   useEffect(() => {
-    setValue('answer', state.answers[`q${currentStep}`] || '');
-  }, [currentStep, state.answers, setValue]);
+    if (question.type === 'contact_info') {
+      // For contact info, ensure we have a valid JSON object
+      const currentValue = state.answers[`q${currentStep}`];
+      if (!currentValue) {
+        setValue('answer', JSON.stringify({ name: '', email: '', zipcode: '' }));
+      } else {
+        setValue('answer', currentValue);
+      }
+    } else {
+      // For other question types, just set the value directly
+      setValue('answer', state.answers[`q${currentStep}`] || '');
+    }
+  }, [currentStep, state.answers, setValue, question.type]);
 
   // Handle form submission
   const onSubmit = (data: { answer: string }) => {
+    // For contact info, we already have the JSON stringified data
+    // For other question types, just use the answer directly
+    let answerValue = data.answer;
+    
+    // Validate contact info if applicable
+    if (question.type === 'contact_info') {
+      try {
+        const contactData = JSON.parse(data.answer);
+        // Check if all required fields are filled
+        const allFieldsFilled = question.subfields?.every(field => 
+          field.required ? !!contactData[field.name] : true
+        );
+        
+        if (!allFieldsFilled) {
+          toast({
+            title: "Missing Information",
+            description: "Please fill in all required contact fields",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // If email field exists, validate email format
+        if (contactData.email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(contactData.email)) {
+            toast({
+              title: "Invalid Email",
+              description: "Please enter a valid email address",
+              variant: "destructive"
+            });
+            return;
+          }
+        }
+        
+        // Use the stringified data
+        answerValue = data.answer;
+      } catch (error) {
+        toast({
+          title: "Form Error",
+          description: "There was a problem with the contact information",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
     // Save the answer to the state
     const updatedAnswers = {
       ...state.answers,
-      [`q${currentStep}`]: data.answer
+      [`q${currentStep}`]: answerValue
     };
     
     updateState({ answers: updatedAnswers });
@@ -71,9 +130,46 @@ export default function Wizard() {
 
   // Render form input based on question type
   const renderInput = () => {
-    const { type, placeholder, options, required } = question;
+    const { type, placeholder, options, required, subfields } = question;
     
     switch (type) {
+      case 'contact_info':
+        // Handle the combined contact information fields
+        const contactInfo = state.answers[`q${currentStep}`] ? 
+          JSON.parse(state.answers[`q${currentStep}`]) : 
+          { name: '', email: '', zipcode: '' };
+        
+        // Local state for contact info fields
+        const [contactFormData, setContactFormData] = useState(contactInfo);
+        
+        // Update form value when contact info changes
+        const updateContactInfo = (field: string, value: string) => {
+          const updatedData = { ...contactFormData, [field]: value };
+          setContactFormData(updatedData);
+          setValue('answer', JSON.stringify(updatedData));
+        };
+        
+        return (
+          <div className="space-y-4">
+            {subfields?.map((field, index) => (
+              <div key={index} className="space-y-2">
+                <Label htmlFor={`contact-${field.name}`} className="text-sm font-medium">
+                  {field.placeholder}
+                </Label>
+                <Input
+                  id={`contact-${field.name}`}
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={contactFormData[field.name] || ''}
+                  onChange={(e) => updateContactInfo(field.name, e.target.value)}
+                  className="w-full transition-all duration-200"
+                  required={field.required}
+                />
+              </div>
+            ))}
+          </div>
+        );
+      
       case 'text':
       case 'email':
         return (
