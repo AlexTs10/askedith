@@ -44,12 +44,12 @@ export default function Home() {
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-              <div className="bg-white p-5 rounded-lg shadow-sm">
+              <div className="p-5 rounded-lg">
                 <HeartIcon className="w-8 h-8 text-teal-600 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Personalized Matches</h3>
                 <p className="text-sm text-gray-600">Custom-tailored resources based on your specific needs</p>
               </div>
-              <div className="bg-white p-5 rounded-lg shadow-sm">
+              <div className="p-5 rounded-lg">
                 <LightbulbIcon className="w-8 h-8 text-amber-500 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Instant Connections</h3>
                 <p className="text-sm text-gray-600">Send emails to the resources you choose with one click</p>

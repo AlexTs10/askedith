@@ -243,10 +243,10 @@ export default function Results() {
                     {categoryResources.map(resource => (
                       <div 
                         key={resource.id} 
-                        className={`bg-white rounded-lg p-5 transition-all duration-300 shadow-sm h-full
+                        className={`rounded-lg p-5 transition-all duration-300 h-full
                          ${state.selectedResourceIds.includes(resource.id) 
-                           ? 'ring-2 ring-teal-600/30 shadow-md' 
-                           : 'hover:shadow-md hover:bg-amber-50/20'}`}
+                           ? 'ring-2 ring-teal-600/30 bg-amber-50/30' 
+                           : 'hover:bg-amber-50/20'}`}
                         onClick={() => toggleResource(resource.id)}
                       >
                         <div className="flex flex-col h-full">

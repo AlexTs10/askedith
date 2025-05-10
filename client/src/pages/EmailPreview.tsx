@@ -150,7 +150,7 @@ export default function EmailPreview() {
                 </p>
               </div>
               
-              <div className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
+              <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
                 Email {currentIndex + 1} of {state.emailsToSend.length}
               </div>
             </div>
@@ -158,9 +158,9 @@ export default function EmailPreview() {
           
           {/* Email content section */}
           <div className="p-8 md:p-10">
-            <div className="relative bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="relative rounded-xl overflow-hidden">
               {/* Email form */}
-              <div className={`bg-card p-5 md:p-8 space-y-6 transition-opacity duration-300 ${isEditing ? 'opacity-100' : 'opacity-95'}`}>
+              <div className={`p-5 md:p-8 space-y-6 transition-opacity duration-300 ${isEditing ? 'opacity-100' : 'opacity-95'}`}>
                 {/* Email header decoration */}
                 <div className="flex items-center space-x-2 mb-2">
                   <div className="w-3 h-3 rounded-full bg-destructive/60"></div>
@@ -170,7 +170,7 @@ export default function EmailPreview() {
                 </div>
                 
                 <div className="space-y-6">
-                  <div className="bg-background/40 backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4">
+                  <div className="backdrop-blur-sm p-4 md:p-5 rounded-lg space-y-4">
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground mb-2 block" htmlFor="email-from">From:</Label>
                       <div className="flex items-center gap-2">
