@@ -9,6 +9,7 @@ export type WizardAnswers = {
 // Type for the emails to send
 export interface EmailTemplate {
   to: string;
+  from: string; // Now includes the full name and email in format "Name <email>"
   subject: string;
   body: string;
 }
