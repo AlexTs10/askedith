@@ -27,7 +27,7 @@ export default function Home() {
             Share Once. Reach Many.
           </p>
           
-          <div className="mb-16">
+          <div className="mb-8">
             <img 
               src={caregiverIllustration}
               alt="Caregiver helping with resources" 
@@ -38,8 +38,8 @@ export default function Home() {
         
         {/* Features section */}
         <div className="text-center w-full">
-          <div className="max-w-xl mx-auto space-y-10">
-            <p className="text-xl leading-relaxed text-gray-600 mb-16 mt-0">
+          <div className="max-w-xl mx-auto">
+            <p className="text-xl leading-relaxed text-gray-600 mb-8 mt-0">
               Find personalized elder care resources for your loved ones through our simple guided process.
             </p>
             
