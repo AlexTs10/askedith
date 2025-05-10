@@ -31,25 +31,25 @@ export default function Home() {
             <img 
               src={caregiverIllustration}
               alt="Caregiver helping with resources" 
-              className="rounded-xl w-full max-w-lg mx-auto" 
+              className="rounded-xl w-full max-w-xl mx-auto" 
             />
           </div>
         </div>
         
         {/* Features section */}
         <div className="text-center w-full">
-          <div className="max-w-xl mx-auto space-y-8">
-            <p className="text-xl leading-relaxed text-gray-600 my-8">
+          <div className="max-w-xl mx-auto space-y-10">
+            <p className="text-xl leading-relaxed text-gray-600 my-12">
               Find personalized elder care resources for your loved ones through our simple guided process.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-              <div className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+              <div className="p-5 rounded-lg border border-gray-200 bg-amber-50/80 shadow-sm">
                 <HeartIcon className="w-8 h-8 text-teal-600 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Personalized Matches</h3>
                 <p className="text-sm text-gray-600">Custom-tailored resources based on your specific needs</p>
               </div>
-              <div className="p-5 rounded-lg border border-gray-200 bg-white shadow-sm">
+              <div className="p-5 rounded-lg border border-gray-200 bg-amber-50/80 shadow-sm">
                 <LightbulbIcon className="w-8 h-8 text-amber-500 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Instant Connections</h3>
                 <p className="text-sm text-gray-600">Send emails to the resources you choose with one click</p>
