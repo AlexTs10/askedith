@@ -13,33 +13,14 @@ export interface Question {
   }[];
 }
 
-// Updated questions for the wizard with combined contact information
+// Updated questions for the wizard with reorganized structure
 export const wizardQuestions: Question[] = [
   { 
     id: 1, 
-    text: "Your contact information", 
-    type: "contact_info", 
+    text: "What is your first name?", 
+    type: "text", 
     required: true,
-    subfields: [
-      {
-        name: "name",
-        type: "text",
-        placeholder: "Your first name",
-        required: true
-      },
-      {
-        name: "email",
-        type: "email",
-        placeholder: "Your email address",
-        required: true
-      },
-      {
-        name: "zipcode",
-        type: "text",
-        placeholder: "Your ZIP code",
-        required: true
-      }
-    ]
+    placeholder: "Your first name"
   },
   { 
     id: 2, 
@@ -124,6 +105,45 @@ export const wizardQuestions: Question[] = [
     type: "textarea", 
     required: false, 
     placeholder: "Additional information" 
+  },
+  { 
+    id: 14, 
+    text: "Your contact information", 
+    type: "contact_info", 
+    required: true,
+    subfields: [
+      {
+        name: "zipcode",
+        type: "text",
+        placeholder: "Your ZIP code",
+        required: true
+      },
+      {
+        name: "email",
+        type: "email",
+        placeholder: "Your email address",
+        required: true
+      },
+      {
+        name: "phone",
+        type: "text",
+        placeholder: "Your phone number",
+        required: true
+      },
+      {
+        name: "lastname",
+        type: "text",
+        placeholder: "Your last name",
+        required: true
+      }
+    ]
+  },
+  { 
+    id: 15, 
+    text: "I consent to be contacted about elder care services", 
+    type: "radio", 
+    required: true, 
+    options: ["Yes", "No"] 
   }
 ];
 
