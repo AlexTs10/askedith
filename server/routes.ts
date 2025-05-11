@@ -124,9 +124,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const status = await checkEmailServiceStatus();
       
       // Check if we need to request SendGrid key
-      status.needsSendGridKey = needsSendGridKey();
+      const statusWithKey = {
+        ...status,
+        needsSendGridKey: needsSendGridKey()
+      };
       
-      res.json(status);
+      res.json(statusWithKey);
     } catch (error) {
       console.error("Email service status check error:", error);
       res.status(500).json({ 

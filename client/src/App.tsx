@@ -3,6 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import ApiSecretChecker from "@/components/ApiSecretChecker";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Wizard from "@/pages/Wizard";
@@ -33,7 +34,9 @@ function App() {
       <TooltipProvider>
         <div className="min-h-screen bg-neutral-lightest">
           <div className="max-w-5xl mx-auto px-4 py-8 md:py-12 space-y-8">
-            <Router />
+            <ApiSecretChecker>
+              <Router />
+            </ApiSecretChecker>
           </div>
           <Toaster />
         </div>
