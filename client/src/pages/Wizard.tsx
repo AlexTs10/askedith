@@ -172,20 +172,48 @@ export default function Wizard() {
     // Fix for question #10 (safety concerns) to ensure both options work correctly
     if (currentStep === 10 && question.type === 'radio') {
       console.log("Question #10 - Applying radio button fix, value:", answerValue);
+      
+      // Pull value directly from state if needed
+      if (!answerValue && state.answers.q10) {
+        answerValue = state.answers.q10;
+        console.log("Question #10 - Using value from state:", answerValue);
+      }
+      
       // The "Yes" option should work just like "No"
       if (answerValue === "Yes" || answerValue === "No") {
         // Clear any validation issues - both options are valid
         console.log("Question #10 - Valid selection, will continue");
+      } else if (!answerValue) {
+        // If still no value, check the DOM to see if any radio option is visually selected
+        const selectedOption = document.querySelector('.bg-teal-50.border-teal-600 .text-lg');
+        if (selectedOption) {
+          answerValue = selectedOption.textContent || "";
+          console.log("Question #10 - Using value from DOM:", answerValue);
+        }
       }
     }
     
     // Fix for question #11 (military service) to ensure "Yes" works correctly
     if (currentStep === 11 && question.type === 'radio') {
       console.log("Question #11 - Applying radio button fix, value:", answerValue);
+      
+      // Pull value directly from state if needed
+      if (!answerValue && state.answers.q11) {
+        answerValue = state.answers.q11;
+        console.log("Question #11 - Using value from state:", answerValue);
+      }
+      
       // The "Yes" option should work just like "No"
       if (answerValue === "Yes" || answerValue === "No") {
         // Clear any validation issues - both options are valid
         console.log("Question #11 - Valid selection, will continue");
+      } else if (!answerValue) {
+        // If still no value, check the DOM to see if any radio option is visually selected
+        const selectedOption = document.querySelector('.bg-teal-50.border-teal-600 .text-lg');
+        if (selectedOption) {
+          answerValue = selectedOption.textContent || "";
+          console.log("Question #11 - Using value from DOM:", answerValue);
+        }
       }
     }
     
@@ -301,7 +329,23 @@ export default function Wizard() {
       } 
       // For all other questions, do normal validation
       else {
-        // Check for null, undefined, or empty values
+        // For radio buttons, check if any option is visually selected
+        if (question.type === 'radio') {
+          // Check if any option is visually selected (has the selection styling)
+          const selectedOption = document.querySelector('.bg-teal-50.border-teal-600');
+          if (selectedOption) {
+            // There is a visual selection - use the text content of the label as the value
+            const optionLabel = selectedOption.querySelector('.text-lg');
+            if (optionLabel && optionLabel.textContent) {
+              answerValue = optionLabel.textContent;
+              console.log(`Question #${currentStep} - Found visually selected option:`, answerValue);
+              // Update form value with this text
+              setValue('answer', answerValue);
+            }
+          }
+        }
+        
+        // Check for null, undefined, or empty values after our fixes
         if (!answerValue) {
           setError('answer', {
             type: 'required',
@@ -637,18 +681,33 @@ export default function Wizard() {
               </div>
             )}
             
-            <RadioGroup
-              defaultValue={state.answers[`q${currentStep}`] || ''}
-              onValueChange={(value) => setValue('answer', value)}
-              className="space-y-3"
-            >
+            <input type="hidden" {...register('answer')} />
+            
+            <div className="space-y-3">
               {options?.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option} id={`radio-${option}`} />
-                  <Label htmlFor={`radio-${option}`} className="text-lg">{option}</Label>
+                <div key={option} 
+                  className={`flex items-center space-x-2 p-3 rounded-md cursor-pointer border 
+                    ${state.answers[`q${currentStep}`] === option ? 'bg-teal-50 border-teal-600' : 'border-gray-200 hover:bg-gray-50'}`}
+                  onClick={() => {
+                    // Set the form value
+                    setValue('answer', option);
+                    
+                    // Update wizard state
+                    const updatedAnswers = {...state.answers};
+                    updatedAnswers[`q${currentStep}`] = option;
+                    updateState({...state, answers: updatedAnswers});
+                    
+                    // Submit the form after a brief delay to ensure state is updated
+                    setTimeout(() => {
+                      handleSubmit(onSubmit)();
+                    }, 100);
+                  }}
+                >
+                  <div className={`w-4 h-4 rounded-full ${state.answers[`q${currentStep}`] === option ? 'bg-teal-600' : 'border border-gray-400'}`}></div>
+                  <Label className="text-lg font-normal text-gray-700 cursor-pointer">{option}</Label>
                 </div>
               ))}
-            </RadioGroup>
+            </div>
           </div>
         );
         
