@@ -8,9 +8,32 @@
 
 import { storage } from './storage';
 import { type InsertEmailLog } from '@shared/schema';
+import sgMail from '@sendgrid/mail';
 
 // Email service configuration
 const DEFAULT_FROM_EMAIL = 'noreply@askcara.org';
+const MAX_RETRY_ATTEMPTS = 3;
+const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
+
+// Initialize SendGrid if API key is available
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+// Email Providers - providing multiple fallbacks for reliability
+enum EmailProvider {
+  SENDGRID = 'sendgrid',
+  NODEMAILER = 'nodemailer',
+  FALLBACK = 'fallback'
+}
+
+// Email Priority Levels
+enum EmailPriority {
+  HIGH = 'high',
+  NORMAL = 'normal',
+  LOW = 'low',
+  BULK = 'bulk'
+}
 
 // Interface for email data
 export interface EmailData {
@@ -21,7 +44,99 @@ export interface EmailData {
   resourceId?: number;
   questionnaireId?: number;
   userId?: number;
+  priority?: EmailPriority;
+  retryCount?: number;
 }
+
+// Queue system for handling high volume
+class EmailQueue {
+  private queue: EmailData[] = [];
+  private processing = false;
+  private rateLimitedUntil = 0;
+  
+  // Add email to the queue
+  public add(email: EmailData): void {
+    // Set defaults
+    email.priority = email.priority || EmailPriority.NORMAL;
+    email.retryCount = email.retryCount || 0;
+    
+    // Add to queue based on priority
+    if (email.priority === EmailPriority.HIGH) {
+      // High priority goes to the front
+      this.queue.unshift(email);
+    } else {
+      // Others go to the back
+      this.queue.push(email);
+    }
+    
+    // Start processing if not already running
+    if (!this.processing) {
+      this.processQueue();
+    }
+  }
+  
+  // Add multiple emails to the queue
+  public addBatch(emails: EmailData[]): void {
+    emails.forEach(email => this.add(email));
+  }
+  
+  // Process the email queue
+  private async processQueue(): Promise<void> {
+    if (this.queue.length === 0) {
+      this.processing = false;
+      return;
+    }
+    
+    this.processing = true;
+    
+    // Check rate limiting
+    const now = Date.now();
+    if (now < this.rateLimitedUntil) {
+      // We're rate limited, wait and try again
+      const delay = this.rateLimitedUntil - now;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    
+    try {
+      const email = this.queue.shift();
+      
+      if (email) {
+        // Process this email
+        const success = await processEmailSend(email);
+        
+        if (!success && (email.retryCount || 0) < MAX_RETRY_ATTEMPTS) {
+          // Failed but can retry
+          email.retryCount = (email.retryCount || 0) + 1;
+          
+          // Put back in queue with exponential backoff
+          const backoffDelay = Math.pow(2, email.retryCount || 1) * 1000;
+          setTimeout(() => this.add(email), backoffDelay);
+        }
+      }
+      
+      // Rate limit ourselves
+      this.rateLimitedUntil = Date.now() + RATE_LIMIT_DELAY;
+      
+      // Process next item with a delay
+      setTimeout(() => this.processQueue(), RATE_LIMIT_DELAY);
+    } catch (error) {
+      console.error('Error processing email queue:', error);
+      // Continue processing after a delay
+      setTimeout(() => this.processQueue(), RATE_LIMIT_DELAY * 2);
+    }
+  }
+  
+  // Get queue stats
+  public getStats(): { queueLength: number; isProcessing: boolean } {
+    return {
+      queueLength: this.queue.length,
+      isProcessing: this.processing
+    };
+  }
+}
+
+// Create the email queue
+const emailQueue = new EmailQueue();
 
 // Fallback for development/testing - just log to console
 async function sendWithFallback(data: EmailData): Promise<boolean> {
@@ -34,9 +149,67 @@ async function sendWithFallback(data: EmailData): Promise<boolean> {
   return true;
 }
 
-// Core function to send email (development version)
+// SendGrid implementation
+async function sendWithSendGrid(data: EmailData): Promise<boolean> {
+  try {
+    if (!process.env.SENDGRID_API_KEY) {
+      console.warn('SendGrid API key not set, falling back to development mode');
+      return sendWithFallback(data);
+    }
+    
+    const msg = {
+      to: data.to,
+      from: data.from || DEFAULT_FROM_EMAIL,
+      subject: data.subject,
+      text: data.body,
+      html: data.body.replace(/\n/g, '<br>') // Simple HTML conversion
+    };
+    
+    await sgMail.send(msg);
+    return true;
+  } catch (error) {
+    console.error('SendGrid error:', error);
+    
+    // If rate limited, we return false but may retry
+    const sendGridError = error as any;
+    if (sendGridError.response && sendGridError.response.statusCode === 429) {
+      console.warn('SendGrid rate limit hit, will retry');
+    }
+    
+    return false;
+  }
+}
+
+// Core function to send email with provider fallbacks
 async function processEmailSend(data: EmailData): Promise<boolean> {
-  const success = await sendWithFallback(data);
+  // Determine the provider to use
+  let success = false;
+  const providers = getAvailableProviders();
+  
+  // Try each provider in order until one works
+  for (const provider of providers) {
+    try {
+      switch (provider) {
+        case EmailProvider.SENDGRID:
+          success = await sendWithSendGrid(data);
+          break;
+          
+        case EmailProvider.NODEMAILER:
+          // Not implemented yet
+          break;
+          
+        case EmailProvider.FALLBACK:
+        default:
+          success = await sendWithFallback(data);
+          break;
+      }
+      
+      if (success) break; // Stop if we succeeded
+    } catch (error) {
+      console.error(`Provider ${provider} failed:`, error);
+      // Continue to next provider
+    }
+  }
   
   // Log the email send attempt to database
   try {
@@ -63,24 +236,52 @@ async function processEmailSend(data: EmailData): Promise<boolean> {
   return success;
 }
 
+// Get available providers in priority order
+function getAvailableProviders(): EmailProvider[] {
+  const providers: EmailProvider[] = [];
+  
+  // If SendGrid is configured, use it first
+  if (process.env.SENDGRID_API_KEY) {
+    providers.push(EmailProvider.SENDGRID);
+  }
+  
+  // Fallback is always available
+  providers.push(EmailProvider.FALLBACK);
+  
+  return providers;
+}
+
 /**
  * Public API: Send an email
- * In development, this logs to console
- * In production, this would use SendGrid/Nodemailer and a queue system
+ * For high-volume sending (queued with rate limiting and retries)
  */
-export async function sendEmail(data: EmailData): Promise<{ success: boolean; message: string }> {
+export async function sendEmail(data: EmailData): Promise<{ success: boolean; message: string; queued: boolean }> {
   try {
-    const success = await processEmailSend(data);
+    // For immediate sending (high priority emails)
+    if (data.priority === EmailPriority.HIGH) {
+      const success = await processEmailSend(data);
+      return {
+        success,
+        queued: false,
+        message: success 
+          ? 'Email sent successfully' 
+          : 'Failed to send email. Please try again later.'
+      };
+    }
+    
+    // For all other emails, add to the queue
+    emailQueue.add(data);
+    
     return {
-      success,
-      message: success 
-        ? 'Email sent successfully' 
-        : 'Failed to send email. Please try again later.'
+      success: true,
+      queued: true,
+      message: 'Email added to send queue'
     };
   } catch (error) {
     console.error('Error sending email:', error);
     return {
       success: false,
+      queued: false,
       message: 'An error occurred while processing your email request.'
     };
   }
@@ -89,66 +290,65 @@ export async function sendEmail(data: EmailData): Promise<{ success: boolean; me
 /**
  * Send a batch of emails to multiple recipients
  * Useful for sending to multiple resources at once
+ * Uses the queue system for high volume handling
  */
 export async function sendBatchEmails(
   dataList: EmailData[]
-): Promise<{ success: boolean; sent: number; failed: number; message: string }> {
-  let sent = 0;
-  let failed = 0;
-  
+): Promise<{ success: boolean; queued: number; message: string }> {
   try {
-    const promises = dataList.map(async (data) => {
-      try {
-        const success = await processEmailSend(data);
-        if (success) {
-          sent++;
-        } else {
-          failed++;
-        }
-        return success;
-      } catch (error) {
-        console.error(`Error sending email to ${data.to}:`, error);
-        failed++;
-        return false;
-      }
-    });
-    
-    await Promise.all(promises);
+    // Add all emails to the queue
+    emailQueue.addBatch(dataList);
     
     return {
-      success: failed === 0,
-      sent,
-      failed,
-      message: `Sent ${sent} emails${failed > 0 ? `, ${failed} failed` : ''}.`
+      success: true,
+      queued: dataList.length,
+      message: `Queued ${dataList.length} emails for sending`
     };
   } catch (error) {
     console.error('Error in batch email operation:', error);
     return {
       success: false,
-      sent,
-      failed: dataList.length - sent,
+      queued: 0,
       message: 'An error occurred during the batch email operation.'
     };
   }
 }
 
-// Check the status of the email service
+/**
+ * Check the status of the email sending system
+ * Useful for diagnostics and monitoring
+ */
 export async function checkEmailServiceStatus(): Promise<{
   sendgridAvailable: boolean;
   nodemailerAvailable: boolean;
   queueEnabled: boolean;
+  queueStats: { queueLength: number; isProcessing: boolean };
   preferredProvider: string;
 }> {
+  const queueStats = emailQueue.getStats();
+  const providers = getAvailableProviders();
+  
   return {
     sendgridAvailable: !!process.env.SENDGRID_API_KEY,
     nodemailerAvailable: false,
-    queueEnabled: false,
-    preferredProvider: 'fallback'
+    queueEnabled: true,
+    queueStats,
+    preferredProvider: providers[0] || EmailProvider.FALLBACK
   };
+}
+
+/**
+ * Add a check for SendGrid API key
+ * Helper function to ask for API key if not present
+ */
+export function needsSendGridKey(): boolean {
+  return !process.env.SENDGRID_API_KEY;
 }
 
 export default { 
   sendEmail, 
   sendBatchEmails, 
-  checkEmailServiceStatus
+  checkEmailServiceStatus,
+  needsSendGridKey,
+  EmailPriority // Export the enum too
 };

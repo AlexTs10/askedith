@@ -119,13 +119,30 @@ export class DatabaseStorage implements IStorage {
     const userLat = 38.8977; // Example: DC area latitude
     const userLong = -77.0365; // Example: DC area longitude
     
-    // In production, we'd use the proper Haversine formula for accurate distance calculation
-    // For now we'll use a simplified approach that at least orders by rough proximity
+    // Implementation of the Haversine formula for accurate distance calculation
     const resourcesWithDistance = allResources.map(resource => {
-      // Rough distance calculation (not using true Haversine formula for simplicity)
-      const latDiff = Number(resource.latitude) - userLat;
-      const longDiff = Number(resource.longitude) - userLong;
-      const distance = Math.sqrt((latDiff * latDiff) + (longDiff * longDiff)) * 69.0; // Rough miles conversion
+      // Parse latitude and longitude as numbers
+      const resLat = resource.latitude ? parseFloat(resource.latitude) : 0;
+      const resLong = resource.longitude ? parseFloat(resource.longitude) : 0;
+      
+      // Skip resources without valid coordinates
+      if (resLat === 0 || resLong === 0) {
+        return {
+          ...resource,
+          distanceMiles: Number.MAX_VALUE // Put at the end of the list
+        };
+      }
+      
+      // Haversine formula
+      const R = 3958.8; // Earth's radius in miles
+      const dLat = (resLat - userLat) * Math.PI / 180;
+      const dLon = (resLong - userLong) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(userLat * Math.PI / 180) * Math.cos(resLat * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c; // Distance in miles
       
       return {
         ...resource,
@@ -381,8 +398,8 @@ async function seedDevelopmentData() {
         website: "arlingtonva.us/aging",
         hours: "8 AM – 5 PM Monday–Friday",
         description: "County agency coordinating services for older adults and caregivers",
-        latitude: 38.8914,
-        longitude: -77.0921
+        latitude: "38.8914",
+        longitude: "-77.0921"
       },
       
       // Financial Advisors
@@ -399,8 +416,8 @@ async function seedDevelopmentData() {
         website: "retirementplanning.com",
         hours: "9 AM – 5 PM Monday–Friday",
         description: "Financial advisory firm specializing in retirement and long-term care planning",
-        latitude: 38.9267,
-        longitude: -77.2344
+        latitude: "38.9267",
+        longitude: "-77.2344"
       }
     ];
     

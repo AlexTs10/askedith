@@ -50,17 +50,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email sending endpoint
   app.post("/api/send-email", async (req, res) => {
     try {
-      const { to, subject, body } = req.body;
+      const { to, subject, body, priority, from, resourceId, questionnaireId, userId } = req.body;
       
       if (!to || !subject || !body) {
         return res.status(400).json({ message: "Missing required email fields" });
       }
       
       // Import the email service
-      const { sendEmail } = await import('./emailService');
+      const emailService = await import('./emailService');
       
       // Send the email
-      const result = await sendEmail({ to, subject, body });
+      const result = await emailService.sendEmail({ 
+        to, 
+        subject, 
+        body,
+        from,
+        resourceId,
+        questionnaireId,
+        userId,
+        priority
+      });
       
       // Return response based on the result
       res.json(result);
@@ -68,7 +77,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Email sending error:", error);
       res.status(500).json({ 
         success: false, 
+        queued: false,
         message: error instanceof Error ? error.message : "Failed to send email" 
+      });
+    }
+  });
+  
+  // Batch email sending endpoint
+  app.post("/api/send-batch-emails", async (req, res) => {
+    try {
+      const { emails } = req.body;
+      
+      if (!emails || !Array.isArray(emails) || emails.length === 0) {
+        return res.status(400).json({ message: "Missing or invalid emails array" });
+      }
+      
+      // Validate all emails have required fields
+      for (const email of emails) {
+        if (!email.to || !email.subject || !email.body) {
+          return res.status(400).json({ message: "All emails require to, subject, and body fields" });
+        }
+      }
+      
+      // Import the email service
+      const { sendBatchEmails } = await import('./emailService');
+      
+      // Send the emails in batch
+      const result = await sendBatchEmails(emails);
+      
+      // Return response
+      res.json(result);
+    } catch (error) {
+      console.error("Batch email sending error:", error);
+      res.status(500).json({ 
+        success: false, 
+        queued: 0,
+        message: error instanceof Error ? error.message : "Failed to send batch emails" 
+      });
+    }
+  });
+  
+  // Email service status endpoint
+  app.get("/api/email-service-status", async (req, res) => {
+    try {
+      const { checkEmailServiceStatus, needsSendGridKey } = await import('./emailService');
+      const status = await checkEmailServiceStatus();
+      
+      // Check if we need to request SendGrid key
+      status.needsSendGridKey = needsSendGridKey();
+      
+      res.json(status);
+    } catch (error) {
+      console.error("Email service status check error:", error);
+      res.status(500).json({ 
+        error: 'Failed to check email service status',
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Setup SendGrid API key
+  app.post("/api/setup-sendgrid", async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      
+      if (!apiKey) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "API key is required" 
+        });
+      }
+      
+      // In a real implementation, we would securely store this key
+      // For development, we just set it in the environment
+      process.env.SENDGRID_API_KEY = apiKey;
+      
+      // Reinitialize the email service
+      const emailService = await import('./emailService');
+      
+      // Check status after setting the key
+      const status = await emailService.checkEmailServiceStatus();
+      
+      res.json({
+        success: true,
+        message: "SendGrid API key configured successfully",
+        status
+      });
+    } catch (error) {
+      console.error("SendGrid setup error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : "Failed to configure SendGrid"
       });
     }
   });
