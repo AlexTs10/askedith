@@ -47,9 +47,9 @@ export default function Home() {
               <div className="p-5 rounded-lg border border-gray-200 bg-gray-50/60 shadow-sm">
                 <HeartIcon className="w-8 h-8 text-teal-600 mb-3 mx-auto" />
                 <h3 className="font-medium feature-card-header">Personalized Matches</h3>
-                <p className="text-sm text-gray-600 feature-card-text">Answer just 15 questions</p>
-                <p className="text-sm text-gray-600 feature-card-text">See Your Curated Resources</p>
-                <p className="text-sm text-gray-600 feature-card-text">Select Who You Want to Contact</p>
+                <p className="text-sm text-gray-600 feature-card-text">Answer Just 15 Questions.</p>
+                <p className="text-sm text-gray-600 feature-card-text">See Your Curated Resources.</p>
+                <p className="text-sm text-gray-600 feature-card-text">Select Who You Want to Contact.</p>
               </div>
               <div className="p-5 rounded-lg border border-gray-200 bg-gray-50/60 shadow-sm">
                 <LightbulbIcon className="w-8 h-8 text-amber-500 mb-3 mx-auto" />
