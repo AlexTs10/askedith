@@ -268,14 +268,30 @@ export default function Wizard() {
     else if (question.type === 'select') {
       // No need to validate here since we're auto-advancing on selection
     }
+    // Special case for question #1 - we know you're stuck here
+    else if (currentStep === 1) {
+      // Important: use the value from the DOM
+      if (document.getElementById('q1') && (document.getElementById('q1') as HTMLInputElement).value) {
+        // If there's a value in the input field
+        const inputValue = (document.getElementById('q1') as HTMLInputElement).value;
+        console.log("For question #1, using direct DOM value:", inputValue);
+        answerValue = inputValue;
+      }
+      // If there's still no value after checking DOM
+      if (!answerValue || (typeof answerValue === 'string' && answerValue.trim() === '')) {
+        setError('answer', {
+          type: 'required',
+          message: 'This field is required'
+        });
+        return;
+      }
+    }
     // For regular fields like text or number
     else if (question.required) {
       // For question #9 (health conditions), allow any input
       if (currentStep === 9) {
         // Allow any non-null input for this question, even empty strings
         if (answerValue === null || answerValue === undefined) {
-          // This matches the form validation error style now
-          setValue('answer', " "); // Set a value to trigger the form error
           setError('answer', {
             type: 'required',
             message: 'This field is required'
@@ -287,8 +303,6 @@ export default function Wizard() {
       else {
         // Check for null, undefined, or empty values
         if (!answerValue) {
-          // This matches the form validation error style now
-          setValue('answer', " "); // Set a value to trigger the form error
           setError('answer', {
             type: 'required',
             message: 'This field is required'
@@ -298,8 +312,6 @@ export default function Wizard() {
         
         // For text inputs, ensure value isn't just whitespace
         if (typeof answerValue === 'string' && answerValue.trim() === '') {
-          // This matches the form validation error style now
-          setValue('answer', " "); // Set a value to trigger the form error
           setError('answer', {
             type: 'required',
             message: 'This field is required'
@@ -508,6 +520,7 @@ export default function Wizard() {
               id={`q${currentStep}`}
               type={type}
               placeholder={placeholder}
+              defaultValue={state.answers[`q${currentStep}`] || ""}
               className="w-full p-4 text-lg font-normal text-gray-700"
               {...register('answer', { 
                 required: required && 'This field is required',
