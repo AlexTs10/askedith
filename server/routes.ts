@@ -6,9 +6,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all resources
   app.get("/api/resources", async (req, res) => {
     try {
+      // Check for query parameters
+      const { category, zipCode, radiusMiles } = req.query;
+      
+      // If zipCode is provided, get resources by location
+      if (zipCode) {
+        const radius = radiusMiles ? parseInt(radiusMiles as string, 10) : 25;
+        const resources = await storage.getResourcesByLocation(zipCode as string, radius);
+        return res.json(resources);
+      }
+      
+      // If category is provided, get resources by category
+      if (category) {
+        const resources = await storage.getResourcesByCategory(category as string);
+        return res.json(resources);
+      }
+      
+      // Otherwise get all resources
       const resources = await storage.getAllResources();
       res.json(resources);
     } catch (error) {
+      console.error("Error fetching resources:", error);
       res.status(500).json({ message: "Failed to fetch resources" });
     }
   });
