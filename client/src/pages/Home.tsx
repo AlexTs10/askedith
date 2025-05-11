@@ -40,19 +40,23 @@ export default function Home() {
         <div className="text-center w-full">
           <div className="max-w-xl mx-auto">
             <p className="text-xl leading-relaxed text-gray-600 mb-8 mt-0">
-              Find personalized elder care resources for your loved ones through our simple guided process.
+              No more phone marathons. No more repeating your story. 
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
               <div className="p-5 rounded-lg border border-gray-200 bg-gray-50/60 shadow-sm">
                 <HeartIcon className="w-8 h-8 text-teal-600 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Personalized Matches</h3>
-                <p className="text-sm text-gray-600">Custom-tailored resources based on your specific needs</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">Answer just 15 questions</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">See Your Curated Resources</p>
+                <p className="text-sm text-gray-600 leading-relaxed">Select Who You Want to Contact</p>
               </div>
               <div className="p-5 rounded-lg border border-gray-200 bg-gray-50/60 shadow-sm">
                 <LightbulbIcon className="w-8 h-8 text-amber-500 mb-3 mx-auto" />
                 <h3 className="font-medium mb-2">Instant Connections</h3>
-                <p className="text-sm text-gray-600">Send emails to the resources you choose with one click</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">We Help You Write Your Story.</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-2">You Review Your Email Template.</p>
+                <p className="text-sm text-gray-600 leading-relaxed">You send to all resources once.</p>
               </div>
             </div>
             
@@ -61,12 +65,12 @@ export default function Home() {
               size="lg"
               className="bg-teal-600 hover:bg-teal-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 w-full md:w-auto"
             >
-              Start 15-Question Wizard
+              Let's Begin 
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
-            <p className="text-sm text-gray-600 font-light mt-4">
-              Takes about 5 minutes to complete. Your information is secure and never shared.
+            <p className="text-md text-gray-600 font-light mt-4">
+              Takes about 5 minutes to complete.
             </p>
           </div>
         </div>
