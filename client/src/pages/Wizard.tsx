@@ -217,6 +217,37 @@ export default function Wizard() {
       }
     }
     
+    // Fix for textarea questions (#12 and #13)
+    if ((currentStep === 12 || currentStep === 13) && question.type === 'textarea') {
+      console.log(`Question #${currentStep} - Checking textarea value:`, answerValue);
+      
+      // Check if there's any value in the DOM that we should be using
+      const textareaEl = document.getElementById(`q${currentStep}`) as HTMLTextAreaElement;
+      if (textareaEl && textareaEl.value && (!answerValue || answerValue === '')) {
+        answerValue = textareaEl.value;
+        console.log(`Question #${currentStep} - Using textarea DOM value:`, answerValue);
+        
+        // Update the form value
+        setValue('answer', answerValue);
+        
+        // Update wizard state
+        const updatedAnswers = {...state.answers};
+        updatedAnswers[`q${currentStep}`] = answerValue;
+        updateState({...state, answers: updatedAnswers});
+      }
+      
+      // For these questions, if user doesn't enter anything, use "None" as default
+      if (!answerValue || answerValue.trim() === '') {
+        answerValue = "None";
+        console.log(`Question #${currentStep} - Using default "None" for empty textarea`);
+        
+        // Update wizard state
+        const updatedAnswers = {...state.answers};
+        updatedAnswers[`q${currentStep}`] = answerValue;
+        updateState({...state, answers: updatedAnswers});
+      }
+    }
+    
     // For checkbox groups and multiselect, save the selected options
     if (question.type === 'checkbox_group' || question.type === 'multiselect') {
       // Make sure required question has at least one selection
@@ -721,15 +752,49 @@ export default function Wizard() {
               </div>
             )}
             
-            <Textarea
-              id={`q${currentStep}`}
-              placeholder={placeholder}
-              className="w-full p-4 text-lg font-normal text-gray-700 min-h-[150px]"
-              rows={6}
-              {...register('answer', { 
-                required: required && 'This field is required'
-              })}
-            />
+            <div className="relative">
+              <Textarea
+                id={`q${currentStep}`}
+                placeholder={placeholder}
+                className="w-full p-4 text-lg font-normal text-gray-700 min-h-[150px]"
+                rows={6}
+                defaultValue={state.answers[`q${currentStep}`] || ''}
+                {...register('answer', { 
+                  required: required && 'This field is required'
+                })}
+                onChange={(e) => {
+                  // Update state immediately on change
+                  const updatedAnswers = {...state.answers};
+                  updatedAnswers[`q${currentStep}`] = e.target.value;
+                  updateState({...state, answers: updatedAnswers});
+                }}
+              />
+              
+              {/* "None" button for optional entry or minimal input */}
+              <div className="mt-2 text-right">
+                <button 
+                  type="button"
+                  className="text-sm text-teal-600 hover:text-teal-700 underline"
+                  onClick={() => {
+                    // Use "None" as the value
+                    const value = "None";
+                    setValue('answer', value);
+                    
+                    // Update state
+                    const updatedAnswers = {...state.answers};
+                    updatedAnswers[`q${currentStep}`] = value;
+                    updateState({...state, answers: updatedAnswers});
+                    
+                    // Continue to next question
+                    setTimeout(() => {
+                      handleSubmit(onSubmit)();
+                    }, 100);
+                  }}
+                >
+                  Skip this question
+                </button>
+              </div>
+            </div>
           </div>
         );
         
