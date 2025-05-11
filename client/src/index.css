@@ -140,10 +140,15 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   }
   
-  /* Feature card paragraph styling */
+  /* Feature card styling */
   .feature-card-text {
     line-height: 1.5;
     margin-bottom: 0.5rem;
+  }
+  
+  .feature-card-header {
+    margin-bottom: 2rem;
+    font-weight: 500;
   }
   
   /* Font classes for AskCara */
