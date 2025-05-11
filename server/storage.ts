@@ -1,191 +1,369 @@
-import { resources, type Resource, type InsertResource } from "@shared/schema";
-import { users, type User, type InsertUser } from "@shared/schema";
+import { 
+  resources, type Resource, type InsertResource,
+  users, type User, type InsertUser,
+  questionnaires, type Questionnaire, type InsertQuestionnaire,
+  emailLogs, type EmailLog, type InsertEmailLog 
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, sql, desc, asc, like, between, or, inArray } from "drizzle-orm";
 
-// Interface with CRUD methods for storage
+// Enhanced interface with CRUD methods for database storage
 export interface IStorage {
-  // User methods (keeping for reference)
+  // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Admin methods
+  createAdmin(admin: InsertUser): Promise<User>;
+  getAllAdmins(): Promise<User[]>;
+  
   // Resource methods
   getAllResources(): Promise<Resource[]>;
+  getResourcesByCategory(category: string): Promise<Resource[]>;
+  getResourcesByLocation(zipCode: string, radiusMiles?: number): Promise<Resource[]>;
   getResource(id: number): Promise<Resource | undefined>;
   createResource(resource: InsertResource): Promise<Resource>;
+  updateResource(id: number, resource: Partial<InsertResource>): Promise<Resource | undefined>;
+  deleteResource(id: number): Promise<boolean>;
+  
+  // Questionnaire methods
+  createQuestionnaire(questionnaire: InsertQuestionnaire): Promise<Questionnaire>;
+  updateQuestionnaireStatus(id: number, status: string): Promise<Questionnaire | undefined>;
+  getIncompleteQuestionnaires(): Promise<Questionnaire[]>;
+  getQuestionnaireAnalytics(): Promise<{ 
+    total: number, 
+    completed: number, 
+    abandoned: number,
+    inProgress: number,
+    completionRate: number 
+  }>;
+  
+  // Email methods
+  logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
+  getEmailLogs(): Promise<EmailLog[]>;
+  getEmailAnalytics(): Promise<{
+    totalSent: number,
+    sentLast24Hours: number,
+    sentLastWeek: number,
+    sentLastMonth: number,
+    byCategory: Record<string, number>
+  }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private resources: Map<number, Resource>;
-  currentUserId: number;
-  currentResourceId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.resources = new Map();
-    this.currentUserId = 1;
-    this.currentResourceId = 1;
-    
-    // Initialize with the three default resources
-    this.initializeResources();
+export class DatabaseStorage implements IStorage {
+  // ----- User methods -----
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
-  private initializeResources() {
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [createdUser] = await db.insert(users).values(user).returning();
+    return createdUser;
+  }
+  
+  // ----- Admin methods -----
+  async createAdmin(admin: InsertUser): Promise<User> {
+    const adminData = { ...admin, isAdmin: true };
+    const [createdAdmin] = await db.insert(users).values(adminData).returning();
+    return createdAdmin;
+  }
+  
+  async getAllAdmins(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.isAdmin, true));
+  }
+  
+  // ----- Resource methods -----
+  async getAllResources(): Promise<Resource[]> {
+    return await db.select().from(resources);
+  }
+  
+  async getResourcesByCategory(category: string): Promise<Resource[]> {
+    return await db.select().from(resources).where(eq(resources.category, category));
+  }
+  
+  async getResourcesByLocation(zipCode: string, radiusMiles: number = 25): Promise<Resource[]> {
+    // In a real implementation, this would use a spatial query
+    // For now, we'll just do a simple ZIP code comparison
+    // Would need a geocoding service to properly implement
+    return await db.select().from(resources).where(eq(resources.zipCode, zipCode));
+  }
+  
+  async getResource(id: number): Promise<Resource | undefined> {
+    const [resource] = await db.select().from(resources).where(eq(resources.id, id));
+    return resource;
+  }
+  
+  async createResource(resource: InsertResource): Promise<Resource> {
+    const [createdResource] = await db.insert(resources).values({
+      ...resource,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return createdResource;
+  }
+  
+  async updateResource(id: number, resource: Partial<InsertResource>): Promise<Resource | undefined> {
+    const [updatedResource] = await db.update(resources)
+      .set({ ...resource, updatedAt: new Date() })
+      .where(eq(resources.id, id))
+      .returning();
+    return updatedResource;
+  }
+  
+  async deleteResource(id: number): Promise<boolean> {
+    const result = await db.delete(resources).where(eq(resources.id, id));
+    return true; // In Postgres, if no error is thrown, the operation was successful
+  }
+  
+  // ----- Questionnaire methods -----
+  async createQuestionnaire(questionnaire: InsertQuestionnaire): Promise<Questionnaire> {
+    const [createdQuestionnaire] = await db.insert(questionnaires).values({
+      ...questionnaire,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return createdQuestionnaire;
+  }
+  
+  async updateQuestionnaireStatus(id: number, status: string): Promise<Questionnaire | undefined> {
+    const updates: any = { 
+      status, 
+      updatedAt: new Date() 
+    };
+    
+    // If status is completed, add completion date
+    if (status === 'completed') {
+      updates.completedAt = new Date();
+    }
+    
+    const [updatedQuestionnaire] = await db.update(questionnaires)
+      .set(updates)
+      .where(eq(questionnaires.id, id))
+      .returning();
+    return updatedQuestionnaire;
+  }
+  
+  async getIncompleteQuestionnaires(): Promise<Questionnaire[]> {
+    return await db.select().from(questionnaires)
+      .where(
+        and(
+          eq(questionnaires.status, 'in_progress'),
+          sql`${questionnaires.createdAt} < NOW() - INTERVAL '1 day'`
+        )
+      )
+      .orderBy(desc(questionnaires.createdAt));
+  }
+  
+  async getQuestionnaireAnalytics(): Promise<{ 
+    total: number, 
+    completed: number, 
+    abandoned: number, 
+    inProgress: number,
+    completionRate: number
+  }> {
+    // This is a simplified implementation - a real one would use SQL aggregations
+    const allQuestionnaires = await db.select().from(questionnaires);
+    const completed = allQuestionnaires.filter(q => q.status === 'completed').length;
+    const abandoned = allQuestionnaires.filter(q => q.status === 'abandoned').length;
+    const inProgress = allQuestionnaires.filter(q => q.status === 'in_progress').length;
+    const total = allQuestionnaires.length;
+    
+    return {
+      total,
+      completed,
+      abandoned,
+      inProgress,
+      completionRate: total > 0 ? (completed / total) * 100 : 0
+    };
+  }
+  
+  // ----- Email methods -----
+  async logEmail(emailLog: InsertEmailLog): Promise<EmailLog> {
+    const [createdLog] = await db.insert(emailLogs).values({
+      ...emailLog,
+      createdAt: new Date()
+    }).returning();
+    return createdLog;
+  }
+  
+  async getEmailLogs(): Promise<EmailLog[]> {
+    return await db.select().from(emailLogs).orderBy(desc(emailLogs.createdAt));
+  }
+  
+  async getEmailAnalytics(): Promise<{
+    totalSent: number,
+    sentLast24Hours: number,
+    sentLastWeek: number,
+    sentLastMonth: number,
+    byCategory: Record<string, number>
+  }> {
+    // This would be better implemented with SQL aggregations in a real application
+    const allEmails = await this.getEmailLogs();
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    const sentLast24Hours = allEmails.filter(email => 
+      email.sentAt && new Date(email.sentAt) >= oneDayAgo
+    ).length;
+    
+    const sentLastWeek = allEmails.filter(email => 
+      email.sentAt && new Date(email.sentAt) >= oneWeekAgo
+    ).length;
+    
+    const sentLastMonth = allEmails.filter(email => 
+      email.sentAt && new Date(email.sentAt) >= oneMonthAgo
+    ).length;
+    
+    // This is simplified - in a real implementation we'd join with resources
+    // to get the category for each email
+    const byCategory: Record<string, number> = {
+      'Veteran Benefits': 0,
+      'Aging Life Care Professionals': 0,
+      'Home Care Companies': 0,
+      'Government Agencies': 0,
+      'Financial Advisors': 0,
+      'Other': 0
+    };
+    
+    return {
+      totalSent: allEmails.length,
+      sentLast24Hours,
+      sentLastWeek,
+      sentLastMonth,
+      byCategory
+    };
+  }
+}
+
+// For populating initial resources during development
+async function seedDevelopmentData() {
+  const count = await db.select({ count: sql<number>`count(*)` }).from(resources);
+  
+  // Only seed if no resources exist
+  if (count[0].count === 0) {
+    console.log('Seeding development resources...');
+    
     const defaultResources: InsertResource[] = [
       // Veteran Benefits
       {
         category: "Veteran Benefits",
         name: "VA Caregiver Support",
-        address: "810 Vermont Avenue, NW, Washington, DC 20420",
+        companyName: "VA Caregiver Support Program",
+        address: "810 Vermont Avenue, NW",
+        city: "Washington",
+        county: "District of Columbia",
+        zipCode: "20420",
         email: "caregiversupport@va.gov",
-        hours: "8 AM – 4 PM Monday–Friday"
+        phone: "855-260-3274",
+        website: "caregiver.va.gov",
+        hours: "8 AM – 4 PM Monday–Friday",
+        description: "Official VA program providing resources and support for caregivers of veterans"
       },
       {
         category: "Veteran Benefits",
         name: "Veterans Aid Foundation",
-        address: "425 N Washington St, Alexandria, VA 22314",
+        companyName: "Veterans Aid Foundation",
+        address: "425 N Washington St",
+        city: "Alexandria",
+        county: "Alexandria City",
+        zipCode: "22314",
         email: "info@veteransaid.org",
-        hours: "9 AM – 5 PM Monday–Friday"
-      },
-      {
-        category: "Veteran Benefits",
-        name: "Military Family Support Alliance",
-        address: "200 N Washington St, Falls Church, VA 22046",
-        email: "contact@mfsa.org",
-        hours: "8:30 AM – 4:30 PM Monday–Friday"
+        phone: "703-555-1234",
+        website: "veteransaid.org",
+        hours: "9 AM – 5 PM Monday–Friday",
+        description: "Non-profit organization helping veterans access benefits and services"
       },
       
       // Aging Life Care Professionals
       {
         category: "Aging Life Care Professionals",
         name: "Senior Life Navigators",
-        address: "8300 Greensboro Dr, McLean, VA 22102",
+        companyName: "Senior Life Navigators, LLC",
+        address: "8300 Greensboro Dr, Suite 800",
+        city: "McLean",
+        county: "Fairfax",
+        zipCode: "22102", 
         email: "info@seniorlifenavigators.com",
-        hours: "9 AM – 5 PM Monday–Friday"
-      },
-      {
-        category: "Aging Life Care Professionals",
-        name: "Elder Care Solutions",
-        address: "1005 N Glebe Rd, Arlington, VA 22201",
-        email: "help@eldercaresolutions.com",
-        hours: "8 AM – 6 PM Monday–Friday, 10 AM – 2 PM Saturday"
-      },
-      {
-        category: "Aging Life Care Professionals",
-        name: "Golden Years Consulting",
-        address: "11710 Plaza America Dr, Reston, VA 20190",
-        email: "appointments@goldenyearsconsulting.com",
-        hours: "9 AM – 4 PM Monday–Thursday"
+        phone: "571-555-8200",
+        website: "seniorlifenavigators.com",
+        hours: "9 AM – 5 PM Monday–Friday",
+        description: "Professional geriatric care managers providing assessments and care planning"
       },
       
       // Home Care Companies
       {
         category: "Home Care Companies",
         name: "Comfort Home Care",
-        address: "4401 East West Hwy, Bethesda, MD 20814",
+        companyName: "Comfort Home Care, Inc.",
+        address: "4401 East West Hwy, Suite 300",
+        city: "Bethesda",
+        county: "Montgomery",
+        zipCode: "20814",
         email: "care@comforthomecare.com",
-        hours: "24/7 Service, Office: 8 AM – 8 PM Daily"
-      },
-      {
-        category: "Home Care Companies",
-        name: "Visiting Angels",
-        address: "459 Herndon Pkwy, Herndon, VA 20170",
-        email: "info@visitingangels-nova.com",
-        hours: "24/7 Service, Office: 8:30 AM – 5 PM Monday–Friday"
-      },
-      {
-        category: "Home Care Companies",
-        name: "Home Instead Senior Care",
-        address: "4900 Leesburg Pike, Alexandria, VA 22302",
-        email: "info@homeinstead-nova.com",
-        hours: "24/7 Service, Office: 9 AM – 5 PM Monday–Friday"
+        phone: "301-555-7400",
+        website: "comforthomecare.com",
+        hours: "24/7 Service, Office: 8 AM – 8 PM Daily",
+        description: "Licensed home care agency providing personal care and companionship"
       },
       
       // Government Agencies
       {
         category: "Government Agencies",
         name: "Area Agency on Aging",
-        address: "3033 Wilson Blvd, Arlington, VA 22201",
+        companyName: "Arlington County Area Agency on Aging",
+        address: "3033 Wilson Blvd",
+        city: "Arlington",
+        county: "Arlington",
+        zipCode: "22201",
         email: "aging@arlingtonva.us",
-        hours: "8 AM – 5 PM Monday–Friday"
-      },
-      {
-        category: "Government Agencies",
-        name: "Social Security Administration",
-        address: "1121 W Broad St, Falls Church, VA 22046",
-        email: "fc.office@ssa.gov",
-        hours: "9 AM – 4 PM Monday–Friday, Closed Wednesday"
-      },
-      {
-        category: "Government Agencies",
-        name: "Medicare Information Center",
-        address: "7121 Leesburg Pike, Falls Church, VA 22043",
-        email: "info@medicarehelp.gov",
-        hours: "8:30 AM – 4:30 PM Monday–Friday"
+        phone: "703-228-1700",
+        website: "arlingtonva.us/aging",
+        hours: "8 AM – 5 PM Monday–Friday",
+        description: "County agency coordinating services for older adults and caregivers"
       },
       
       // Financial Advisors
       {
         category: "Financial Advisors",
         name: "Retirement Planning Partners",
-        address: "8270 Greensboro Dr, McLean, VA 22102",
+        companyName: "Retirement Planning Partners, LLC",
+        address: "8270 Greensboro Dr, Suite 500",
+        city: "McLean",
+        county: "Fairfax",
+        zipCode: "22102",
         email: "info@retirementplanning.com",
-        hours: "9 AM – 5 PM Monday–Friday"
-      },
-      {
-        category: "Financial Advisors",
-        name: "ElderWealth Financial",
-        address: "1800 Tysons Blvd, McLean, VA 22102",
-        email: "help@elderwealthfinancial.com",
-        hours: "9 AM – 4 PM Monday–Friday"
-      },
-      {
-        category: "Financial Advisors",
-        name: "Senior Money Matters",
-        address: "2070 Chain Bridge Rd, Vienna, VA 22182",
-        email: "advisors@seniormoneymatters.com",
-        hours: "8:30 AM – 5:30 PM Monday–Thursday, 8:30 AM – 3 PM Friday"
+        phone: "703-555-9200",
+        website: "retirementplanning.com",
+        hours: "9 AM – 5 PM Monday–Friday",
+        description: "Financial advisory firm specializing in retirement and long-term care planning"
       }
     ];
-
-    defaultResources.forEach(resource => {
-      this.createResource(resource);
-    });
-  }
-
-  // Resource methods
-  async getAllResources(): Promise<Resource[]> {
-    return Array.from(this.resources.values());
-  }
-
-  async getResource(id: number): Promise<Resource | undefined> {
-    return this.resources.get(id);
-  }
-
-  async createResource(insertResource: InsertResource): Promise<Resource> {
-    const id = this.currentResourceId++;
-    const resource: Resource = { ...insertResource, id };
-    this.resources.set(id, resource);
-    return resource;
-  }
-
-  // User methods (keeping for reference)
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    
+    // Insert the initial resources
+    for (const resource of defaultResources) {
+      await db.insert(resources).values({
+        ...resource,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }
+    
+    console.log('Development resources seeded successfully');
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
+
+// Initialize the database with default resources when in development
+if (process.env.NODE_ENV === 'development') {
+  seedDevelopmentData().catch(console.error);
+}

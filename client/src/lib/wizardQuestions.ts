@@ -27,12 +27,12 @@ export const wizardQuestions: Question[] = [
   },
   { 
     id: 2, 
-    text: "Age of first person who needs senior living or care?", 
+    text: "Age of first person who may need some kind of care?", 
     type: "number", 
     required: true, 
     placeholder: "Enter age of first person",
     category: "recipient_info",
-    subtext: "If there is a second person, their age is:",
+    subtext: "If there is a second person, what is their age?",
     subfields: [
       {
         name: "secondPersonAge",
@@ -56,38 +56,38 @@ export const wizardQuestions: Question[] = [
     type: "checkbox_group", 
     required: true, 
     options: [
-      "Independent living", 
-      "Independent living with assistance", 
-      "Assisted living facility", 
-      "Nursing home", 
-      "Living with family",
-      "Looking to move",
-      "Need housing options"
+      "Living home alone", 
+      "Living with family", 
+      "In Rehab with discharge soon", 
+      "In a senior living community", 
+      "In a skilled nursing facility"
     ],
     category: "housing" 
   },
   { 
     id: 5, 
-    text: "Biggest current challenges (Check all that apply)", 
+    text: "Current life challenges (Check all that apply)", 
     type: "checkbox_group", 
     required: true, 
     options: [
+      "No challenges. Simply seeking independent lifestyle options",
       "Mobility issues", 
       "Memory care", 
-      "Financial planning", 
-      "Daily assistance", 
+      "Financial resources and planning needed", 
+      "Needs assistance with Activities of Daily Living", 
       "Medical coordination",
-      "Transportation",
+      "No longer drives. Needs Transportation",
       "Medication management",
-      "Social isolation",
-      "Home modifications",
-      "Legal matters (POA, wills, etc.)"
+      "Is socially isolated",
+      "Meal preparation or grocery shopping assistance",
+      "Researching Home modifications",
+      "Legal matters (Power of Attorney, Wills, etc.)"
     ],
     category: "needs" 
   },
   { 
     id: 6, 
-    text: "Level of daily assistance needed", 
+    text: "Level of daily assistance and oversight you think is needed", 
     type: "select", 
     required: true, 
     options: ["Minimal", "Moderate", "Substantial", "Full-time care"],
@@ -95,10 +95,10 @@ export const wizardQuestions: Question[] = [
   },
   { 
     id: 7, 
-    text: "Monthly budget target", 
+    text: "What is the monthly income available for care?", 
     type: "select", 
     required: true, 
-    options: ["Under $1,000", "$1,000-2,000", "$2,000-3,000", "$3,000-5,000", "Over $5,000"],
+    options: ["Under $1,000", "$1,000-2,000", "$2,000-3,000", "$3,000-5,000", "$5,000-7,000", "$7,000-9,000", "$9,000+"],
     category: "financial" 
   },
   { 
@@ -119,15 +119,24 @@ export const wizardQuestions: Question[] = [
   },
   { 
     id: 10, 
-    text: "Safety concerns", 
+    text: "Financial situation (Select all that apply)", 
     type: "radio", 
     required: true, 
-    options: ["Yes", "No"],
-    category: "safety" 
+    options: [
+      "Own a home", 
+      "Rent a home", 
+      "Have savings", 
+      "Have a pension", 
+      "Have a 401k", 
+      "Have Social Security", 
+      "Have Life Insurance", 
+      "Have Long-Term Care Insurance"
+    ],
+    category: "financial_situation" 
   },
   { 
     id: 11, 
-    text: "Has the care recipient served in the military?", 
+    text: "Is the person a veteran or spouse of a veteran?", 
     type: "radio", 
     required: true, 
     options: ["Yes", "No"],
@@ -138,17 +147,16 @@ export const wizardQuestions: Question[] = [
     text: "Family members involved in decisions", 
     type: "textarea", 
     required: true, 
-    placeholder: "List family members involved",
+    placeholder: "Describe the family members involved in care decisions",
     category: "family_involvement" 
   },
   { 
     id: 13, 
-    text: "Anything else you think these professionals ought to know about your situation and needs?", 
+    text: "Additional information professionals should know", 
     type: "textarea", 
     required: true, 
-    placeholder: "Additional information",
-    category: "additional_info",
-    subtext: "For example, if you need help understanding Medicare, obtaining a Power of Attorney, are thinking about care possibilities, share it all here."
+    placeholder: "Share any other relevant details about your situation",
+    category: "additional_info"
   },
   { 
     id: 14, 
@@ -182,6 +190,20 @@ export const wizardQuestions: Question[] = [
         required: true
       }
     ]
+  },
+  { 
+    id: 15, 
+    text: "Select resource types you'd like to connect with", 
+    type: "checkbox_group", 
+    required: true, 
+    options: [
+      "Veteran Benefits specialists", 
+      "Aging Life Care Professionals", 
+      "Home Care Companies", 
+      "Government Agencies", 
+      "Financial Advisors"
+    ],
+    category: "resource_types"
   }
 ];
 
