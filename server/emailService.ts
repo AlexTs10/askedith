@@ -253,13 +253,15 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
       }
     }
     
+    // Format the from field in standard SendGrid format: name <email>
+    // This is the most reliable format for SendGrid API
+    const formattedFrom = `${senderName} <${verifiedSenderEmail}>`;
+    console.log('Formatted from address:', formattedFrom);
+    
     // Construct the message with the verified sender
     const msg = {
       to: testEmail, // Override with test email
-      from: {
-        email: verifiedSenderEmail, // Must be the verified sender
-        name: senderName // Display name can be customized
-      },
+      from: formattedFrom, // Use standard format: "Name <email@domain.com>"
       // User's actual email goes here so replies will go to them
       replyTo: data.replyTo || (data.from?.includes('@') ? data.from : undefined),
       subject: `[TEST] ${data.subject}`,
@@ -280,12 +282,46 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
   } catch (error) {
     console.error('SendGrid error:', error);
     
-    // If rate limited, we return false but may retry
+    // Extract detailed error information for troubleshooting
     const sendGridError = error as any;
-    if (sendGridError.response && sendGridError.response.statusCode === 429) {
-      console.warn('SendGrid rate limit hit, will retry');
+    if (sendGridError.response) {
+      // Handle rate limiting
+      if (sendGridError.response.statusCode === 429) {
+        console.warn('SendGrid rate limit hit, will retry later');
+      }
+      
+      // Handle authentication/authorization errors
+      if (sendGridError.response.statusCode === 401 || sendGridError.response.statusCode === 403) {
+        console.error('AUTHENTICATION ERROR: Your SendGrid API key may be invalid or missing permissions');
+        console.error('Please check that your SENDGRID_API_KEY environment variable is set correctly');
+        console.error('And ensure it has "Mail Send" permission in the SendGrid dashboard');
+      }
+      
+      // Extract and log detailed error messages
+      if (sendGridError.response.body && sendGridError.response.body.errors) {
+        console.error('SendGrid errors:');
+        sendGridError.response.body.errors.forEach((err: any, index: number) => {
+          console.error(`  Error ${index + 1}: ${err.message} (field: ${err.field || 'unknown'})`);
+          
+          // Special handling for common errors
+          if (err.message && err.message.includes('sender identity')) {
+            console.error('  SENDER VERIFICATION ERROR: The from email address is not verified in SendGrid');
+            console.error('  Please add Sender Authentication for this domain in SendGrid dashboard');
+          }
+        });
+      }
     }
     
+    // Log a fallback email to console for debugging
+    console.log('\n==== EMAIL CONTENT (FALLBACK MODE) ====');
+    console.log(`From: ${data.from || 'Not specified'}`);
+    console.log(`To: ${data.to}`);
+    console.log(`Subject: ${data.subject}`);
+    console.log('Body:');
+    console.log(data.body);
+    console.log('======================================\n');
+    
+    // Return false to indicate failure, the queue will retry if needed
     return false;
   }
 }
