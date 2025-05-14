@@ -200,15 +200,34 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     // TESTING MODE: Override recipient with test email
     const testEmail = "elias@secondactfs.com";
     
+    // Ensure the 'from' email is properly formatted 
+    let fromEmail = data.from || DEFAULT_FROM_EMAIL;
+    
+    // If from doesn't contain an email address or is improperly formatted, use the default
+    if (!fromEmail.includes('@') || !fromEmail.includes('<') || !fromEmail.includes('>')) {
+      // If it seems like just a name without proper email formatting
+      if (!fromEmail.includes('<') && !fromEmail.includes('>')) {
+        // Extract name if possible
+        const name = fromEmail.split(' <')[0].trim();
+        fromEmail = name ? `${name} <${DEFAULT_FROM_EMAIL}>` : DEFAULT_FROM_EMAIL;
+      } else {
+        // Fallback to default if formatting is incorrect
+        fromEmail = DEFAULT_FROM_EMAIL;
+      }
+    }
+    
+    console.log('Using from email:', fromEmail);
+    
     const msg = {
       to: testEmail, // Override with test email
-      from: data.from || DEFAULT_FROM_EMAIL,
+      from: fromEmail,
       subject: `[TEST] ${data.subject}`,
       text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
       html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` // Simple HTML conversion
     };
     
     await sgMail.send(msg);
+    console.log('Email sent successfully via SendGrid');
     return true;
   } catch (error) {
     console.error('SendGrid error:', error);

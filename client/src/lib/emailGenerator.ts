@@ -30,15 +30,8 @@ function extractUserInfo(answers: WizardAnswers) {
     console.error("Error parsing contact information:", e);
   }
   
-  // For backward compatibility with old data format
-  if (!email && answers.q2) {
-    if (typeof answers.q2 === 'string') {
-      email = answers.q2;
-    } else if (typeof answers.q2 === 'number') {
-      // Convert to string if somehow a number got stored
-      email = String(answers.q2);
-    }
-  }
+  // No longer use q2 (age) as email - was causing bugs
+  // Use a valid default email format instead when necessary
   
   if (!zipcode && answers.q6) {
     zipcode = String(answers.q6 || '');
@@ -233,10 +226,15 @@ export function generateEmails(
     // TESTING MODE: Override all recipient emails with the test email
     const testEmail = "elias@secondactfs.com";
     
+    // Ensure we have a valid email in the from field, or use the default "noreply" address
+    const fromEmail = userInfo.email && userInfo.email.includes('@') 
+      ? userInfo.email 
+      : "noreply@askedith.org";
+      
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
-      // Include full name in the from field, but also store the actual email for sending
-      from: `${userInfo.fullName} <${userInfo.email}>`,
+      // Include full name in the from field with a proper email address
+      from: `${userInfo.fullName} <${fromEmail}>`,
       subject: `Seeking ${category} assistance for my ${relationship}`,
       body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
     });
