@@ -204,12 +204,17 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     // Ensure the 'from' email is properly formatted 
     let fromEmail = data.from || DEFAULT_FROM_EMAIL;
     
-    // If from doesn't contain an email address or is improperly formatted, use the default
+    // Check if from email is properly formatted with both name and email
     if (!fromEmail.includes('@') || !fromEmail.includes('<') || !fromEmail.includes('>')) {
-      // If it seems like just a name without proper email formatting
-      if (!fromEmail.includes('<') && !fromEmail.includes('>')) {
+      // If it has an @ but not proper bracketing, it might just be an email address
+      if (fromEmail.includes('@') && !fromEmail.includes('<') && !fromEmail.includes('>')) {
+        // It's just an email address, keep as is (SendGrid will handle)
+        console.log('Using plain email address as from:', fromEmail);
+      } 
+      // If it doesn't have proper email formatting
+      else if (!fromEmail.includes('<') && !fromEmail.includes('>')) {
         // Extract name if possible
-        const name = fromEmail.split(' <')[0].trim();
+        const name = fromEmail.trim();
         fromEmail = name ? `${name} <${DEFAULT_FROM_EMAIL}>` : DEFAULT_FROM_EMAIL;
       } else {
         // Fallback to default if formatting is incorrect

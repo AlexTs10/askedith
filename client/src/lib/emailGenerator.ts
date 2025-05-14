@@ -227,20 +227,19 @@ export function generateEmails(
     const testEmail = "elias@secondactfs.com";
     
     // Get user's actual email from the input form
-    // Always use a verified domain (askedith.org) for the FROM field to ensure deliverability
-    // but set reply-to to the user's actual email so replies go to them
     const userEmail = userInfo.email && userInfo.email.includes('@') 
       ? userInfo.email 
       : undefined; // Use undefined instead of null for TypeScript compatibility
     
-    const verifiedFromDomain = "noreply@askedith.org";
-      
+    // Per user request: Use the user's inputted email as the FROM address
+    // This is what the user wants, though deliverability may be affected
+    
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
-      // Always use a verified domain in the from field for better deliverability
-      from: `${userInfo.fullName} <${verifiedFromDomain}>`,
-      // Store the user's actual email as replyTo if available
-      replyTo: userEmail,  
+      // Use the user's email as the FROM address, as requested
+      from: userEmail ? `${userInfo.fullName} <${userEmail}>` : `${userInfo.fullName} <no-email-provided@example.com>`,
+      // No need for replyTo when user's email is already the FROM address
+      // replyTo: userEmail,  
       subject: `Seeking ${category} assistance for my ${relationship}`,
       body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
     });
