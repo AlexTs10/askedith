@@ -123,10 +123,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { checkEmailServiceStatus, needsSendGridKey } = await import('./emailService');
       const status = await checkEmailServiceStatus();
       
-      // Check if we need to request SendGrid key
+      // Check if we need to request SendGrid key (now async)
+      const needsKey = await needsSendGridKey();
       const statusWithKey = {
         ...status,
-        needsSendGridKey: needsSendGridKey()
+        needsSendGridKey: needsKey
       };
       
       res.json(statusWithKey);
@@ -157,11 +158,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store the API key securely in our config
       await setSendGridApiKey(apiKey);
       
-      // Reinitialize the email service
-      const emailService = await import('./emailService');
+      // Set the API key in the environment for this session as well
+      process.env.SENDGRID_API_KEY = apiKey;
       
-      // Reload the email service to use the new key
-      await emailService.initializeSendGrid();
+      // Force reload the email service module
+      delete require.cache[require.resolve('./emailService')];
+      const emailService = await import('./emailService');
       
       // Check status after setting the key
       const status = await emailService.checkEmailServiceStatus();

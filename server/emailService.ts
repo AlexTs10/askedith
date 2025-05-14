@@ -364,8 +364,31 @@ export async function checkEmailServiceStatus(): Promise<{
   const queueStats = emailQueue.getStats();
   const providers = getAvailableProviders();
   
+  // Check both environment variable and config file
+  let sendgridAvailable = !!process.env.SENDGRID_API_KEY;
+  
+  if (!sendgridAvailable) {
+    try {
+      // Also check if SendGrid is configured in our config file
+      const configured = await isSendGridConfigured();
+      if (configured) {
+        const apiKey = await getSendGridApiKey();
+        sendgridAvailable = !!apiKey;
+        
+        // If key found in config but not in env, set it in env
+        if (sendgridAvailable && !process.env.SENDGRID_API_KEY) {
+          process.env.SENDGRID_API_KEY = apiKey;
+          // Initialize SendGrid with the key
+          sgMail.setApiKey(apiKey);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking SendGrid configuration:', error);
+    }
+  }
+  
   return {
-    sendgridAvailable: !!process.env.SENDGRID_API_KEY,
+    sendgridAvailable,
     nodemailerAvailable: false,
     queueEnabled: true,
     queueStats,
@@ -377,8 +400,24 @@ export async function checkEmailServiceStatus(): Promise<{
  * Add a check for SendGrid API key
  * Helper function to ask for API key if not present
  */
-export function needsSendGridKey(): boolean {
-  return !process.env.SENDGRID_API_KEY;
+export async function needsSendGridKey(): Promise<boolean> {
+  // First check environment variable
+  if (process.env.SENDGRID_API_KEY) {
+    return false;
+  }
+  
+  // Then check config file
+  try {
+    const configured = await isSendGridConfigured();
+    if (configured) {
+      const apiKey = await getSendGridApiKey();
+      return !apiKey;
+    }
+  } catch (error) {
+    console.error('Error checking SendGrid configuration:', error);
+  }
+  
+  return true;
 }
 
 export default { 
