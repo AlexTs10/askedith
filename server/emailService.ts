@@ -19,7 +19,7 @@ const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
 import { getSendGridApiKey, isSendGridConfigured } from './config';
 
 // Initialize SendGrid
-async function initializeSendGrid() {
+export async function initializeSendGrid() {
   try {
     // Check if SendGrid is configured
     const configured = await isSendGridConfigured();
