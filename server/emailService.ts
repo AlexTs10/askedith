@@ -237,20 +237,42 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     
     console.log('Using from email:', fromEmail);
     
-    // Use a verified sender domain that you've set up in SendGrid
-    // This MUST be an email that you've verified in SendGrid under "Sender Authentication"
+    // Use our verified sender domain that's been set up in SendGrid
+    // This MUST be exactly the email that was verified in SendGrid under "Sender Authentication"
     const verifiedSenderEmail = 'elias@secondactfs.com';
     
+    // Always use the verified sender - this is critical for deliverability
     console.log('Using verified sender email for SendGrid:', verifiedSenderEmail);
     
+    // Extract the name part from the fromEmail if available
+    let senderName = 'AskEdith';
+    if (fromEmail && fromEmail.includes('<') && fromEmail.includes('>')) {
+      const nameMatch = fromEmail.match(/(.*)<.*>/);
+      if (nameMatch && nameMatch[1]) {
+        senderName = nameMatch[1].trim();
+      }
+    }
+    
+    // Construct the message with the verified sender
     const msg = {
       to: testEmail, // Override with test email
-      from: verifiedSenderEmail, // Use a verified sender for testing
-      replyTo: data.from || data.replyTo, // Include user's email as reply-to 
+      from: {
+        email: verifiedSenderEmail, // Must be the verified sender
+        name: senderName // Display name can be customized
+      },
+      // User's actual email goes here so replies will go to them
+      replyTo: data.replyTo || (data.from?.includes('@') ? data.from : undefined),
       subject: `[TEST] ${data.subject}`,
-      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}\n\nFrom: ${fromEmail}`,
-      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em><br><br><em>From: ${fromEmail}</em>` // Simple HTML conversion
+      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
+      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` 
     };
+    
+    console.log('SendGrid email configuration:', {
+      to: msg.to,
+      from: msg.from,
+      replyTo: msg.replyTo,
+      subject: msg.subject
+    });
     
     await sgMail.send(msg);
     console.log('Email sent successfully via SendGrid');

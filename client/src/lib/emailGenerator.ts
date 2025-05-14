@@ -69,12 +69,33 @@ function extractUserInfo(answers: WizardAnswers) {
     fullName = `${firstName} ${lastName}`;
   }
   
+  // Final validation for email
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    console.warn('Invalid or missing email after all extraction attempts - will need fallback');
+    
+    // Try to get email from any other question text
+    for (const [key, value] of Object.entries(answers)) {
+      if (typeof value === 'string' && 
+          value.includes('@') && 
+          value.includes('.') &&
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(value)) {
+        console.log(`Found potential email in answer ${key}:`, value);
+        const matches = value.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+        if (matches && matches[0]) {
+          email = matches[0];
+          console.log('Extracted email from text:', email);
+          break;
+        }
+      }
+    }
+  }
+  
   console.log('Extracted user info:', { firstName, lastName, email, fullName });
   
   return {
     firstName,
     lastName,
-    email,
+    email: email || 'no-email-provided@example.com', // Ensure we have a valid email
     zipcode,
     phone,
     // Full name for display purposes
@@ -261,27 +282,30 @@ export function generateEmails(
     console.log('Generating email with userInfo:', userInfo);
     console.log('Email to be used as FROM:', userEmail);
     
-    // Per user request: Use the user's inputted email as the FROM address
-    // This is what the user wants, though deliverability may be affected
+    // SendGrid requires a verified sender domain/email
+    // We can't use the user's email directly in the From field,
+    // but we can use it as the Reply-To field
     
-    // Set from address as just the email or with formatting
-    let fromAddress = '';
-    if (userEmail) {
-      fromAddress = `${userInfo.fullName} <${userEmail}>`;
+    // Using our verified sender address (maintained by server)
+    const verifiedSender = 'elias@secondactfs.com';
+    
+    // Only use user email if it's valid, otherwise skip reply-to
+    let replyToEmail = undefined;
+    if (userEmail && userEmail.includes('@') && userEmail.includes('.')) {
+      replyToEmail = userEmail;
+      console.log('Using reply-to email:', replyToEmail);
     } else {
-      // Fallback
-      console.warn('No valid email provided in form, using fallback');
-      fromAddress = `${userInfo.fullName} <no-email-provided@example.com>`;
+      console.warn('No valid email for reply-to, skipping');
     }
     
-    console.log('Final FROM address:', fromAddress);
+    console.log('Final FROM address (verified sender):', `${userInfo.fullName} <${verifiedSender}>`);
     
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
-      // Use the user's email as the FROM address, as requested
-      from: fromAddress,
-      // No need for replyTo when user's email is already the FROM address
-      // replyTo: userEmail,  
+      // Use a verified sender domain for deliverability
+      from: `${userInfo.fullName} <${verifiedSender}>`,
+      // Set the reply-to as the user's email so replies go to them
+      replyTo: replyToEmail,
       subject: `Seeking ${category} assistance for my ${relationship}`,
       body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
     });
