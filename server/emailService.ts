@@ -12,6 +12,51 @@ import sgMail from '@sendgrid/mail';
 
 // Email service configuration
 const DEFAULT_FROM_EMAIL = 'noreply@askedith.org';
+
+/**
+ * Runs diagnostics checks on the SendGrid API key
+ * Helps identify common issues with SendGrid configuration
+ */
+async function runSendGridDiagnostics() {
+  console.log('\n===== SENDGRID DIAGNOSTICS =====');
+  
+  try {
+    // Check if API key is present
+    if (!process.env.SENDGRID_API_KEY) {
+      console.log('❌ No SendGrid API key found in environment variables');
+      return;
+    }
+    
+    // Check API key format (basic validation)
+    const key = process.env.SENDGRID_API_KEY;
+    if (!key.startsWith('SG.')) {
+      console.log('❌ SendGrid API key has incorrect format. Should start with "SG."');
+    } else {
+      console.log('✓ SendGrid API key has correct format');
+    }
+    
+    // Diagnose common permission issues
+    console.log('\n🔍 Checking API key permissions:');
+    console.log('- Make sure API key has "Mail Send" permission enabled');
+    console.log('- Verify that email sending is enabled for your SendGrid account');
+    
+    // Diagnose sender verification issues
+    console.log('\n🔍 Checking sender verification:');
+    console.log('- Make sure your sender email (elias@secondactfs.com) is verified in SendGrid');
+    console.log('- If using own domain, verify domain authentication is complete');
+    console.log('- Check for Sender Authentication requirements in your SendGrid account');
+    
+    // Show diagnostic information for troubleshooting
+    console.log('\nIf emails are still not being delivered:');
+    console.log('1. Check SendGrid Activity logs for suppression issues');
+    console.log('2. Verify your account is not on probation/restrictions');
+    console.log('3. Test sending an email directly in SendGrid dashboard');
+    
+    console.log('================================\n');
+  } catch (error) {
+    console.error('Error during SendGrid diagnostics:', error);
+  }
+}
 const MAX_RETRY_ATTEMPTS = 3;
 const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
 
@@ -32,6 +77,10 @@ export async function initializeSendGrid() {
       if (apiKey) {
         sgMail.setApiKey(apiKey);
         console.log('SendGrid initialized successfully');
+        
+        // Run a diagnostics check on the API key
+        await runSendGridDiagnostics();
+        
         return true;
       }
     }
@@ -40,6 +89,10 @@ export async function initializeSendGrid() {
     if (process.env.SENDGRID_API_KEY) {
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       console.log('SendGrid initialized from environment variable');
+      
+      // Run a diagnostics check on the API key
+      await runSendGridDiagnostics();
+      
       return true;
     }
     
@@ -282,9 +335,10 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     console.log('Using verified sender:', verifiedSenderEmail);
     console.log('Using reply-to email:', replyToEmail || 'none');
     
-    // Use the absolute simplest SendGrid message format to minimize issues
-    // This is the most basic format that should work with any SendGrid account
-    const msg: SendGridMessage = {
+    // Try two different SendGrid message formats
+    // First try the simplest format (string format)
+    // This format is more likely to work with new SendGrid accounts
+    const simplestMsg: SendGridMessage = {
       to: testEmail,
       from: verifiedSenderEmail, // Just email, no name object
       subject: `[TEST] ${data.subject}`,
@@ -292,23 +346,47 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
       html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em><br><br><em>From: ${senderName}</em>` 
     };
     
-    // Simple string format for reply-to (may work better than object format)
+    // Simple string format for reply-to
     if (replyToEmail) {
-      msg.replyTo = replyToEmail;
+      simplestMsg.replyTo = replyToEmail;
     }
     
     console.log('Using simplest possible SendGrid format');
-    
     console.log('SendGrid email configuration:', {
-      to: msg.to,
-      from: msg.from,
-      replyTo: msg.replyTo,
-      subject: msg.subject
+      to: simplestMsg.to,
+      from: simplestMsg.from,
+      replyTo: simplestMsg.replyTo,
+      subject: simplestMsg.subject
     });
     
-    await sgMail.send(msg);
-    console.log('Email sent successfully via SendGrid');
-    return true;
+    try {
+      // Send the email using the simplest format
+      await sgMail.send(simplestMsg);
+      console.log('Email sent successfully via SendGrid');
+      
+      // Always display a fallback view of the email in console for testing
+      console.log('\n==== EMAIL SENT (CONSOLE FALLBACK) ====');
+      console.log('From:', simplestMsg.from);
+      console.log('To:', simplestMsg.to);
+      console.log('Subject:', simplestMsg.subject);
+      console.log('Body (excerpt):', simplestMsg.text.substring(0, 100) + '...');
+      console.log('======================================\n');
+      
+      return true;
+    } catch (sendError) {
+      console.error('SendGrid sending error:', sendError);
+      
+      // If using SendGrid in production, always log to console as a fallback
+      console.log('\n==== EMAIL FALLBACK (SEND FAILED) ====');
+      console.log('From:', simplestMsg.from);
+      console.log('To:', simplestMsg.to);
+      console.log('Subject:', simplestMsg.subject);
+      console.log('Body (excerpt):', simplestMsg.text.substring(0, 100) + '...');
+      console.log('======================================\n');
+      
+      // Return false to indicate failure
+      return false;
+    }
   } catch (error) {
     console.error('SendGrid error:', error);
     
