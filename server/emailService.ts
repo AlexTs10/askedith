@@ -1,5 +1,5 @@
 /**
- * Email Service for AskCara
+ * Email Service for AskEdith
  * 
  * This service handles email sending with support for high volume processing.
  * In production, it will use SendGrid and a queue system to handle 40,000+ users/month.
@@ -11,7 +11,7 @@ import { type InsertEmailLog } from '@shared/schema';
 import sgMail from '@sendgrid/mail';
 
 // Email service configuration
-const DEFAULT_FROM_EMAIL = 'noreply@askcara.org';
+const DEFAULT_FROM_EMAIL = 'noreply@askedith.org';
 const MAX_RETRY_ATTEMPTS = 3;
 const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
 
