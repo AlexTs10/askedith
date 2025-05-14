@@ -71,6 +71,7 @@ export default function EmailPreview() {
       const emailData = {
         to: currentEmail.to,
         from: currentEmail.from,
+        replyTo: currentEmail.replyTo, // Include the reply-to field
         subject: emailSubject,
         body: emailBody
       };

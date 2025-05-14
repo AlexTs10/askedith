@@ -226,15 +226,21 @@ export function generateEmails(
     // TESTING MODE: Override all recipient emails with the test email
     const testEmail = "elias@secondactfs.com";
     
-    // Ensure we have a valid email in the from field, or use the default "noreply" address
-    const fromEmail = userInfo.email && userInfo.email.includes('@') 
+    // Get user's actual email from the input form
+    // Always use a verified domain (askedith.org) for the FROM field to ensure deliverability
+    // but set reply-to to the user's actual email so replies go to them
+    const userEmail = userInfo.email && userInfo.email.includes('@') 
       ? userInfo.email 
-      : "noreply@askedith.org";
+      : undefined; // Use undefined instead of null for TypeScript compatibility
+    
+    const verifiedFromDomain = "noreply@askedith.org";
       
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
-      // Include full name in the from field with a proper email address
-      from: `${userInfo.fullName} <${fromEmail}>`,
+      // Always use a verified domain in the from field for better deliverability
+      from: `${userInfo.fullName} <${verifiedFromDomain}>`,
+      // Store the user's actual email as replyTo if available
+      replyTo: userEmail,  
       subject: `Seeking ${category} assistance for my ${relationship}`,
       body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
     });

@@ -75,6 +75,7 @@ enum EmailPriority {
 export interface EmailData {
   to: string;
   from?: string; // Includes the sender's name and email
+  replyTo?: string; // User's actual email for replies
   subject: string;
   body: string;
   resourceId?: number;
@@ -221,6 +222,7 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     const msg = {
       to: testEmail, // Override with test email
       from: fromEmail,
+      replyTo: data.replyTo, // Include user's actual email as reply-to if available
       subject: `[TEST] ${data.subject}`,
       text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
       html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` // Simple HTML conversion
