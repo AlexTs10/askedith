@@ -176,11 +176,15 @@ const emailQueue = new EmailQueue();
 
 // Fallback for development/testing - just log to console
 async function sendWithFallback(data: EmailData): Promise<boolean> {
+  // TESTING MODE: Override recipient with test email (even in fallback mode)
+  const testEmail = "elias@secondactfs.com";
+  const originalRecipient = data.to;
+  
   console.log('==== EMAIL SENT (DEVELOPMENT MODE) ====');
   console.log(`From: ${data.from || DEFAULT_FROM_EMAIL}`);
-  console.log(`To: ${data.to}`);
-  console.log(`Subject: ${data.subject}`);
-  console.log(`Body: \n${data.body}`);
+  console.log(`To: ${testEmail} (Original: ${originalRecipient})`);
+  console.log(`Subject: [TEST] ${data.subject}`);
+  console.log(`Body: \n${data.body}\n\n[TEST MODE] Original recipient: ${originalRecipient}`);
   console.log('======================================');
   return true;
 }
@@ -193,12 +197,15 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
       return sendWithFallback(data);
     }
     
+    // TESTING MODE: Override recipient with test email
+    const testEmail = "elias@secondactfs.com";
+    
     const msg = {
-      to: data.to,
+      to: testEmail, // Override with test email
       from: data.from || DEFAULT_FROM_EMAIL,
-      subject: data.subject,
-      text: data.body,
-      html: data.body.replace(/\n/g, '<br>') // Simple HTML conversion
+      subject: `[TEST] ${data.subject}`,
+      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
+      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` // Simple HTML conversion
     };
     
     await sgMail.send(msg);

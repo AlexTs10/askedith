@@ -230,12 +230,15 @@ export function generateEmails(
     }
     
     // Create just ONE email template for the entire category
+    // TESTING MODE: Override all recipient emails with the test email
+    const testEmail = "elias@secondactfs.com";
+    
     emails.push({
-      to: templateResource.email,
+      to: testEmail, // Use the test email instead of actual provider email
       // Include full name in the from field, but also store the actual email for sending
       from: `${userInfo.fullName} <${userInfo.email}>`,
       subject: `Seeking ${category} assistance for my ${relationship}`,
-      body: emailBody
+      body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
     });
   });
   
