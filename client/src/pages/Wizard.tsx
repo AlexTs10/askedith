@@ -267,7 +267,8 @@ export default function Wizard() {
         if (selectedOptions.includes("Select All")) {
           // If "Select All" is selected, include all resource types except "Select All" itself
           // This ensures that the resources page receives all actual resource types
-          optionsToSave = options?.filter(opt => opt !== "Select All") || [];
+          const questionOptions = question.options || [];
+          optionsToSave = questionOptions.filter(option => option !== "Select All");
         }
       }
       
