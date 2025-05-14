@@ -15,10 +15,46 @@ const DEFAULT_FROM_EMAIL = 'noreply@askedith.org';
 const MAX_RETRY_ATTEMPTS = 3;
 const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
 
-// Initialize SendGrid if API key is available
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Import configuration module
+import { getSendGridApiKey, isSendGridConfigured } from './config';
+
+// Initialize SendGrid
+async function initializeSendGrid() {
+  try {
+    // Check if SendGrid is configured
+    const configured = await isSendGridConfigured();
+    
+    if (configured) {
+      // Load the API key from config
+      const apiKey = await getSendGridApiKey();
+      
+      // Set the API key
+      if (apiKey) {
+        sgMail.setApiKey(apiKey);
+        console.log('SendGrid initialized successfully');
+        return true;
+      }
+    }
+    
+    // Also check environment variable as fallback
+    if (process.env.SENDGRID_API_KEY) {
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      console.log('SendGrid initialized from environment variable');
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error initializing SendGrid:', error);
+    return false;
+  }
 }
+
+// Initialize SendGrid on module load
+let sendgridInitialized = false;
+initializeSendGrid().then(result => {
+  sendgridInitialized = result;
+});
 
 // Email Providers - providing multiple fallbacks for reliability
 enum EmailProvider {

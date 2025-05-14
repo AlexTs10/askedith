@@ -151,12 +151,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // In a real implementation, we would securely store this key
-      // For development, we just set it in the environment
-      process.env.SENDGRID_API_KEY = apiKey;
+      // Import config module
+      const { setSendGridApiKey } = await import('./config');
+      
+      // Store the API key securely in our config
+      await setSendGridApiKey(apiKey);
       
       // Reinitialize the email service
       const emailService = await import('./emailService');
+      
+      // Reload the email service to use the new key
+      await emailService.initializeSendGrid();
       
       // Check status after setting the key
       const status = await emailService.checkEmailServiceStatus();
