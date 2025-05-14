@@ -191,6 +191,16 @@ async function sendWithFallback(data: EmailData): Promise<boolean> {
 }
 
 // SendGrid implementation
+// Define interface for SendGrid message to handle optional properties
+interface SendGridMessage {
+  to: string;
+  from: string;
+  subject: string;
+  text: string;
+  html: string;
+  replyTo?: string;
+}
+
 async function sendWithSendGrid(data: EmailData): Promise<boolean> {
   try {
     if (!process.env.SENDGRID_API_KEY) {
@@ -272,26 +282,22 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     console.log('Using verified sender:', verifiedSenderEmail);
     console.log('Using reply-to email:', replyToEmail || 'none');
     
-    // Build message using the NodeJS SendGrid client format
-    // This format is different from the raw API format but works with the library
-    const msg = {
+    // Use the absolute simplest SendGrid message format to minimize issues
+    // This is the most basic format that should work with any SendGrid account
+    const msg: SendGridMessage = {
       to: testEmail,
-      from: {
-        email: verifiedSenderEmail,
-        name: senderName
-      },
+      from: verifiedSenderEmail, // Just email, no name object
       subject: `[TEST] ${data.subject}`,
-      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
-      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` 
+      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}\n\nFrom: ${senderName}`,
+      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em><br><br><em>From: ${senderName}</em>` 
     };
     
-    // Add reply-to if available
+    // Simple string format for reply-to (may work better than object format)
     if (replyToEmail) {
-      msg.replyTo = {
-        email: replyToEmail,
-        name: senderName
-      };
+      msg.replyTo = replyToEmail;
     }
+    
+    console.log('Using simplest possible SendGrid format');
     
     console.log('SendGrid email configuration:', {
       to: msg.to,
