@@ -92,10 +92,13 @@ function extractUserInfo(answers: WizardAnswers) {
   
   console.log('Extracted user info:', { firstName, lastName, email, fullName });
   
+  // Important: For the "from" field, we must use a verified email
+  // When no email is provided by the user, use our official email instead
+  // of a placeholder that could cause SendGrid to reject the message
   return {
     firstName,
     lastName,
-    email: email || 'no-email-provided@example.com', // Ensure we have a valid email
+    email: email || 'elias@secondactfs.com', // Use a verified email as fallback
     zipcode,
     phone,
     // Full name for display purposes
@@ -298,12 +301,18 @@ export function generateEmails(
       console.warn('No valid email for reply-to, skipping');
     }
     
-    console.log('Final FROM address (verified sender):', `${userInfo.fullName} <${verifiedSender}>`);
+    // IMPORTANT: Always use a consistent FROM format that uses a verified sender domain
+    // This is critical for deliverability with SendGrid
+    const fromName = "AskEdith"; // Always use a consistent sender name for better deliverability
+    const fromAddress = `${fromName} <${verifiedSender}>`;
+    
+    console.log('Final FROM address (verified sender):', fromAddress);
+    console.log('Reply-To email (if available):', replyToEmail || 'none');
     
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
-      // Use a verified sender domain for deliverability
-      from: `${userInfo.fullName} <${verifiedSender}>`,
+      // Always use a verified sender domain for deliverability
+      from: fromAddress,
       // Set the reply-to as the user's email so replies go to them
       replyTo: replyToEmail,
       subject: `Seeking ${category} assistance for my ${relationship}`,
