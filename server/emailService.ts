@@ -237,13 +237,19 @@ async function sendWithSendGrid(data: EmailData): Promise<boolean> {
     
     console.log('Using from email:', fromEmail);
     
+    // Use a verified sender domain that you've set up in SendGrid
+    // This MUST be an email that you've verified in SendGrid under "Sender Authentication"
+    const verifiedSenderEmail = 'elias@secondactfs.com';
+    
+    console.log('Using verified sender email for SendGrid:', verifiedSenderEmail);
+    
     const msg = {
       to: testEmail, // Override with test email
-      from: fromEmail,
-      replyTo: data.replyTo, // Include user's actual email as reply-to if available
+      from: verifiedSenderEmail, // Use a verified sender for testing
+      replyTo: data.from || data.replyTo, // Include user's email as reply-to 
       subject: `[TEST] ${data.subject}`,
-      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}`,
-      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em>` // Simple HTML conversion
+      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}\n\nFrom: ${fromEmail}`,
+      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em><br><br><em>From: ${fromEmail}</em>` // Simple HTML conversion
     };
     
     await sgMail.send(msg);
