@@ -24,8 +24,14 @@ function extractUserInfo(answers: WizardAnswers) {
         email = contactInfo.email || '';
         zipcode = contactInfo.zipcode || '';
         phone = contactInfo.phone || '';
+        
+        // Additional logging to debug email extraction
+        console.log('Extracted email from contact info:', email);
       }
     }
+    
+    // Log the result
+    console.log('Final email extracted:', email);
   } catch (e) {
     console.error("Error parsing contact information:", e);
   }
@@ -231,13 +237,29 @@ export function generateEmails(
       ? userInfo.email 
       : undefined; // Use undefined instead of null for TypeScript compatibility
     
+    // Debug log to help diagnose issues
+    console.log('Generating email with userInfo:', userInfo);
+    console.log('Email to be used as FROM:', userEmail);
+    
     // Per user request: Use the user's inputted email as the FROM address
     // This is what the user wants, though deliverability may be affected
+    
+    // Set from address as just the email or with formatting
+    let fromAddress = '';
+    if (userEmail) {
+      fromAddress = `${userInfo.fullName} <${userEmail}>`;
+    } else {
+      // Fallback
+      console.warn('No valid email provided in form, using fallback');
+      fromAddress = `${userInfo.fullName} <no-email-provided@example.com>`;
+    }
+    
+    console.log('Final FROM address:', fromAddress);
     
     emails.push({
       to: testEmail, // Use the test email instead of actual provider email
       // Use the user's email as the FROM address, as requested
-      from: userEmail ? `${userInfo.fullName} <${userEmail}>` : `${userInfo.fullName} <no-email-provided@example.com>`,
+      from: fromAddress,
       // No need for replyTo when user's email is already the FROM address
       // replyTo: userEmail,  
       subject: `Seeking ${category} assistance for my ${relationship}`,
