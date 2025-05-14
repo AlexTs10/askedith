@@ -112,7 +112,7 @@ export const wizardQuestions: Question[] = [
   { 
     id: 9, 
     text: "Health conditions of concern", 
-    type: "text", 
+    type: "textarea", 
     required: true, 
     placeholder: "List any major health concerns",
     category: "health" 
@@ -120,7 +120,7 @@ export const wizardQuestions: Question[] = [
   { 
     id: 10, 
     text: "Financial situation (Select all that apply)", 
-    type: "radio", 
+    type: "checkbox_group", 
     required: true, 
     options: [
       "Own a home", 
@@ -197,6 +197,7 @@ export const wizardQuestions: Question[] = [
     type: "checkbox_group", 
     required: true, 
     options: [
+      "Select All",
       "Veteran Benefits specialists", 
       "Aging Life Care Professionals", 
       "Home Care Companies", 
