@@ -50,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email sending endpoint
   app.post("/api/send-email", async (req, res) => {
     try {
-      const { to, subject, body, priority, from, resourceId, questionnaireId, userId } = req.body;
+      const { to, subject, body, priority, from, replyTo, resourceId, questionnaireId, userId } = req.body;
       
       if (!to || !subject || !body) {
         return res.status(400).json({ message: "Missing required email fields" });
@@ -65,6 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subject, 
         body,
         from,
+        replyTo, // Include replyTo field for proper email configuration
         resourceId,
         questionnaireId,
         userId,
@@ -97,6 +98,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!email.to || !email.subject || !email.body) {
           return res.status(400).json({ message: "All emails require to, subject, and body fields" });
         }
+        // Ensure replyTo is passed through if available
+        email.replyTo = email.replyTo || undefined;
       }
       
       // Import the email service
