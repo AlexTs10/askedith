@@ -205,8 +205,8 @@ export default function Results() {
         <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">
           <span>A</span>
           <span style={{ fontSize: 'calc(100% - 2pt)' }}>sk</span>
-          <span>C</span>
-          <span style={{ fontSize: 'calc(100% - 2pt)' }}>ara</span>
+          <span>E</span>
+          <span style={{ fontSize: 'calc(100% - 2pt)' }}>dith</span>
         </h1>
         <p className="text-2xl md:text-3xl text-gray-600 font-light mb-2">Share Once. Reach Many.</p>
       </div>
