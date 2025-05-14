@@ -57,7 +57,7 @@ export default function ApiSecretChecker({ children }: ApiSecretCheckerProps) {
           <DialogHeader className="p-6 pb-0">
             <DialogTitle>Email Service Setup Required</DialogTitle>
             <DialogDescription>
-              AskCara needs to configure SendGrid to send emails to care providers.
+              AskEdith needs to configure SendGrid to send emails to care providers.
             </DialogDescription>
           </DialogHeader>
           

@@ -22,8 +22,8 @@ export default function Confirmation() {
         <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">
           <span>A</span>
           <span style={{ fontSize: 'calc(100% - 2pt)' }}>sk</span>
-          <span>C</span>
-          <span style={{ fontSize: 'calc(100% - 2pt)' }}>ara</span>
+          <span>E</span>
+          <span style={{ fontSize: 'calc(100% - 2pt)' }}>dith</span>
         </h1>
         <p className="text-2xl md:text-3xl text-gray-600 font-light mb-2">Share Once. Reach Many.</p>
       </div>
@@ -73,7 +73,7 @@ export default function Confirmation() {
               </div>
               
               <p className="text-gray-600 mb-8">
-                Thank you for using AskCara. Check your email for a confirmation and summary of your requests.
+                Thank you for using AskEdith. Check your email for a confirmation and summary of your requests.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

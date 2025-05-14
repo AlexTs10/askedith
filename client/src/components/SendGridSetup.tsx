@@ -69,7 +69,7 @@ export default function SendGridSetup({ onSuccess }: SendGridSetupProps) {
           <CardTitle className="text-amber-800">SendGrid API Setup</CardTitle>
         </div>
         <CardDescription>
-          Configure your SendGrid API key to enable email sending for AskCara
+          Configure your SendGrid API key to enable email sending for AskEdith
         </CardDescription>
       </CardHeader>
       
