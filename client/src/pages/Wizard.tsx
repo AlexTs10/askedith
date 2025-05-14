@@ -476,7 +476,18 @@ export default function Wizard() {
   const updateContactInfo = (field: string, value: string) => {
     const updatedData = { ...contactFormData, [field]: value };
     setContactFormData(updatedData);
+    
+    // Store in the form
     setValue('answer', JSON.stringify(updatedData));
+    
+    // Log for debugging
+    console.log(`Contact field "${field}" updated with value "${value}"`);
+    console.log('Updated contact data:', updatedData);
+    
+    // Also update wizard state directly to ensure it's saved
+    const updatedAnswers = {...state.answers};
+    updatedAnswers[`q${currentStep}`] = JSON.stringify(updatedData);
+    updateState({...state, answers: updatedAnswers});
   };
   
   // Render form input based on question type

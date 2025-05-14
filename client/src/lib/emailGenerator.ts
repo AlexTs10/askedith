@@ -27,7 +27,27 @@ function extractUserInfo(answers: WizardAnswers) {
         
         // Additional logging to debug email extraction
         console.log('Extracted email from contact info:', email);
+        
+        // Extra validation for email
+        if (!email || !email.includes('@')) {
+          console.warn('Invalid email format found in contact info:', email);
+          
+          // Look for any field that might contain an email (sometimes users put email in phone field)
+          for (const key of Object.keys(contactInfo)) {
+            if (typeof contactInfo[key] === 'string' && 
+                contactInfo[key].includes('@') && 
+                contactInfo[key].includes('.')) {
+              console.log(`Found potential email in ${key} field:`, contactInfo[key]);
+              email = contactInfo[key];
+              break;
+            }
+          }
+        }
+      } else {
+        console.warn('Contact info does not start with {, raw data:', answers.q14);
       }
+    } else {
+      console.warn('No q14 data available or not a string:', answers.q14);
     }
     
     // Log the result
