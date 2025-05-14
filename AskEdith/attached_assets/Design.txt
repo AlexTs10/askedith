@@ -1,0 +1,69 @@
+Here's a comprehensive design guide for recreating the AskCara application's aesthetic:
+AskCara Design Guide
+Color Palette
+
+Main Colors:
+
+    Primary teal: #14b8a6 (teal-600)
+    Light background gradient: from-amber-50 to-white
+    Text colors:
+        Headers: text-teal-600
+        Secondary text: text-gray-600
+        Button text: text-white (on teal buttons)
+
+Typography
+
+Font Families:
+
+    Headers and titles: font-serif (Playfair Display)
+    Body text: System font stack (sans-serif)
+    Font sizes:
+        Main title: text-5xl md:text-6xl
+        Section headers: text-3xl
+        Feature card titles: text-xl
+        Body text: text-2xl (tagline), text-lg (standard)
+
+Component Styling
+
+Buttons:
+
+    Primary buttons: bg-teal-600 hover:bg-teal-700 text-white
+    Secondary buttons: border-teal-600 text-teal-600 hover:bg-teal-50
+    Call-to-action button: px-8 py-6 rounded-full
+    Standard buttons: Default rounded corners (shadcn/ui default)
+
+Cards:
+
+    Feature cards: bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100
+
+Questionnaire Design
+
+Layout:
+
+    Single-question format with progress indicator
+    Clean card container with subtle shadow
+    Full-width layout on mobile, constrained width on desktop (max-w-2xl)
+
+Questionnaire Elements:
+
+    Question card: border-gray-100 shadow-sm with white background
+    Progress bar: Teal color (bg-teal-600) on light gray background
+    Input fields: Standard with focus state focus:ring-teal-500
+    Navigation buttons at footer: Same styling as home page buttons
+    Question title: Same teal serif font as main page headers
+
+Questionnaire Flow:
+
+    Questions appear one at a time
+    Email question is specifically positioned as the last question (#15)
+    Clear progress indicator showing completion percentage
+    Previous/Next navigation with appropriate button styling
+
+General Design Principles
+
+    Elegant serif font for branding and headers
+    Warm, light background with teal accents
+    Consistent rounded corners and subtle shadows
+    Responsive design that works across device sizes
+    Clean, minimal interface with appropriate spacing
+    Subtle hover effects for interactive elements
