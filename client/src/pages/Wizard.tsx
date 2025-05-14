@@ -260,8 +260,19 @@ export default function Wizard() {
         return;
       }
       
+      // Process special "Select All" option for question #15
+      let optionsToSave = [...selectedOptions];
+      
+      if (currentStep === 15) {
+        if (selectedOptions.includes("Select All")) {
+          // If "Select All" is selected, include all resource types except "Select All" itself
+          // This ensures that the resources page receives all actual resource types
+          optionsToSave = options?.filter(opt => opt !== "Select All") || [];
+        }
+      }
+      
       // Store as JSON array
-      answerValue = JSON.stringify(selectedOptions);
+      answerValue = JSON.stringify(optionsToSave);
     }
     // Validate contact info if applicable
     else if (question.type === 'contact_info') {
@@ -543,39 +554,81 @@ export default function Wizard() {
               </div>
             )}
             
-            <div className="space-y-3">
-              {options?.map((option) => (
-                <div 
-                  key={option} 
-                  className={`flex items-start space-x-3 p-3 rounded-md border transition-all duration-150 
-                  ${selectedOptions.includes(option) 
-                    ? 'border-primary/40 bg-primary/5' 
-                    : 'border-border hover:border-border/80 hover:bg-accent/50'}`}
+            {/* Skip the Next button for question #10 */}
+            {currentStep === 10 && (
+              <div className="mb-4 flex justify-end">
+                <Button
+                  type="button"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 text-sm"
+                  onClick={() => handleSubmit(onSubmit)()}
                 >
-                  <Checkbox 
-                    id={`checkbox-${option}`}
-                    checked={selectedOptions.includes(option)} 
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedOptions(prev => [...prev, option]);
-                      } else {
-                        setSelectedOptions(prev => prev.filter(item => item !== option));
-                      }
-                    }}
-                    className="mt-1"
-                  />
-                  <Label 
-                    htmlFor={`checkbox-${option}`} 
-                    className="text-base cursor-pointer flex-1"
-                    onClick={(e) => {
-                      // Prevent bubbling to avoid double toggling
-                      e.stopPropagation();
-                    }}
+                  Continue to Next Question
+                </Button>
+              </div>
+            )}
+            
+            <div className="space-y-3">
+              {options?.map((option) => {
+                // Handle "Select All" option specially for question #15
+                const isSelectAll = currentStep === 15 && option === "Select All";
+                
+                return (
+                  <div 
+                    key={option} 
+                    className={`flex items-start space-x-3 p-3 rounded-md border transition-all duration-150 
+                    ${selectedOptions.includes(option) 
+                      ? 'border-primary/40 bg-primary/5' 
+                      : 'border-border hover:border-border/80 hover:bg-accent/50'}
+                    ${isSelectAll ? 'bg-teal-50 border-teal-200' : ''}`}
                   >
-                    {option}
-                  </Label>
-                </div>
-              ))}
+                    <Checkbox 
+                      id={`checkbox-${option}`}
+                      checked={selectedOptions.includes(option)} 
+                      onCheckedChange={(checked) => {
+                        if (isSelectAll && checked) {
+                          // If "Select All" is checked, select all options
+                          setSelectedOptions(options || []);
+                        } else if (isSelectAll && !checked) {
+                          // If "Select All" is unchecked, clear all selections
+                          setSelectedOptions([]);
+                        } else if (checked) {
+                          // For regular options, add them to selection
+                          setSelectedOptions(prev => [...prev, option]);
+                          
+                          // If all regular options are now selected, also check "Select All"
+                          if (currentStep === 15) {
+                            const regularOptions = options?.filter(opt => opt !== "Select All") || [];
+                            const willSelectAll = [...selectedOptions, option].length === regularOptions.length;
+                            
+                            if (willSelectAll && !selectedOptions.includes("Select All")) {
+                              setSelectedOptions(prev => [...prev, option, "Select All"]);
+                            }
+                          }
+                        } else {
+                          // For regular options being unchecked, remove them
+                          setSelectedOptions(prev => prev.filter(item => item !== option));
+                          
+                          // Also uncheck "Select All" if it was checked
+                          if (currentStep === 15 && selectedOptions.includes("Select All")) {
+                            setSelectedOptions(prev => prev.filter(item => item !== "Select All" && item !== option));
+                          }
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <Label 
+                      htmlFor={`checkbox-${option}`} 
+                      className={`text-base cursor-pointer flex-1 ${isSelectAll ? 'font-semibold' : ''}`}
+                      onClick={(e) => {
+                        // Prevent bubbling to avoid double toggling
+                        e.stopPropagation();
+                      }}
+                    >
+                      {option}
+                    </Label>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
