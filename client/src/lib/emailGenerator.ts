@@ -64,6 +64,37 @@ function extractUserInfo(answers: WizardAnswers) {
 }
 
 /**
+ * Helper function to parse JSON array values from answers
+ * Converts ["Option 1","Option 2"] to "Option 1 and Option 2"
+ */
+function parseArrayAnswer(answer: string): string {
+  try {
+    if (answer && typeof answer === 'string') {
+      // Handle array format
+      if (answer.startsWith('[')) {
+        const options = JSON.parse(answer);
+        if (options.length === 0) {
+          return '';
+        } else if (options.length === 1) {
+          return options[0];
+        } else if (options.length === 2) {
+          return `${options[0]} and ${options[1]}`;
+        } else {
+          // Format list with Oxford comma
+          const lastOption = options[options.length - 1];
+          const otherOptions = options.slice(0, options.length - 1);
+          return `${otherOptions.join(', ')}, and ${lastOption}`;
+        }
+      }
+    }
+    return answer;
+  } catch (e) {
+    console.error('Error parsing array answer:', e);
+    return answer;
+  }
+}
+
+/**
  * Generates an email body based on the resource and user answers
  */
 export function generateEmailBody(resource: Resource, answers: WizardAnswers): string {
@@ -73,24 +104,65 @@ export function generateEmailBody(resource: Resource, answers: WizardAnswers): s
   // Get relationship from q3
   const relation = answers.q3 ? answers.q3.toLowerCase() : 'parent';
   
-  // Get other information from answers for a more conversational email
-  const livingArrangement = answers.q4 || '';
-  const mainConcern = answers.q5 || '';
+  // Parse and format the living arrangement (q4)
+  let livingArrangement = '';
+  try {
+    if (answers.q4) {
+      const parsedLiving = parseArrayAnswer(answers.q4);
+      livingArrangement = parsedLiving ? parsedLiving.toLowerCase() : '';
+    }
+  } catch (e) {
+    console.error('Error parsing living arrangement:', e);
+    livingArrangement = answers.q4 || '';
+  }
+  
+  // Parse and format the main concerns (q5)
+  let mainConcerns = '';
+  try {
+    if (answers.q5) {
+      const parsedConcerns = parseArrayAnswer(answers.q5);
+      mainConcerns = parsedConcerns ? parsedConcerns : '';
+    }
+  } catch (e) {
+    console.error('Error parsing main concerns:', e);
+    mainConcerns = answers.q5 || '';
+  }
+  
+  // Parse the financial situation (q10)
+  let financialSituation = '';
+  try {
+    if (answers.q10) {
+      const parsedFinances = parseArrayAnswer(answers.q10);
+      financialSituation = parsedFinances ? parsedFinances : '';
+    }
+  } catch (e) {
+    console.error('Error parsing financial situation:', e);
+    financialSituation = answers.q10 || '';
+  }
+  
+  // Get other information
+  const careLevel = answers.q6 || '';
   const budget = answers.q7 || '';
   const timeline = answers.q8 || '';
   const healthConditions = answers.q9 || '';
-  const hasVeteranStatus = answers.q11 === 'Yes' ? true : false;
+  const hasVeteranStatus = answers.q11 === 'Yes';
+  const familyInvolvement = answers.q12 || '';
+  const additionalInfo = answers.q13 || '';
 
   // Create a more conversational, human-sounding email
   return `Hi ${resource.name},
 
 I hope this email finds you well. My name is ${userInfo.fullName}, and I'm reaching out because I'm currently caring for my ${relation} who needs some additional support.
 
-I came across your ${resource.category} services and believe you might be able to help us. My ${relation} is currently ${livingArrangement.toLowerCase()}, and we're primarily concerned about ${mainConcern.toLowerCase()}. 
+I came across your ${resource.category} services and believe you might be able to help us. My ${relation} is currently living ${livingArrangement ? `in a ${livingArrangement} situation` : 'at home'}. We're looking for ${careLevel ? `${careLevel.toLowerCase()} level of care` : 'assistance'} ${timeline ? `within a ${timeline.toLowerCase()} timeframe` : 'soon'}.
 
-${hasVeteranStatus ? `I should mention that my ${relation} has served in the military, if that's relevant to available services. ` : ''}${healthConditions ? `We're also managing some health issues, specifically ${healthConditions.toLowerCase()}.` : ''}
+Our main concerns include ${mainConcerns ? mainConcerns.toLowerCase() : 'various care needs'}. ${healthConditions ? `We're also managing health issues including ${healthConditions}.` : ''}${hasVeteranStatus ? ` I should mention that my ${relation} has served in the military, which may be relevant to available services.` : ''}
 
-In terms of timing, we're looking for assistance ${timeline.toLowerCase()} and have a monthly budget of approximately ${budget}. 
+${financialSituation ? `Regarding finances, we ${financialSituation.toLowerCase()}.` : ''}${budget ? ` Our monthly budget for care is approximately ${budget}.` : ''}
+
+${familyInvolvement ? `In terms of family support, ${familyInvolvement}` : ''}
+
+${additionalInfo ? `Additional information that might be helpful: ${additionalInfo}` : ''}
 
 Would it be possible to schedule a brief call to discuss how your services might fit our needs? I'm available most days and can adjust my schedule to accommodate yours.
 

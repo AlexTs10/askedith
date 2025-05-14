@@ -596,8 +596,8 @@ export default function Wizard() {
                           setSelectedOptions(prev => [...prev, option]);
                           
                           // If all regular options are now selected, also check "Select All"
-                          if (currentStep === 15) {
-                            const regularOptions = options?.filter(opt => opt !== "Select All") || [];
+                          if (currentStep === 15 && Array.isArray(question.options)) {
+                            const regularOptions = question.options.filter((opt: string) => opt !== "Select All") || [];
                             const willSelectAll = [...selectedOptions, option].length === regularOptions.length;
                             
                             if (willSelectAll && !selectedOptions.includes("Select All")) {
