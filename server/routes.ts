@@ -165,6 +165,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       delete require.cache[require.resolve('./emailService')];
       const emailService = await import('./emailService');
       
+      // Reinitialize the email service with the new key
+      await emailService.initializeSendGrid();
+      
       // Check status after setting the key
       const status = await emailService.checkEmailServiceStatus();
       

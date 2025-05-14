@@ -425,5 +425,6 @@ export default {
   sendBatchEmails, 
   checkEmailServiceStatus,
   needsSendGridKey,
+  initializeSendGrid, // Add this function to exports
   EmailPriority // Export the enum too
 };
