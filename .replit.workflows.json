@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Start AskEdith",
+    "command": "cd AskEdith && npm run dev",
+    "restartOn": {
+      "files": ["AskEdith/**"],
+      "fileIgnoreGlobs": ["**/*.md", "**/*.log"]
+    }
+  }
+]
