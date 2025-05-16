@@ -17,8 +17,9 @@ const API_BASE_URL = 'https://api.nylas.com';
  */
 export function generateAuthUrl(email) {
   try {
-    // Get credentials from environment variables
-    const clientId = process.env.NYLAS_CLIENT_ID;
+    // Use the exact client ID provided by the user
+    // Using this directly instead of environment variable to ensure correct format
+    const clientId = '12acd056-2644-46b2-9199-5d7fdcf9a86b';
     
     // This must match exactly what's registered in the Nylas dashboard
     const redirectUri = 'https://askcara-project.elias18.repl.co/callback';
@@ -55,7 +56,8 @@ export function generateAuthUrl(email) {
  */
 export async function exchangeCodeForToken(code) {
   try {
-    const clientId = process.env.NYLAS_CLIENT_ID;
+    // Use exact credentials to ensure correct format
+    const clientId = '12acd056-2644-46b2-9199-5d7fdcf9a86b';
     const clientSecret = process.env.NYLAS_CLIENT_SECRET;
     const redirectUri = 'https://askcara-project.elias18.repl.co/callback';
     
