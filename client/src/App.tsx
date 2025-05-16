@@ -21,6 +21,7 @@ function Router() {
       <Route path="/wizard/:step?" component={Wizard} />
       <Route path="/results" component={Results} />
       <Route path="/email-preview/:index?" component={EmailPreview} />
+      <Route path="/callback" component={Callback} />
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/printable" component={PrintableResults} />

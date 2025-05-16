@@ -252,16 +252,29 @@ export async function createFolderStructure(accessToken) {
  */
 export async function sendEmailWithNylas(accessToken, emailData, category) {
   try {
+    // Get account info to use as the from address
+    const account = await getAccount(accessToken);
+    
     // Build draft content
     const draftData = {
       subject: emailData.subject,
       to: [{ email: emailData.to, name: '' }],
       body: emailData.body,
+      from: [{ 
+        // Use the user's actual email (from their connected account)
+        email: account.email_address,
+        name: emailData.fromName || '' 
+      }]
     };
     
     if (emailData.replyTo) {
       draftData.reply_to = [{ email: emailData.replyTo, name: '' }];
     }
+    
+    console.log('Sending email with Nylas using account:', {
+      email: account.email_address,
+      provider: account.provider
+    });
     
     // Send the email
     const message = await nylasRequest(accessToken, '/send', 'POST', draftData);
