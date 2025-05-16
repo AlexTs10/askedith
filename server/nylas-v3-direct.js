@@ -7,10 +7,10 @@
 
 import fetch from 'node-fetch';
 
-// Nylas API constants
-const NYLAS_API_URI = 'https://api.nylas.com';
-const NYLAS_AUTH_URI = `${NYLAS_API_URI}/oauth/authorize`;
-const NYLAS_TOKEN_URI = `${NYLAS_API_URI}/oauth/token`;
+// Nylas API constants - updated based on Nylas Support recommendation
+const NYLAS_API_URI = 'https://api.us.nylas.com/v3';
+const NYLAS_AUTH_URI = 'https://api.nylas.com/oauth/authorize'; // Auth still uses old endpoint
+const NYLAS_TOKEN_URI = 'https://api.nylas.com/oauth/token'; // Token exchange still uses old endpoint
 const NYLAS_CLIENT_ID = '12acd056-2644-46b2-9199-5d7fdcf9a86b'; // Using direct client ID
 const NYLAS_CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET;
 const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
