@@ -32,8 +32,8 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
  */
 export function generateAuthUrl(email, redirectUri) {
   try {
-    // Use the registered callback URI from Nylas dashboard
-    const registeredRedirectUri = 'http://localhost:3000/callback';
+    // Use the current host for the redirect URI
+    const currentHost = redirectUri || 'http://localhost:3000/callback';
     
     // Ensure the scope format is correct - use space-separated scopes instead of comma-separated
     const scopes = 'email.modify email.send';
@@ -41,7 +41,7 @@ export function generateAuthUrl(email, redirectUri) {
     url.searchParams.append('client_id', process.env.NYLAS_CLIENT_ID);
     url.searchParams.append('response_type', 'code');
     url.searchParams.append('scopes', scopes);
-    url.searchParams.append('redirect_uri', registeredRedirectUri);
+    url.searchParams.append('redirect_uri', currentHost);
     url.searchParams.append('login_hint', email);
     
     console.log('Generated Nylas auth URL:', url.toString());

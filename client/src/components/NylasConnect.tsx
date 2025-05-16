@@ -57,13 +57,33 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
     },
   });
 
-  // Handle form submission
+  // Handle form submission - will start the OAuth flow
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     
     try {
-      // Instead of OAuth flow, we'll store the email for personalized messaging
-      const response = await fetch('/api/store-user-email', {
+      // Request a Nylas OAuth URL for the provided email
+      const response = await fetch('/api/nylas/auth-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email: data.email,
+          // Use the current URL (origin) to build a callback URL
+          redirectUri: `${window.location.origin}/callback`
+        }),
+      });
+      
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || 'Failed to generate authorization URL');
+      }
+      
+      const { authUrl } = await response.json();
+      
+      // Also store the email for personalized messaging as a backup
+      await fetch('/api/store-user-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,27 +91,22 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
         body: JSON.stringify({ email: data.email }),
       });
       
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || 'Failed to store email preference');
-      }
-      
-      // Set as connected for the UI
-      setIsConnected(true);
+      // Close the dialog
       setIsOpen(false);
       
+      // Open the Nylas authorization page in a new window
+      window.open(authUrl, '_blank', 'width=800,height=600');
+      
       toast({
-        title: 'Email Preference Saved',
-        description: 'Your emails will be personalized with your address as the reply-to contact.',
+        title: 'Email Connection Started',
+        description: 'Please complete the authorization in the new window to connect your email account.',
       });
       
-      // Call the onConnect callback if provided
-      if (onConnect) onConnect();
     } catch (error) {
-      console.error('Error setting email preference:', error);
+      console.error('Error starting email connection:', error);
       toast({
-        title: 'Update Error',
-        description: 'Failed to save your email preference. Please try again.',
+        title: 'Connection Error',
+        description: 'Failed to start the email connection process. Please try again.',
         variant: 'destructive',
       });
     } finally {
