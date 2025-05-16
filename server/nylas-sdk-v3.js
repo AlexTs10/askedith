@@ -61,8 +61,9 @@ export function generateNylasAuthUrl(email) {
     
     // Add provider-specific parameters
     if (isGmail) {
-      // Use the provided Google Cloud Client ID
+      // Use the provided Google Cloud OAuth credentials
       const GOOGLE_CLIENT_ID = "1044417285008-shes6p79lclto98shfbhminm8ki557fm.apps.googleusercontent.com";
+      const GOOGLE_CLIENT_SECRET = "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";
       
       // Gmail requires specific scopes and parameters
       authConfig.scope = [
@@ -73,8 +74,9 @@ export function generateNylasAuthUrl(email) {
       authConfig.prompt = 'consent';
       authConfig.access_type = 'offline';
       authConfig.googleClientId = GOOGLE_CLIENT_ID;
+      authConfig.googleClientSecret = GOOGLE_CLIENT_SECRET;
       
-      console.log('Using Google Client ID for authentication:', GOOGLE_CLIENT_ID);
+      console.log('Using Google OAuth credentials for authentication');
     }
     
     // Generate the OAuth URL with the appropriate configuration
@@ -99,13 +101,26 @@ export async function exchangeCodeForToken(code) {
     
     console.log('Exchanging code for token using Nylas SDK');
     
+    // Google OAuth credentials
+    const GOOGLE_CLIENT_ID = "1044417285008-shes6p79lclto98shfbhminm8ki557fm.apps.googleusercontent.com";
+    const GOOGLE_CLIENT_SECRET = "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";
+    
     // Exchange the authorization code for a grant ID
-    const response = await nylasClient.auth.exchangeCodeForToken({
+    const exchangeParams = {
       clientId: NYLAS_CLIENT_ID,
       clientSecret: NYLAS_CLIENT_SECRET,
       code: code,
       redirectUri: NYLAS_REDIRECT_URI,
-    });
+    };
+    
+    // Add Google credentials if the auth flow is for Gmail
+    if (code.includes('gmail') || code.includes('google')) {
+      exchangeParams.googleClientId = GOOGLE_CLIENT_ID;
+      exchangeParams.googleClientSecret = GOOGLE_CLIENT_SECRET;
+      console.log('Using Google OAuth credentials for token exchange');
+    }
+    
+    const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
     
     console.log('Successfully exchanged code for grant ID');
     
