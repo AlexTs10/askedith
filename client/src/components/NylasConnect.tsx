@@ -82,7 +82,9 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
       });
       
       // Redirect to Nylas auth page
-      window.location.href = result.authUrl;
+      console.log('Auth URL:', result.authUrl);
+      // Use window.open instead of location.href to open in a new tab
+      window.open(result.authUrl, '_blank');
     } catch (error) {
       console.error('Error connecting to email:', error);
       toast({
