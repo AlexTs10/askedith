@@ -3,19 +3,15 @@
  */
 
 import { Request, Response, Router } from 'express';
-// Import ONLY the auth functions from our simplified implementation
+// Import all functions from our new V3 direct implementation
 import {
-  generateAuthUrl,
-  exchangeCodeForToken
-} from './nylas-auth-without-sdk.js';
-
-// Import the other functions from our previous implementation
-import {
+  generateNylasAuthUrl,
+  exchangeCodeForToken,
   createFolderStructure,
   sendEmailWithNylas,
   checkNylasConnection,
   getMessagesFromCategory
-} from './direct-nylas-api.js';
+} from './nylas-v3-direct.js';
 import { EmailData } from './emailService';
 
 const router = Router();
@@ -29,8 +25,8 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Our direct API implementation handles the redirect URI internally
-    const authUrl = generateAuthUrl(email);
+    // Use our new V3 direct implementation
+    const authUrl = generateNylasAuthUrl(email);
     
     res.json({ authUrl });
   } catch (error) {
