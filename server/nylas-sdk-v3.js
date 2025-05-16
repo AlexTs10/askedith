@@ -48,20 +48,31 @@ export function generateNylasAuthUrl(email) {
       throw new Error('Nylas client not initialized');
     }
     
-    // Generate auth URL with minimal scopes for Google authentication
-    const authUrl = nylasClient.auth.urlForOAuth2({
+    // Detect the email provider to use appropriate parameters
+    const isGmail = email.endsWith('@gmail.com');
+    const isYahoo = email.endsWith('@yahoo.com');
+    
+    // Base configuration for all providers
+    const authConfig = {
       clientId: NYLAS_CLIENT_ID,
       redirectUri: NYLAS_REDIRECT_URI,
-      loginHint: email,
-      // Request only the minimal required scopes to avoid permission issues
-      scope: [
-        'https://www.googleapis.com/auth/gmail.readonly',  // For reading emails (minimal)
-        'https://www.googleapis.com/auth/gmail.send'       // For sending emails (minimal)
-      ],
-      // Add additional parameters for OAuth compatibility
-      prompt: 'consent',
-      access_type: 'offline'
-    });
+      loginHint: email
+    };
+    
+    // Add provider-specific parameters
+    if (isGmail) {
+      // Gmail requires specific scopes and parameters
+      authConfig.scope = [
+        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.send',
+        'https://www.googleapis.com/auth/gmail.labels'
+      ];
+      authConfig.prompt = 'consent';
+      authConfig.access_type = 'offline';
+    }
+    
+    // Generate the OAuth URL with the appropriate configuration
+    const authUrl = nylasClient.auth.urlForOAuth2(authConfig);
     
     console.log('Generated Nylas auth URL with SDK');
     return authUrl;
