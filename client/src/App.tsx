@@ -14,6 +14,8 @@ import Confirmation from "@/pages/Confirmation";
 import AdminDashboard from "@/pages/Admin";
 import PrintableResults from "@/pages/PrintableResults";
 import NylasTest from "@/pages/NylasTest";
+import EmailSetup from "@/pages/EmailSetup";
+import EmailConnect from "@/pages/EmailConnect";
 
 function Router() {
   return (
@@ -27,6 +29,8 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/printable" component={PrintableResults} />
       <Route path="/nylas-test" component={NylasTest} />
+      <Route path="/email-setup" component={EmailSetup} />
+      <Route path="/email-connect" component={EmailConnect} />
       <Route component={NotFound} />
     </Switch>
   );
