@@ -301,12 +301,15 @@ export function generateEmails(
       console.warn('No valid email for reply-to, skipping');
     }
     
-    // IMPORTANT: Always use a consistent FROM format that uses a verified sender domain
-    // This is critical for deliverability with SendGrid
-    const fromName = "AskEdith"; // Always use a consistent sender name for better deliverability
-    const fromAddress = `${fromName} <${verifiedSender}>`;
+    // When using Nylas, we can use the user's own email directly as the From address
+    // For SendGrid, we need to use a verified sender domain but set Reply-To as the user's email
     
-    console.log('Final FROM address (verified sender):', fromAddress);
+    // Better format: Use the user's actual name and email when using Nylas
+    const fromName = userInfo.fullName || "AskEdith";
+    // When using Nylas, use the user's actual email, otherwise fall back to the verified sender
+    const fromAddress = userEmail ? `${fromName} <${userEmail}>` : `AskEdith <${verifiedSender}>`;
+    
+    console.log('Final FROM address:', fromAddress);
     console.log('Reply-To email (if available):', replyToEmail || 'none');
     
     emails.push({

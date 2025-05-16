@@ -9,6 +9,7 @@ import Home from "@/pages/Home";
 import Wizard from "@/pages/Wizard";
 import Results from "@/pages/Results";
 import EmailPreview from "@/pages/EmailPreview";
+import Callback from "@/pages/Callback";
 import Confirmation from "@/pages/Confirmation";
 import AdminDashboard from "@/pages/Admin";
 import PrintableResults from "@/pages/PrintableResults";
