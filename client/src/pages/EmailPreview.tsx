@@ -57,6 +57,8 @@ export default function EmailPreview() {
   const [isSending, setIsSending] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
+  const [showSendAllOption, setShowSendAllOption] = useState(false);
+  const [isSendingAll, setIsSendingAll] = useState(false);
   
   // Get the current email index
   const currentIndex = parseInt(index, 10);
@@ -70,6 +72,21 @@ export default function EmailPreview() {
       setEmailBody(currentEmail.body);
     }
   }, [currentEmail]);
+  
+  // Check connection status when component loads
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const response = await fetch('/api/nylas/connection-status');
+        const data = await response.json();
+        setShowSendAllOption(data.connected);
+      } catch (error) {
+        console.error('Error checking connection status:', error);
+      }
+    };
+    
+    checkConnection();
+  }, []);
   
   // Toggle edit mode
   const toggleEdit = () => {
@@ -86,6 +103,69 @@ export default function EmailPreview() {
     }
     
     setIsEditing(!isEditing);
+  };
+  
+  // Send all emails at once with a single authentication
+  const sendAllEmails = async () => {
+    try {
+      setIsSendingAll(true);
+      
+      // Save current edits first
+      const updatedEmails = [...state.emailsToSend];
+      updatedEmails[currentIndex] = {
+        ...currentEmail,
+        subject: emailSubject,
+        body: emailBody
+      };
+      
+      updateState({ emailsToSend: updatedEmails });
+      
+      // Prepare all emails with categories
+      const emailsWithCategories = updatedEmails.map(email => ({
+        to: email.to,
+        from: email.from,
+        replyTo: email.replyTo,
+        subject: email.subject,
+        body: email.body,
+        category: getResourceCategory(email)
+      }));
+      
+      console.log("Sending all emails in batch:", emailsWithCategories);
+      
+      // Send batch request
+      const response = await fetch('/api/send-batch-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emails: emailsWithCategories }),
+      });
+      
+      const result = await response.json();
+      console.log("Batch email result:", result);
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send batch emails');
+      }
+      
+      // Show success message
+      toast({
+        title: "All Emails Sent",
+        description: `Successfully sent ${result.sent || 0} out of ${emailsWithCategories.length} emails.`,
+      });
+      
+      // Navigate to confirmation page
+      window.location.href = '/confirmation';
+    } catch (error) {
+      console.error("Error sending batch emails:", error);
+      toast({
+        title: "Error",
+        description: `Failed to send batch emails: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSendingAll(false);
+    }
   };
   
   // Send email function
@@ -318,46 +398,82 @@ export default function EmailPreview() {
             </div>
             
             {/* Action buttons */}
-            <div className="mt-8 flex flex-col-reverse md:flex-row items-center gap-4">
-              <Button 
-                variant="outline"
-                className={`w-full md:w-auto transition-all duration-200 ${isEditing ? 'bg-primary/5 text-primary border-primary/20' : ''}`}
-                onClick={toggleEdit}
-                disabled={isSending}
-              >
-                {isEditing ? (
-                  <div className="flex items-center">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Save Changes
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Edit className="mr-2 h-4 w-4" />
-                    Personalize Email
-                  </div>
-                )}
-              </Button>
+            <div className="mt-8 flex flex-col space-y-4">
+              {/* Main action buttons */}
+              <div className="flex flex-col-reverse md:flex-row items-center gap-4">
+                <Button 
+                  variant="outline"
+                  className={`w-full md:w-auto transition-all duration-200 ${isEditing ? 'bg-primary/5 text-primary border-primary/20' : ''}`}
+                  onClick={toggleEdit}
+                  disabled={isSending || isSendingAll}
+                >
+                  {isEditing ? (
+                    <div className="flex items-center">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Personalize Email
+                    </div>
+                  )}
+                </Button>
+                
+                <Button 
+                  className="w-full md:flex-1 bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 py-6"
+                  onClick={sendEmail}
+                  disabled={isSending || isSendingAll}
+                >
+                  {isSending ? (
+                    <div className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Sending Email...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      <Send className="mr-2 h-5 w-5" />
+                      Send Email Now
+                    </div>
+                  )}
+                </Button>
+              </div>
               
-              <Button 
-                className="w-full md:flex-1 bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 py-6"
-                onClick={sendEmail}
-                disabled={isSending}
-              >
-                {isSending ? (
-                  <div className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Sending Email...
+              {/* Send All Emails button - only show if > 1 email and user has connected their email */}
+              {(state.emailsToSend.length > 1 && showSendAllOption) && (
+                <div className="w-full border border-teal-100 bg-teal-50/50 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium text-teal-700">Send All Emails at Once</h3>
+                      <p className="text-sm text-teal-600">Authenticate once and send all {state.emailsToSend.length} emails together</p>
+                    </div>
+                    <Button 
+                      variant="secondary"
+                      className="bg-teal-600 hover:bg-teal-700 text-white"
+                      onClick={sendAllEmails}
+                      disabled={isSendingAll || isSending}
+                    >
+                      {isSendingAll ? (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Sending All...
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <Send className="mr-2 h-4 w-4" />
+                          Send All {state.emailsToSend.length} Emails
+                        </div>
+                      )}
+                    </Button>
                   </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Send className="mr-2 h-5 w-5" />
-                    Send Email Now
-                  </div>
-                )}
-              </Button>
+                </div>
+              )}
             </div>
             
             {/* Email counter info */}
