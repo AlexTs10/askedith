@@ -18,15 +18,17 @@ const router = Router();
 // Route to generate auth URL for email connection
 router.post('/nylas/auth-url', (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const { email, redirectUri } = req.body;
     
     if (!email) {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Generate the redirect URI based on the current request
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/nylas/callback`;
-    const authUrl = generateAuthUrl(email, redirectUri);
+    // Use the provided redirectUri from the frontend or generate one
+    const callbackUri = redirectUri || `${req.protocol}://${req.get('host')}/callback`;
+    console.log('Using callback URI for Nylas:', callbackUri);
+    
+    const authUrl = generateAuthUrl(email, callbackUri);
     
     res.json({ authUrl });
   } catch (error) {

@@ -268,15 +268,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Received Nylas callback with code:', code);
       
       // Process the authorization code
+      // Use the same callback URL that was used to generate the auth URL
+      const callbackUrl = 'http://localhost:3000/callback';
+      console.log('Using callback URL for token exchange:', callbackUrl);
+      
       const nylasHelper = await import('./nylas-direct.js');
-      const accessToken = await nylasHelper.exchangeCodeForToken(code, 'http://localhost:3000/callback');
+      const accessToken = await nylasHelper.exchangeCodeForToken(code, callbackUrl);
+      
+      console.log('Successfully obtained Nylas access token');
       
       // Store the access token in session
       if (req.session) {
         req.session.nylasAccessToken = accessToken;
+        console.log('Saved Nylas access token in session');
         
         // Create folder structure for the user
-        await nylasHelper.createFolderStructure(accessToken);
+        console.log('Creating folder structure in email account...');
+        const folderResult = await nylasHelper.createFolderStructure(accessToken);
+        console.log('Folder creation result:', folderResult);
       }
       
       // Display success page
