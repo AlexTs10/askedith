@@ -32,16 +32,21 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
  */
 export function generateAuthUrl(email, redirectUri) {
   try {
-    // Use the current host for the redirect URI
-    const currentHost = redirectUri || 'http://localhost:3000/callback';
+    // Use the exact redirect URI provided by the frontend
+    // This is critical - it must match exactly what Nylas has registered
+    const callbackUrl = redirectUri || 'https://askcara-project.elias18.repl.co/callback';
+    
+    console.log('Using callback URL for OAuth:', callbackUrl);
     
     // Ensure the scope format is correct - use space-separated scopes instead of comma-separated
-    const scopes = 'email.modify email.send';
+    // These scopes allow reading, modifying, and sending emails
+    const scopes = 'email.modify email.send email.folders.modify';
+    
     const url = new URL(`${API_BASE_URL}/oauth/authorize`);
     url.searchParams.append('client_id', process.env.NYLAS_CLIENT_ID);
     url.searchParams.append('response_type', 'code');
-    url.searchParams.append('scopes', scopes);
-    url.searchParams.append('redirect_uri', currentHost);
+    url.searchParams.append('scope', scopes); // Note: Nylas expects 'scope' not 'scopes'
+    url.searchParams.append('redirect_uri', callbackUrl);
     url.searchParams.append('login_hint', email);
     
     console.log('Generated Nylas auth URL:', url.toString());
@@ -57,14 +62,17 @@ export function generateAuthUrl(email, redirectUri) {
  */
 export async function exchangeCodeForToken(code, redirectUri) {
   try {
-    console.log('Exchanging code for token with redirect URI:', redirectUri);
+    // Use the same redirect URI that was used to generate the auth URL
+    const callbackUrl = redirectUri || 'https://askcara-project.elias18.repl.co/callback';
+    console.log('Exchanging code for token with redirect URI:', callbackUrl);
     
+    // Build the request body with all required OAuth parameters
     const requestBody = {
       client_id: process.env.NYLAS_CLIENT_ID,
       client_secret: process.env.NYLAS_CLIENT_SECRET,
       grant_type: 'authorization_code',
       code: code,
-      redirect_uri: redirectUri
+      redirect_uri: callbackUrl
     };
     
     console.log('Token exchange request:', {

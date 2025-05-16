@@ -24,8 +24,16 @@ export default function NylasCallback() {
         
         console.log('Authorization code received:', code);
         
-        // Send the code to the backend
-        const response = await fetch(`/api/nylas/callback?code=${code}`);
+        // Get the current URL to use as the redirect URI
+        // This must match exactly what was used to generate the auth URL
+        const currentUrl = window.location.href;
+        const baseUrl = currentUrl.split('/').slice(0, 3).join('/');
+        const callbackUrl = `${baseUrl}/callback`;
+        
+        console.log('Using callback URL for token exchange:', callbackUrl);
+        
+        // Send the code to the backend with the exact same redirect URI
+        const response = await fetch(`/api/nylas/callback?code=${code}&redirect_uri=${encodeURIComponent(callbackUrl)}`);
         const data = await response.json();
         
         if (!response.ok) {

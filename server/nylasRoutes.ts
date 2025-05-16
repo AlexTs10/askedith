@@ -40,17 +40,26 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
 // OAuth callback endpoint
 router.get('/nylas/callback', async (req: Request, res: Response) => {
   try {
-    const { code } = req.query;
+    const { code, redirect_uri } = req.query;
     
     if (!code || typeof code !== 'string') {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Use the same redirect URI that was used to generate the auth URL
-    // This needs to match exactly what was provided to generateAuthUrl
-    const redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-    console.log('Using redirect URI for token exchange:', redirectUri);
+    // Use the redirect URI provided by the client
+    // This MUST match exactly what was used in the initial auth URL generation
+    let redirectUri: string;
     
+    if (redirect_uri && typeof redirect_uri === 'string') {
+      redirectUri = redirect_uri;
+    } else {
+      // Fallback if no redirect_uri is provided (should be rare)
+      redirectUri = `${req.protocol}://${req.get('host')}/callback`;
+    }
+    
+    console.log('Using exact redirect URI for token exchange:', redirectUri);
+    
+    // Exchange the auth code for an access token
     const accessToken = await exchangeCodeForToken(code, redirectUri);
     
     // Store the token in session
