@@ -216,7 +216,7 @@ I hope this email finds you well. My name is ${userInfo.fullName}, and I'm reach
 
 I came across your ${resource.category} services and hope you can help us. My ${relation} is currently living ${livingArrangement ? `in a ${livingArrangement} situation` : "at home"}. We're looking for ${careLevel ? `${careLevel.toLowerCase()} level of care` : "assistance"} ${timeline ? `within a ${timeline.toLowerCase()} timeframe` : "soon"}.
 
-Our main concerns include ${mainConcerns ? mainConcerns.toLowerCase() : "various care needs"}. ${healthConditions ? `We're also managing health issues including ${healthConditions}.` : ""}${hasVeteranStatus ? ` I should mention that my ${relation} has served in the military, which may be relevant to available services.` : ""}
+Our main concerns include ${mainConcerns ? mainConcerns.toLowerCase() : "various care needs"}. ${healthConditions ? `We're also managing health issues including ${healthConditions}.` : ""}${hasVeteranStatus ? ` I should mention that my ${relation} has served in the military in case it may be relevant to available services.` : ""}
 
 ${financialSituation ? `Regarding finances, we ${financialSituation.toLowerCase()}.` : ""}${budget ? ` Our monthly budget for care is approximately ${budget}.` : ""}
 
