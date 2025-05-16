@@ -13,10 +13,15 @@ const NYLAS_CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET;
 const NYLAS_API_KEY = process.env.NYLAS_CLIENT_SECRET; // In V3, the client secret is used as the API key
 const NYLAS_API_URI = 'https://api.us.nylas.com'; // US region API URI
 
-// Use the Replit-specific domain with preview subdomain for better connectivity
-// This should help with callback issues
-const REPLIT_DOMAIN = process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'askcara-project.elias18.repl.co';
-const NYLAS_REDIRECT_URI = `https://${REPLIT_DOMAIN}/callback`;
+// Log Nylas configuration for debugging (excluding secrets)
+console.log('Nylas Configuration:');
+console.log('- Client ID:', NYLAS_CLIENT_ID);
+console.log('- Client Secret:', NYLAS_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
+console.log('- API URI:', NYLAS_API_URI);
+
+// Use the exact redirect URI that's registered in the Nylas dashboard
+// This must match exactly what's configured in the Nylas application settings
+const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
 
 console.log('Using Nylas redirect URI:', NYLAS_REDIRECT_URI);
 

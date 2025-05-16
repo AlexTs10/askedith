@@ -50,31 +50,101 @@ export function NylasTestConnect() {
       const data = await response.json();
       
       if (data.authUrl) {
-        // Open the auth URL in a new window
-        window.open(data.authUrl, '_blank');
+        // Add a message listener for the OAuth window callback
+        const messageListener = (event: MessageEvent) => {
+          if (event.data && event.data.type === 'NYLAS_CONNECTION_SUCCESS') {
+            console.log('Received connection success message');
+            setConnected(true);
+            setConnecting(false);
+            window.removeEventListener('message', messageListener);
+          }
+        };
+        window.addEventListener('message', messageListener);
         
-        // Start polling for connection status
+        // Open the auth URL in a new window
+        const popupWindow = window.open(data.authUrl, 'NylasAuth', 'width=800,height=600');
+        
+        // Handle popup blocked or closed
+        if (!popupWindow || popupWindow.closed || typeof popupWindow.closed === 'undefined') {
+          setError('Popup was blocked. Please allow popups for this site and try again.');
+          setConnecting(false);
+          window.removeEventListener('message', messageListener);
+          return;
+        }
+        
+        // Start polling for connection status (as a fallback)
         let attempts = 0;
         const maxAttempts = 30; // Poll for 5 minutes (10 second intervals)
         const pollInterval = setInterval(async () => {
           attempts++;
           
-          // Check if we're connected
-          const statusResponse = await fetch('/api/nylas/connection-status');
-          const statusData = await statusResponse.json();
+          // Check if popup is closed
+          if (popupWindow.closed) {
+            // Check if we're connected (the window might have closed after successful auth)
+            try {
+              const statusResponse = await fetch('/api/nylas/connection-status');
+              const statusData = await statusResponse.json();
+              
+              if (statusData.connected) {
+                // Connected after popup closed
+                clearInterval(pollInterval);
+                setConnected(true);
+                setConnecting(false);
+                window.removeEventListener('message', messageListener);
+                return;
+              }
+            } catch (err) {
+              console.error('Error checking status after popup closed:', err);
+            }
+            
+            // Not connected but window closed - probable error
+            if (!connected) {
+              clearInterval(pollInterval);
+              setConnecting(false);
+              setError('Authentication window was closed before completion. Please try again.');
+              window.removeEventListener('message', messageListener);
+            }
+            return;
+          }
           
-          if (statusData.connected) {
-            // We're connected!
-            clearInterval(pollInterval);
-            setConnected(true);
-            setConnecting(false);
-          } else if (attempts >= maxAttempts) {
-            // Timeout
-            clearInterval(pollInterval);
-            setConnecting(false);
-            setError('Connection timeout. Please try again.');
+          // Normal poll check
+          try {
+            const statusResponse = await fetch('/api/nylas/connection-status');
+            const statusData = await statusResponse.json();
+            
+            if (statusData.connected) {
+              // We're connected!
+              clearInterval(pollInterval);
+              setConnected(true);
+              setConnecting(false);
+              window.removeEventListener('message', messageListener);
+              
+              // Close the popup if it's still open
+              if (!popupWindow.closed) {
+                popupWindow.close();
+              }
+            } else if (attempts >= maxAttempts) {
+              // Timeout
+              clearInterval(pollInterval);
+              setConnecting(false);
+              setError('Connection timeout. Please try again.');
+              window.removeEventListener('message', messageListener);
+              
+              // Close the popup if it's still open
+              if (!popupWindow.closed) {
+                popupWindow.close();
+              }
+            }
+          } catch (err) {
+            console.error('Error during polling:', err);
           }
         }, 10000); // Check every 10 seconds
+        
+        // Cleanup function to remove event listener if component unmounts
+        return () => {
+          clearInterval(pollInterval);
+          window.removeEventListener('message', messageListener);
+        };
       } else {
         setError('Failed to get authentication URL');
         setConnecting(false);
