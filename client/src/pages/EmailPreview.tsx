@@ -116,21 +116,66 @@ export default function EmailPreview() {
       
       console.log("Email data being sent:", emailData);
       
-      // Send the email via API
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emailData)
-      });
+      // First check if we have a Nylas connection
+      const nylasCheck = await fetch('/api/nylas/connection-status');
+      const nylasStatus = await nylasCheck.json();
+      let response, result;
+      
+      if (nylasStatus.connected) {
+        console.log("Using Nylas to send from user's email account");
+        // Send via Nylas (from user's own email)
+        response = await fetch('/api/nylas/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: emailData.to,
+            subject: emailData.subject,
+            body: emailData.body,
+            category: emailData.category,
+            replyTo: emailData.replyTo || emailData.from
+          })
+        });
+        
+        result = await response.json();
+        
+        if (!response.ok) {
+          if (result.needsAuth) {
+            // If Nylas auth is needed, fall back to SendGrid
+            console.log("Nylas auth needed, falling back to SendGrid");
+            response = await fetch('/api/send-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(emailData)
+            });
+            
+            result = await response.json();
+          } else {
+            throw new Error(result.error || `Failed to send email via Nylas: ${response.status}`);
+          }
+        }
+      } else {
+        // Fall back to SendGrid
+        console.log("No Nylas connection, using SendGrid");
+        response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailData)
+        });
+        
+        result = await response.json();
+      }
       
       // Parse the response
-      const result = await response.json();
       console.log("Server response:", result);
       
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || `Failed to send email: ${response.status}`);
+      if (!response.ok || (!result.success && !result.messageId)) {
+        throw new Error(result.message || result.error || `Failed to send email: ${response.status}`);
       }
       
       // Show success toast
