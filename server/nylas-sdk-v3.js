@@ -71,8 +71,7 @@ export function generateNylasAuthUrl(email) {
         'https://www.googleapis.com/auth/gmail.send',
         'https://www.googleapis.com/auth/gmail.labels'
       ];
-      authConfig.prompt = 'consent';
-      authConfig.access_type = 'offline';
+      authConfig.access_type = 'offline'; // Request a refresh token
       authConfig.googleClientId = GOOGLE_CLIENT_ID;
       authConfig.googleClientSecret = GOOGLE_CLIENT_SECRET;
       
