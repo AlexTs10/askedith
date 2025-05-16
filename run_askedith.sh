@@ -1,1 +1,3 @@
-cd AskEdith && NODE_ENV=development tsx server/index.ts
+#!/bin/bash
+cd AskEdith
+npm run dev

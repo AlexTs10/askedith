@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom AskEdith 2.0 Theme */
+:root {
+  --primary: #0d9488; /* Teal 600 */
+  --primary-dark: #0f766e; /* Teal 700 */
+  --secondary: #f59e0b; /* Amber 500 */
+  --background: #fffbeb; /* Amber 50 */
+}
+
 :root {
   /* Base colors - Apple-inspired teal as primary */
   --background: 180 33% 99%;
