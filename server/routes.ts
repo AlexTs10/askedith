@@ -1,12 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-// Import the Nylas routes
-const nylasRoutes = require('./nylas-routes');
+// We'll import the Nylas routes dynamically to avoid module system conflicts
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register Nylas routes
-  app.use('/api', nylasRoutes);
+  // Import and register Nylas routes dynamically
+  try {
+    // Use ESM dynamic import for the Nylas routes
+    const { default: nylasRoutes } = await import('./nylas-routes.js');
+    app.use('/api', nylasRoutes);
+  } catch (error) {
+    console.error('Failed to load Nylas routes:', error);
+  }
   // Get all resources
   app.get("/api/resources", async (req, res) => {
     try {
@@ -54,27 +59,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email sending endpoint
   app.post("/api/send-email", async (req, res) => {
     try {
-      const { to, subject, body, priority, from, replyTo, resourceId, questionnaireId, userId } = req.body;
+      const { to, subject, body, priority, from, replyTo, resourceId, questionnaireId, userId, category } = req.body;
       
       if (!to || !subject || !body) {
         return res.status(400).json({ message: "Missing required email fields" });
       }
       
-      // Import the email service
-      const emailService = await import('./emailService');
+      // Check if the user has a Nylas connection
+      const nylasHelper = require('./nylas-helper');
+      const hasNylasConnection = req.session?.nylasAccessToken && 
+        await nylasHelper.checkNylasConnection(req.session.nylasAccessToken);
       
-      // Send the email
-      const result = await emailService.sendEmail({ 
-        to, 
-        subject, 
-        body,
-        from,
-        replyTo, // Include replyTo field for proper email configuration
-        resourceId,
-        questionnaireId,
-        userId,
-        priority
-      });
+      let result;
+      
+      if (hasNylasConnection && req.session?.nylasAccessToken) {
+        // Use Nylas to send the email if the user has connected their account
+        console.log('Using Nylas to send email');
+        const emailData = { to, subject, body, replyTo };
+        // Use the email category if provided, otherwise use a default
+        const emailCategory = category || 'Other';
+        
+        result = await nylasHelper.sendEmailWithNylas(
+          req.session.nylasAccessToken, 
+          emailData, 
+          emailCategory
+        );
+        
+        if (result.success) {
+          // Convert Nylas result to match our standard response format
+          result = {
+            success: true,
+            queued: false,
+            message: "Email sent successfully via your connected email account"
+          };
+        } else {
+          // Fall back to SendGrid if Nylas fails
+          console.log('Nylas email send failed, falling back to SendGrid');
+          const emailService = await import('./emailService');
+          result = await emailService.sendEmail({ 
+            to, subject, body, from, replyTo, resourceId, questionnaireId, userId, priority
+          });
+        }
+      } else {
+        // Use SendGrid if no Nylas connection
+        console.log('Using SendGrid to send email (no Nylas connection)');
+        const emailService = await import('./emailService');
+        result = await emailService.sendEmail({ 
+          to, subject, body, from, replyTo, resourceId, questionnaireId, userId, priority
+        });
+      }
       
       // Return response based on the result
       res.json(result);
@@ -104,13 +137,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         // Ensure replyTo is passed through if available
         email.replyTo = email.replyTo || undefined;
+        // Ensure category is defined
+        email.category = email.category || 'Other';
       }
       
-      // Import the email service
-      const { sendBatchEmails } = await import('./emailService');
+      // Check if the user has a Nylas connection
+      const nylasHelper = require('./nylas-helper');
+      const hasNylasConnection = req.session?.nylasAccessToken && 
+        await nylasHelper.checkNylasConnection(req.session.nylasAccessToken);
       
-      // Send the emails in batch
-      const result = await sendBatchEmails(emails);
+      let result;
+      
+      if (hasNylasConnection && req.session?.nylasAccessToken) {
+        // Use Nylas for batch email sending
+        console.log('Using Nylas to send batch emails');
+        
+        // Send all emails through Nylas
+        const nylasResults = await Promise.all(
+          emails.map(email => nylasHelper.sendEmailWithNylas(
+            req.session.nylasAccessToken,
+            {
+              to: email.to,
+              subject: email.subject,
+              body: email.body,
+              replyTo: email.replyTo
+            },
+            email.category
+          ))
+        );
+        
+        // Check if all emails were sent successfully
+        const allSuccessful = nylasResults.every(r => r.success);
+        const successCount = nylasResults.filter(r => r.success).length;
+        
+        if (allSuccessful) {
+          result = {
+            success: true,
+            queued: 0,
+            sent: successCount,
+            total: emails.length,
+            message: `All ${successCount} emails sent successfully via your connected email account`
+          };
+        } else if (successCount > 0) {
+          result = {
+            success: true,
+            queued: 0,
+            sent: successCount,
+            total: emails.length,
+            message: `${successCount} of ${emails.length} emails sent successfully via your connected email account`
+          };
+        } else {
+          // Fall back to SendGrid if all Nylas sends fail
+          console.log('Nylas batch email send failed, falling back to SendGrid');
+          const { sendBatchEmails } = await import('./emailService');
+          result = await sendBatchEmails(emails);
+        }
+      } else {
+        // Use SendGrid for batch sending if no Nylas connection
+        console.log('Using SendGrid to send batch emails (no Nylas connection)');
+        const { sendBatchEmails } = await import('./emailService');
+        result = await sendBatchEmails(emails);
+      }
       
       // Return response
       res.json(result);

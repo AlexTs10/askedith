@@ -5,7 +5,17 @@
  * without TypeScript constraints, allowing us to work with the actual SDK structure.
  */
 
-const Nylas = require('nylas');
+import Nylas from 'nylas';
+
+// Resource categories
+const MAIN_FOLDER_NAME = 'AskEdith';
+const RESOURCE_CATEGORIES = [
+  'Veteran Benefits',
+  'Aging Life Care Professionals',
+  'Home Care Companies',
+  'Government Agencies',
+  'Financial Advisors'
+];
 
 // Check if Nylas API credentials are available
 if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
@@ -20,20 +30,10 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
   });
 }
 
-// Resource categories
-const MAIN_FOLDER_NAME = 'AskEdith';
-const RESOURCE_CATEGORIES = [
-  'Veteran Benefits',
-  'Aging Life Care Professionals',
-  'Home Care Companies',
-  'Government Agencies',
-  'Financial Advisors'
-];
-
 /**
  * Generate an OAuth URL for connecting a user's email account
  */
-function generateAuthUrl(email, redirectUri) {
+export function generateAuthUrl(email, redirectUri) {
   try {
     return Nylas.urlForAuthentication({
       redirectURI: redirectUri,
@@ -49,7 +49,7 @@ function generateAuthUrl(email, redirectUri) {
 /**
  * Exchange an authorization code for an access token
  */
-async function exchangeCodeForToken(code, redirectUri) {
+export async function exchangeCodeForToken(code, redirectUri) {
   try {
     const token = await Nylas.exchangeCodeForToken(code);
     return token;
@@ -62,7 +62,7 @@ async function exchangeCodeForToken(code, redirectUri) {
 /**
  * Create the AskEdith folder structure in the user's email account
  */
-async function createFolderStructure(accessToken) {
+export async function createFolderStructure(accessToken) {
   try {
     // Create a Nylas client with the user's access token
     const nylas = Nylas.with(accessToken);
@@ -138,7 +138,7 @@ async function createFolderStructure(accessToken) {
 /**
  * Send an email using the user's connected account
  */
-async function sendEmailWithNylas(accessToken, emailData, category) {
+export async function sendEmailWithNylas(accessToken, emailData, category) {
   try {
     const nylas = Nylas.with(accessToken);
     
@@ -216,7 +216,7 @@ async function categorizeSentMessage(accessToken, messageId, category) {
 /**
  * Check if a user has a valid Nylas connection
  */
-async function checkNylasConnection(accessToken) {
+export async function checkNylasConnection(accessToken) {
   try {
     const nylas = Nylas.with(accessToken);
     await nylas.account.get();
@@ -229,7 +229,7 @@ async function checkNylasConnection(accessToken) {
 /**
  * Get messages from a specific category folder/label
  */
-async function getMessagesFromCategory(accessToken, category, limit = 20) {
+export async function getMessagesFromCategory(accessToken, category, limit = 20) {
   try {
     const nylas = Nylas.with(accessToken);
     const account = await nylas.account.get();
@@ -276,12 +276,3 @@ async function getMessagesFromCategory(accessToken, category, limit = 20) {
     return [];
   }
 }
-
-module.exports = {
-  generateAuthUrl,
-  exchangeCodeForToken,
-  createFolderStructure,
-  sendEmailWithNylas,
-  checkNylasConnection,
-  getMessagesFromCategory
-};

@@ -1,17 +1,13 @@
 /**
- * Nylas API Routes for AskEdith
- * 
- * These routes provide the API endpoints for Nylas email integration
+ * API Routes for Nylas Email Integration
  */
 
-const express = require('express');
-const router = express.Router();
-const nylasHelper = require('./nylas-helper');
+import { Router } from 'express';
+import * as nylasHelper from './nylas-helper.js';
 
-/**
- * Generate OAuth URL for connecting a user's email
- * POST /api/nylas/auth-url
- */
+const router = Router();
+
+// Route to generate auth URL for email connection
 router.post('/nylas/auth-url', (req, res) => {
   try {
     const { email } = req.body;
@@ -31,15 +27,12 @@ router.post('/nylas/auth-url', (req, res) => {
   }
 });
 
-/**
- * OAuth callback endpoint
- * GET /api/nylas/callback
- */
+// OAuth callback endpoint
 router.get('/nylas/callback', async (req, res) => {
   try {
     const { code } = req.query;
     
-    if (!code) {
+    if (!code || typeof code !== 'string') {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
@@ -62,10 +55,7 @@ router.get('/nylas/callback', async (req, res) => {
   }
 });
 
-/**
- * Check connection status
- * GET /api/nylas/connection-status
- */
+// Check connection status
 router.get('/nylas/connection-status', async (req, res) => {
   if (!req.session?.nylasAccessToken) {
     return res.json({ connected: false });
@@ -80,10 +70,7 @@ router.get('/nylas/connection-status', async (req, res) => {
   }
 });
 
-/**
- * Send email via Nylas
- * POST /api/nylas/send-email
- */
+// Send email via Nylas
 router.post('/nylas/send-email', async (req, res) => {
   const accessToken = req.session?.nylasAccessToken;
   
@@ -125,10 +112,7 @@ router.post('/nylas/send-email', async (req, res) => {
   }
 });
 
-/**
- * Get messages from a specific category
- * GET /api/nylas/messages/:category
- */
+// Get messages from a specific category
 router.get('/nylas/messages/:category', async (req, res) => {
   const accessToken = req.session?.nylasAccessToken;
   
@@ -152,10 +136,7 @@ router.get('/nylas/messages/:category', async (req, res) => {
   }
 });
 
-/**
- * Send batch emails through Nylas
- * POST /api/nylas/send-batch
- */
+// Send batch emails through Nylas
 router.post('/nylas/send-batch', async (req, res) => {
   const accessToken = req.session?.nylasAccessToken;
   
@@ -209,4 +190,4 @@ router.post('/nylas/send-batch', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

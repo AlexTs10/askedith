@@ -10,6 +10,42 @@ import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import { NylasConnect } from '@/components/NylasConnect';
 
+// Helper function to determine resource category from email data
+const getResourceCategory = (email: any) => {
+  // Try to extract category from subject
+  const subject = email.subject?.toLowerCase() || '';
+  
+  if (subject.includes('veteran') || subject.includes('military')) {
+    return 'Veteran Benefits';
+  } else if (subject.includes('aging') || subject.includes('care professional')) {
+    return 'Aging Life Care Professionals';
+  } else if (subject.includes('home care') || subject.includes('homecare')) {
+    return 'Home Care Companies';
+  } else if (subject.includes('government') || subject.includes('agency')) {
+    return 'Government Agencies';
+  } else if (subject.includes('financial') || subject.includes('advisor')) {
+    return 'Financial Advisors';
+  }
+  
+  // Get from provider name if available
+  const to = email.to?.toLowerCase() || '';
+  
+  if (to.includes('veteran') || to.includes('military')) {
+    return 'Veteran Benefits';
+  } else if (to.includes('care professional')) {
+    return 'Aging Life Care Professionals';
+  } else if (to.includes('home care') || to.includes('homecare')) {
+    return 'Home Care Companies';
+  } else if (to.includes('government') || to.includes('agency')) {
+    return 'Government Agencies';
+  } else if (to.includes('financial') || to.includes('advisor')) {
+    return 'Financial Advisors';
+  }
+  
+  // Default category
+  return 'Other';
+};
+
 export default function EmailPreview() {
   const { index = "0" } = useParams();
   const [_, navigate] = useLocation();
@@ -74,7 +110,8 @@ export default function EmailPreview() {
         from: currentEmail.from,
         replyTo: currentEmail.replyTo, // Include the reply-to field
         subject: emailSubject,
-        body: emailBody
+        body: emailBody,
+        category: currentEmail.category || getResourceCategory(currentEmail)
       };
       
       console.log("Email data being sent:", emailData);
