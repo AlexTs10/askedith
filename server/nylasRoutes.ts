@@ -3,9 +3,14 @@
  */
 
 import { Request, Response, Router } from 'express';
+// Import ONLY the auth functions from our simplified implementation
 import {
   generateAuthUrl,
-  exchangeCodeForToken,
+  exchangeCodeForToken
+} from './nylas-auth-without-sdk.js';
+
+// Import the other functions from our previous implementation
+import {
   createFolderStructure,
   sendEmailWithNylas,
   checkNylasConnection,
