@@ -32,7 +32,8 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
  */
 export function generateAuthUrl(email, redirectUri) {
   try {
-    const scopes = 'email.modify,email.send';
+    // Ensure the scope format is correct - use space-separated scopes instead of comma-separated
+    const scopes = 'email.modify email.send';
     const url = new URL(`${API_BASE_URL}/oauth/authorize`);
     url.searchParams.append('client_id', process.env.NYLAS_CLIENT_ID);
     url.searchParams.append('response_type', 'code');
@@ -40,6 +41,7 @@ export function generateAuthUrl(email, redirectUri) {
     url.searchParams.append('redirect_uri', redirectUri);
     url.searchParams.append('login_hint', email);
     
+    console.log('Generated Nylas auth URL:', url.toString());
     return url.toString();
   } catch (error) {
     console.error('Error generating auth URL:', error);
@@ -52,25 +54,37 @@ export function generateAuthUrl(email, redirectUri) {
  */
 export async function exchangeCodeForToken(code, redirectUri) {
   try {
+    console.log('Exchanging code for token with redirect URI:', redirectUri);
+    
+    const requestBody = {
+      client_id: process.env.NYLAS_CLIENT_ID,
+      client_secret: process.env.NYLAS_CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: redirectUri
+    };
+    
+    console.log('Token exchange request:', {
+      url: `${API_BASE_URL}/oauth/token`,
+      body: { ...requestBody, client_secret: '***hidden***' }
+    });
+    
     const response = await fetch(`${API_BASE_URL}/oauth/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        client_id: process.env.NYLAS_CLIENT_ID,
-        client_secret: process.env.NYLAS_CLIENT_SECRET,
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: redirectUri
-      })
+      body: JSON.stringify(requestBody)
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to exchange code: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Token exchange error response:', errorText);
+      throw new Error(`Failed to exchange code: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();
+    console.log('Token exchange successful, received access token');
     return data.access_token;
   } catch (error) {
     console.error('Error exchanging code for token:', error);
