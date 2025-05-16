@@ -95,10 +95,15 @@ function extractUserInfo(answers: WizardAnswers) {
   // Important: For the "from" field, we must use a verified email
   // When no email is provided by the user, use our official email instead
   // of a placeholder that could cause SendGrid to reject the message
+  
+  // IMPORTANT: Override with your actual email for testing
+  // This ensures your email is always used regardless of form input
+  email = 'papasavvaseliasp@gmail.com';
+  
   return {
     firstName,
     lastName,
-    email: email || 'elias@secondactfs.com', // Use a verified email as fallback
+    email: email, // Now using your actual email directly
     zipcode,
     phone,
     // Full name for display purposes
@@ -276,38 +281,27 @@ export function generateEmails(
     // TESTING MODE: Override all recipient emails with the test email
     const testEmail = "elias@secondactfs.com";
     
-    // Get user's actual email from the input form
-    const userEmail = userInfo.email && userInfo.email.includes('@') 
-      ? userInfo.email 
-      : undefined; // Use undefined instead of null for TypeScript compatibility
+    // Always use your actual Gmail email for testing
+    const yourEmail = 'papasavvaseliasp@gmail.com';
     
     // Debug log to help diagnose issues
     console.log('Generating email with userInfo:', userInfo);
-    console.log('Email to be used as FROM:', userEmail);
+    console.log('Explicitly using this email as FROM:', yourEmail);
     
-    // SendGrid requires a verified sender domain/email
-    // We can't use the user's email directly in the From field,
-    // but we can use it as the Reply-To field
+    // Since we're hardcoding your email for testing, make sure it's used everywhere
+    const userEmail = yourEmail;
     
-    // Using our verified sender address (maintained by server)
-    const verifiedSender = 'elias@secondactfs.com';
-    
-    // Only use user email if it's valid, otherwise skip reply-to
-    let replyToEmail = undefined;
-    if (userEmail && userEmail.includes('@') && userEmail.includes('.')) {
-      replyToEmail = userEmail;
-      console.log('Using reply-to email:', replyToEmail);
-    } else {
-      console.warn('No valid email for reply-to, skipping');
-    }
+    // Use your email for both From and Reply-To fields
+    // This ensures replies come back to you and the From field shows your address
+    const replyToEmail = yourEmail;
     
     // When using Nylas, we can use the user's own email directly as the From address
     // For SendGrid, we need to use a verified sender domain but set Reply-To as the user's email
     
-    // Better format: Use the user's actual name and email when using Nylas
-    const fromName = userInfo.fullName || "AskEdith";
-    // When using Nylas, use the user's actual email, otherwise fall back to the verified sender
-    const fromAddress = userEmail ? `${fromName} <${userEmail}>` : `AskEdith <${verifiedSender}>`;
+    // Always use your actual name and email for testing
+    const fromName = userInfo.fullName || "Elias";
+    // Use your Gmail email directly as the sender address
+    const fromAddress = `${fromName} <${userEmail}>`;
     
     console.log('Final FROM address:', fromAddress);
     console.log('Reply-To email (if available):', replyToEmail || 'none');
