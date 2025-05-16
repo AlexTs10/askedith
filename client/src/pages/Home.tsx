@@ -13,20 +13,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-amber-100 flex flex-col items-center">
-      {/* Ribbon */}
-      <div className="w-full bg-teal-600 text-white text-center py-1 text-sm font-medium">
-        AskEdith 2.0 - Enhanced Edition
-      </div>
+    <div className="min-h-screen bg-amber-50 flex flex-col items-center">
       {/* Main content area */}
-      <main className="flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center">
+      <main className="flex-1 w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center bg-amber-50">
         <div className="text-center mb-10">
           <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-6 text-teal-600">
-            <span className="text-teal-700 font-bold">A</span>
-            <span style={{ fontSize: 'calc(100% - 2pt)' }} className="text-teal-600">sk</span>
-            <span className="text-teal-700 font-bold">E</span>
-            <span style={{ fontSize: 'calc(100% - 2pt)' }} className="text-teal-600">dith</span>
-            <span className="text-xs align-top bg-amber-100 text-amber-700 px-1 py-0.5 rounded ml-1">2.0</span>
+            <span>A</span>
+            <span style={{ fontSize: 'calc(100% - 2pt)' }}>sk</span>
+            <span>E</span>
+            <span style={{ fontSize: 'calc(100% - 2pt)' }}>dith</span>
           </h1>
           <p className="text-2xl md:text-3xl text-gray-600 font-light mb-10">
             Share Once. Reach Many.
@@ -68,7 +63,7 @@ export default function Home() {
             <Button 
               onClick={startWizard}
               size="lg"
-              className="bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white text-lg px-8 py-6 rounded-full transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 w-full md:w-auto border-2 border-teal-400"
+              className="bg-teal-600 hover:bg-teal-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 w-full md:w-auto"
             >
               Let's Begin 
               <ArrowRight className="ml-2 h-5 w-5" />
