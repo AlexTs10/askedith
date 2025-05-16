@@ -12,9 +12,13 @@ const NYLAS_CLIENT_ID = process.env.NYLAS_CLIENT_ID || '12acd056-2644-46b2-9199-
 const NYLAS_CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET;
 const NYLAS_API_KEY = process.env.NYLAS_CLIENT_SECRET; // In V3, the client secret is used as the API key
 const NYLAS_API_URI = 'https://api.us.nylas.com'; // US region API URI
-// Make sure this matches what's registered in the Nylas dashboard
-// (Default Replit URL with specific callback path)
-const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
+
+// Use the Replit-specific domain with preview subdomain for better connectivity
+// This should help with callback issues
+const REPLIT_DOMAIN = process.env.REPL_SLUG ? `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'askcara-project.elias18.repl.co';
+const NYLAS_REDIRECT_URI = `https://${REPLIT_DOMAIN}/callback`;
+
+console.log('Using Nylas redirect URI:', NYLAS_REDIRECT_URI);
 
 // Configure Nylas instance
 let nylasClient;
@@ -112,12 +116,11 @@ export async function exchangeCodeForToken(code) {
       redirectUri: NYLAS_REDIRECT_URI,
     };
     
-    // Add Google credentials if the auth flow is for Gmail
-    if (code.includes('gmail') || code.includes('google')) {
-      exchangeParams.googleClientId = GOOGLE_CLIENT_ID;
-      exchangeParams.googleClientSecret = GOOGLE_CLIENT_SECRET;
-      console.log('Using Google OAuth credentials for token exchange');
-    }
+    // Always include Google credentials regardless of code content
+    // This helps with authentication regardless of the email provider
+    exchangeParams.googleClientId = GOOGLE_CLIENT_ID;
+    exchangeParams.googleClientSecret = GOOGLE_CLIENT_SECRET;
+    console.log('Including Google OAuth credentials for token exchange');
     
     const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
     

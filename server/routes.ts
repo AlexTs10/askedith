@@ -246,10 +246,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Handle Nylas OAuth callback
+  // Handle Nylas OAuth callback with improved error handling
   app.get("/callback", async (req, res) => {
     try {
-      const { code } = req.query;
+      console.log('Callback received with query params:', req.query);
+      const { code, error, error_description } = req.query;
+      
+      // Check for OAuth error response
+      if (error) {
+        console.error(`OAuth error: ${error} - ${error_description}`);
+        return res.send(`
+          <html>
+            <head>
+              <title>Email Connection Failed</title>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif; 
+                  text-align: center; 
+                  margin-top: 50px;
+                  background-color: #f7f7f7;
+                }
+                .container {
+                  background-color: white;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 40px;
+                  border-radius: 10px;
+                  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                h1 { color: #e11d48; }
+                .error-icon {
+                  font-size: 60px;
+                  color: #e11d48;
+                  margin-bottom: 20px;
+                }
+                .error-details {
+                  background-color: #ffe4e6;
+                  padding: 15px;
+                  border-radius: 5px;
+                  text-align: left;
+                  margin: 20px 0;
+                }
+                .btn {
+                  display: inline-block;
+                  background-color: #0e7490;
+                  color: white;
+                  padding: 12px 24px;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                  margin-top: 20px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="error-icon">✖</div>
+                <h1>Email Connection Failed</h1>
+                <p>There was an error connecting your email account.</p>
+                <div class="error-details">
+                  <strong>Error:</strong> ${error}<br>
+                  <strong>Description:</strong> ${error_description || 'No description provided'}
+                </div>
+                <p>Please try again or use the Simple Email option instead.</p>
+                <a href="/email-setup" class="btn">Return to Email Setup</a>
+              </div>
+            </body>
+          </html>
+        `);
+      }
       
       if (!code || typeof code !== 'string') {
         console.error('No authorization code provided in callback');
@@ -260,26 +325,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Process the authorization code using Nylas SDK V3
       const nylasHelper = await import('./nylas-sdk-v3.js');
-      const grantId = await nylasHelper.exchangeCodeForToken(code);
       
-      console.log('Successfully obtained Nylas grant ID');
-      
-      // Store the grant ID in session
-      if (req.session) {
-        req.session.nylasGrantId = grantId;
-        console.log('Saved Nylas grant ID in session');
+      try {
+        // Exchange code for token with detailed error logging
+        console.log('Attempting to exchange code for token...');
+        const grantId = await nylasHelper.exchangeCodeForToken(code);
+        console.log('Successfully obtained Nylas grant ID');
         
-        // Create folder structure for the user using their grant ID
-        console.log('Creating folder structure in email account...');
-        const folderResult = await nylasHelper.createFolderStructure(grantId);
-        console.log('Folder creation result:', folderResult);
+        // Store the grant ID in session
+        if (req.session) {
+          req.session.nylasGrantId = grantId;
+          console.log('Saved Nylas grant ID in session');
+          
+          // Create folder structure for the user using their grant ID
+          console.log('Creating folder structure in email account...');
+          const folderResult = await nylasHelper.createFolderStructure(grantId);
+          console.log('Folder creation result:', folderResult);
+        }
+        
+        // Display success page
+        res.send(`
+          <html>
+            <head>
+              <title>Email Connected Successfully</title>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif; 
+                  text-align: center; 
+                  margin-top: 50px;
+                  background-color: #f7f7f7;
+                }
+                .container {
+                  background-color: white;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 40px;
+                  border-radius: 10px;
+                  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                h1 { color: #0e7490; }
+                .success-icon {
+                  font-size: 60px;
+                  color: #22c55e;
+                  margin-bottom: 20px;
+                }
+                .btn {
+                  display: inline-block;
+                  background-color: #0e7490;
+                  color: white;
+                  padding: 12px 24px;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                  margin-top: 20px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="success-icon">✓</div>
+                <h1>Email Connected Successfully!</h1>
+                <p>Your email account has been successfully connected to AskEdith.</p>
+                <p>We've created folders to organize provider responses by category.</p>
+                <a href="/email-preview" class="btn">Return to Email Preview</a>
+              </div>
+              <script>
+                // Notify parent window of successful connection
+                if (window.opener) {
+                  window.opener.postMessage({ type: 'NYLAS_CONNECTION_SUCCESS' }, '*');
+                }
+              </script>
+            </body>
+          </html>
+        `);
+      } catch (tokenError) {
+        console.error('Token exchange error:', tokenError);
+        return res.send(`
+          <html>
+            <head>
+              <title>Email Connection Failed</title>
+              <style>
+                body { 
+                  font-family: Arial, sans-serif; 
+                  text-align: center; 
+                  margin-top: 50px;
+                  background-color: #f7f7f7;
+                }
+                .container {
+                  background-color: white;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 40px;
+                  border-radius: 10px;
+                  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                h1 { color: #e11d48; }
+                .error-icon {
+                  font-size: 60px;
+                  color: #e11d48;
+                  margin-bottom: 20px;
+                }
+                .error-details {
+                  background-color: #ffe4e6;
+                  padding: 15px;
+                  border-radius: 5px;
+                  text-align: left;
+                  margin: 20px 0;
+                }
+                .btn {
+                  display: inline-block;
+                  background-color: #0e7490;
+                  color: white;
+                  padding: 12px 24px;
+                  text-decoration: none;
+                  border-radius: 6px;
+                  font-weight: bold;
+                  margin-top: 20px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="error-icon">✖</div>
+                <h1>Email Connection Failed</h1>
+                <p>There was an error processing your authorization.</p>
+                <div class="error-details">
+                  <strong>Error:</strong> ${tokenError.message || 'Unknown error during token exchange'}
+                </div>
+                <p>Please try again or use the Simple Email option instead.</p>
+                <a href="/email-setup" class="btn">Return to Email Setup</a>
+              </div>
+            </body>
+          </html>
+        `);
       }
-      
-      // Display success page
-      res.send(`
+    } catch (error) {
+      console.error('Error processing OAuth callback:', error);
+      res.status(500).send(`
         <html>
           <head>
-            <title>Email Connected Successfully</title>
+            <title>Email Connection Failed</title>
             <style>
               body { 
                 font-family: Arial, sans-serif; 
@@ -295,10 +480,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 border-radius: 10px;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
               }
-              h1 { color: #0e7490; }
-              .success-icon {
+              h1 { color: #e11d48; }
+              .error-icon {
                 font-size: 60px;
-                color: #22c55e;
+                color: #e11d48;
                 margin-bottom: 20px;
               }
               .btn {
@@ -315,18 +500,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           </head>
           <body>
             <div class="container">
-              <div class="success-icon">✓</div>
-              <h1>Email Connected Successfully!</h1>
-              <p>Your email account has been successfully connected to AskEdith.</p>
-              <p>We've created folders to organize provider responses by category.</p>
-              <a href="/email-preview" class="btn">Return to Email Preview</a>
+              <div class="error-icon">✖</div>
+              <h1>Email Connection Failed</h1>
+              <p>An unexpected error occurred. Please try again.</p>
+              <a href="/email-setup" class="btn">Return to Email Setup</a>
             </div>
           </body>
         </html>
       `);
-    } catch (error) {
-      console.error('Error processing OAuth callback:', error);
-      res.status(500).send('Error connecting your email account. Please try again.');
     }
   });
 
