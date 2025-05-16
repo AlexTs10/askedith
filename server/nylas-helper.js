@@ -5,7 +5,11 @@
  * without TypeScript constraints, allowing us to work with the actual SDK structure.
  */
 
-import Nylas from 'nylas';
+// Using direct API calls instead of SDK to avoid compatibility issues
+import fetch from 'node-fetch';
+
+// Base URL for Nylas API
+const API_BASE_URL = 'https://api.nylas.com';
 
 // Resource categories
 const MAIN_FOLDER_NAME = 'AskEdith';
@@ -22,12 +26,6 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
   console.warn('Nylas API credentials not found or incomplete. Email integration will be limited.');
 } else {
   console.log('Nylas credentials found. Email integration is available.');
-  
-  // Configure Nylas with credentials
-  Nylas.config({
-    clientId: process.env.NYLAS_CLIENT_ID,
-    clientSecret: process.env.NYLAS_CLIENT_SECRET
-  });
 }
 
 /**
@@ -35,11 +33,24 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
  */
 export function generateAuthUrl(email, redirectUri) {
   try {
-    return Nylas.urlForAuthentication({
-      redirectURI: redirectUri,
-      loginHint: email,
-      scopes: ['email.modify', 'email.send']
-    });
+    // According to Nylas documentation, we should use a fixed redirect URI 
+    // that's registered with Nylas in their dashboard
+    const callbackUrl = 'https://askcara-project.elias18.repl.co/callback';
+    
+    console.log('Using standard callback URL for OAuth:', callbackUrl);
+    
+    // Based on Nylas V3 docs, these are the scopes needed for Gmail integration
+    const scopes = 'email.read_only email.modify email.send email.folders.read_only email.folders.modify';
+    
+    // Build the OAuth URL exactly as specified in the Nylas docs
+    // Using template string to ensure the client_id is properly formatted
+    const authUrl = `${API_BASE_URL}/oauth/authorize?client_id=${encodeURIComponent(process.env.NYLAS_CLIENT_ID)}&response_type=code&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(callbackUrl)}&login_hint=${encodeURIComponent(email)}`;
+    
+    // Create URL object from the template string
+    const url = new URL(authUrl);
+    
+    console.log('Generated Nylas auth URL:', url.toString());
+    return url.toString();
   } catch (error) {
     console.error('Error generating auth URL:', error);
     throw error;
