@@ -62,7 +62,8 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/nylas/auth-url', {
+      // Instead of OAuth flow, we'll store the email for personalized messaging
+      const response = await fetch('/api/store-user-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,26 +71,27 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
         body: JSON.stringify({ email: data.email }),
       });
       
-      const result = await response.json();
-      
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate authentication URL');
+        const result = await response.json();
+        throw new Error(result.error || 'Failed to store email preference');
       }
       
+      // Set as connected for the UI
+      setIsConnected(true);
+      setIsOpen(false);
+      
       toast({
-        title: 'Connecting to Email',
-        description: 'You will be redirected to your email provider to authorize access.',
+        title: 'Email Preference Saved',
+        description: 'Your emails will be personalized with your address as the reply-to contact.',
       });
       
-      // Redirect to Nylas auth page
-      console.log('Auth URL:', result.authUrl);
-      // Use window.open instead of location.href to open in a new tab
-      window.open(result.authUrl, '_blank');
+      // Call the onConnect callback if provided
+      if (onConnect) onConnect();
     } catch (error) {
-      console.error('Error connecting to email:', error);
+      console.error('Error setting email preference:', error);
       toast({
-        title: 'Connection Error',
-        description: 'Failed to connect to your email. Please try again.',
+        title: 'Update Error',
+        description: 'Failed to save your email preference. Please try again.',
         variant: 'destructive',
       });
     } finally {

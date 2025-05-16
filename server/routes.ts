@@ -234,6 +234,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Store user email preference
+  app.post("/api/store-user-email", (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Email address is required" 
+        });
+      }
+      
+      // Store the email in session
+      if (req.session) {
+        req.session.userEmail = email;
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Email preference saved" 
+      });
+    } catch (error) {
+      console.error("Error storing user email:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to store email preference" 
+      });
+    }
+  });
+
   // Setup SendGrid API key
   app.post("/api/setup-sendgrid", async (req, res) => {
     try {
