@@ -13,6 +13,7 @@ const NYLAS_AUTH_URI = 'https://api.nylas.com/oauth/authorize'; // Auth still us
 const NYLAS_TOKEN_URI = 'https://api.nylas.com/oauth/token'; // Token exchange still uses old endpoint
 const NYLAS_CLIENT_ID = '12acd056-2644-46b2-9199-5d7fdcf9a86b'; // Using direct client ID
 const NYLAS_CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET;
+// Using the exact URI as registered in the Nylas Dashboard
 const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
 
 // Email folder structure
