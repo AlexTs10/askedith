@@ -65,12 +65,10 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
       // Important: Save the user's email to use in the authorization flow
       localStorage.setItem('nylas_auth_email', data.email);
       
-      // Get the current deployed URL - this is critical for the redirect to work
-      const currentUrl = window.location.href;
-      const baseUrl = currentUrl.split('/').slice(0, 3).join('/');
-      const callbackUrl = `${baseUrl}/callback`;
+      // Use the exact authenticated redirect URI you registered with Nylas
+      const callbackUrl = 'https://askcara-project.elias18.repl.co/callback';
       
-      console.log('Using callback URL for OAuth:', callbackUrl);
+      console.log('Using authenticated callback URL for OAuth:', callbackUrl);
       
       // Request a Nylas OAuth URL for the provided email
       const response = await fetch('/api/nylas/auth-url', {
