@@ -3,7 +3,7 @@
  */
 
 import { Request, Response, Router } from 'express';
-// Import functions from our fully updated Nylas V3 API implementation
+// Import functions from our Nylas SDK V3 implementation
 import {
   generateNylasAuthUrl,
   exchangeCodeForToken,
@@ -11,7 +11,7 @@ import {
   sendEmailWithNylas,
   checkNylasConnection,
   getMessagesFromCategory
-} from './nylas-v3-api.js';
+} from './nylas-sdk-v3.js';
 import { EmailData } from './emailService';
 
 const router = Router();
@@ -50,9 +50,9 @@ router.get('/nylas/callback', async (req: Request, res: Response) => {
     // Exchange the auth code for an access token
     const accessToken = await exchangeCodeForToken(code);
     
-    // Store the token in session
+    // Store the grant ID in session (V3 API uses grant IDs instead of access tokens)
     if (req.session) {
-      req.session.nylasAccessToken = accessToken;
+      req.session.nylasGrantId = accessToken; // Variable name remains for backward compatibility
       
       // Create folder structure for the user
       await createFolderStructure(accessToken);
@@ -68,12 +68,12 @@ router.get('/nylas/callback', async (req: Request, res: Response) => {
 
 // Check connection status
 router.get('/nylas/connection-status', async (req: Request, res: Response) => {
-  if (!req.session?.nylasAccessToken) {
+  if (!req.session?.nylasGrantId) {
     return res.json({ connected: false });
   }
   
   try {
-    const connected = await checkNylasConnection(req.session.nylasAccessToken);
+    const connected = await checkNylasConnection(req.session.nylasGrantId);
     res.json({ connected });
   } catch (error) {
     console.error('Error checking connection status:', error);

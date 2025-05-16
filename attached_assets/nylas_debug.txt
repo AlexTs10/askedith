@@ -1,0 +1,166 @@
+Based on the error message and the documentation, there are a few key issues to check:
+
+    API Endpoints: You're using https://api.nylas.com/oauth/authorize but for v3 you should be using the regional endpoints. The correct base URL should be https://api.us.nylas.com for US region or https://api.eu.nylas.com for EU region 1.
+
+    Environment Setup: Make sure you have properly stored your environment variables:
+
+    NYLAS_CLIENT_ID
+    NYLAS_API_KEY
+    NYLAS_API_URI
+
+    Authentication Flow: For v3, you need to implement the correct authentication flow using:
+
+    The proper regional API URI
+    Your client ID
+    A registered callback URI that exactly matches what's in your code
+
+    Callback URI: Ensure your callback URI is properly registered in the Nylas Dashboard under Application > Hosted Authentication > Callback URIs > Add Callback URI 2
+
+To help debug this, I recommend:
+
+    Verify you're using the v3 endpoints and not the deprecated v2 endpoints 1
+    Double-check that your callback URI is exactly registered as shown in the dashboard 2
+    Ensure you're using the correct API region URI in your environment variables 1
+
+Would you like me to provide code examples for implementing the correct authentication flow?
+
+First, let's set up the Node.js initialization:
+import Nylas from "nylas";
+
+const nylas = new Nylas({ 
+  apiKey: "<NYLAS_API_KEY>", 
+  apiUri: "<NYLAS_API_URI>",
+});
+
+Then implement the authentication flow:
+import 'dotenv/config';
+import express from 'express';
+import Nylas from 'nylas';
+
+const AuthConfig = { 
+  clientId: process.env.NYLAS_CLIENT_ID,
+  redirectUri: "http://localhost:3000/oauth/exchange",
+};
+
+const NylasConfig = { 
+  apiKey: process.env.NYLAS_API_KEY,
+  apiUri: process.env.NYLAS_API_URI,
+};
+
+const nylas = new Nylas(NylasConfig);
+
+app.get('/nylas/auth', (req, res) => {
+  const authUrl = nylas.auth.urlForOAuth2({ 
+    clientId: AuthConfig.clientId,
+    provider: 'google',
+    redirectUri: AuthConfig.redirectUri,
+    loginHint: '<USER_EMAIL>',
+    scope: ['email']
+  })
+  res.redirect(authUrl);
+});
+
+app.get("/oauth/callback", async (req, res) => {
+  const code = req.query.code;
+  
+  if (!code) {
+    res.status(400).send("No authorization code returned from Nylas");
+    return;
+  }
+
+  try {
+    const response = await nylas.auth.exchangeCodeForToken({
+      clientSecret: config.clientSecret,
+      clientId: config.clientId, 
+      code,
+      redirectUri: config.redirectUri,
+    });
+
+    const { grantId } = response;
+    console.log({ grantId });
+    res.status(200).send({ grantId });
+  } catch (error) {
+    console.error("Error exchanging code for token:", error);
+    res.status(500).send("Failed to exchange authorization code for token");
+  }
+});
+
+Key points to check:
+
+    Environment Variables: Make sure you have properly set up:
+
+    NYLAS_API_KEY
+    NYLAS_API_URI
+    NYLAS_GRANT_ID
+
+    API URI: Use the correct regional endpoint:
+
+    United States (Oregon): https://api.us.nylas.com
+    Europe (Ireland): https://api.eu.nylas.com
+
+    Callback URIs: Your callback URI must be registered in your Nylas application and match exactly what you use in your code. The callback URI should include the protocol and Nylas only accepts HTTP for localhost development. Otherwise, you must use HTTPS. 2
+
+    OAuth Flow: The OAuth protocol requires that you include the client_secret field for calls made to this endpoint, depending on the platform you define. If you're using OAuth 2.0 with PKCE and your platform is js, ios, android, or desktop, the client_secret field is not required. 3
+
+Would you like me to provide more details about any of these aspects or explain how to implement specific parts of the flow?
+
+
+
+    You don't "find" a Grant ID - it's generated when a user successfully authenticates. Nylas creates only one grant per email address in each application1.
+
+    Here's how to get the Grant ID through the authentication flow:
+
+app.get("/oauth/exchange", async (req, res) => {
+  const code = req.query.code;
+
+  if (!code) {
+    res.status(400).send("No authorization code returned from Nylas");
+    return;
+  }
+
+  try {
+    const response = await nylas.auth.exchangeCodeForToken({
+      clientSecret: nylasConfig.apiKey,
+      clientId: nylasConfig.clientId,
+      redirectUri: nylasConfig.callbackUri,
+      code,
+    });
+    
+    const { grantId } = response;
+    
+    // Store this grantId in your database, associated with your user
+    console.log(response.grantId);
+    
+    res.json({
+      message: "OAuth2 flow completed successfully for grant ID: " + grantId,
+    });
+  } catch (error) {
+    res.status(500).send("Failed to exchange authorization code for token");
+  }
+});
+
+Once you have the grant ID you use it along with your API key for all future API calls. For example, to get messages:
+app.get("/nylas/recent-emails", async (req, res) => {
+  try {
+    const grantId = fetchUserGrantIdFromYourDb(); // This is an example, you'll have to write this
+    const messages = await nylas.messages.list({
+      identifier: grantId,
+      queryParams: {
+        limit: 5,
+      },
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching emails:", error);
+  }
+});
+
+Remember:
+
+    The Grant ID is created when a user successfully authenticates
+    You need to store it in your database associated with your user
+    You'll use this Grant ID along with your API key for all future API calls for that specific user
+    Each email address gets only one grant per application1
+
+Would you like me to provide more examples of how to use the Grant ID in API calls?
