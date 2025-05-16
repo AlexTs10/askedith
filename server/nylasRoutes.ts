@@ -3,7 +3,7 @@
  */
 
 import { Request, Response, Router } from 'express';
-// Import all functions from our new V3 direct implementation
+// Import functions from our fully updated Nylas V3 API implementation
 import {
   generateNylasAuthUrl,
   exchangeCodeForToken,
@@ -11,7 +11,7 @@ import {
   sendEmailWithNylas,
   checkNylasConnection,
   getMessagesFromCategory
-} from './nylas-v3-direct.js';
+} from './nylas-v3-api.js';
 import { EmailData } from './emailService';
 
 const router = Router();
