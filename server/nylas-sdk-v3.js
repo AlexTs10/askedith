@@ -58,8 +58,8 @@ export function generateNylasAuthUrl(email) {
         'https://www.googleapis.com/auth/gmail.readonly',  // For reading emails (minimal)
         'https://www.googleapis.com/auth/gmail.send'       // For sending emails (minimal)
       ],
-      // Add additional parameters to improve Google OAuth compatibility
-      prompt: 'select_account consent',
+      // Add additional parameters for OAuth compatibility
+      prompt: 'consent',
       access_type: 'offline'
     });
     
