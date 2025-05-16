@@ -1,0 +1,50 @@
+See error and explanation from Nylas:
+Error:
+'''
+Error
+
+Sorry, an error occurred :(
+
+Status 60001:
+
+scope_not_allowed
+
+Scope 'email.read_only' not allowed for provider 'google'
+"""
+
+Nylas explanation:
+'''
+This error occurs because the scope 'email.read_only' is not a valid scope for Google authentication with Nylas. For Google, you need to use the correct Google-specific scopes1. Here are the valid read-only scopes for Google:
+
+    https://www.googleapis.com/auth/gmail.readonly - View messages
+    https://www.googleapis.com/auth/calendar.readonly - View calendars and events
+    https://www.googleapis.com/auth/calendar.events.readonly - View events on all calendars
+
+When this type of scope error occurs, it returns a common.scope_not_allowed error type with a 400 status code indicating "One or more provided scopes is not allowed"2.
+
+To resolve this, you'll need to re-authenticate using the correct Google scopes for your needs.
+
+To re-authenticate with the correct Google scopes:
+
+    First, identify which scopes you need based on what API endpoints you plan to use 1
+
+    For Google authentication, you'll need to create a Google connector that includes your Google Cloud Platform (GCP) client_id and client_secret, and specify the default scopes you need 2
+
+    When making the authentication request:
+        Use the Bearer auth request header with your Nylas application's API key
+        Set provider_type: "google"
+        Include any non-default scopes you need
+
+    For email access specifically, here are the minimum required Google scopes:
+        For read-only access: /gmail.readonly 1
+        For modifying messages: /gmail.modify
+        For sending emails: /gmail.send
+
+The scopes must match exactly or be a subset of the scopes configured in your Google Cloud Platform app 
+
+I recommend checking the Authentication scopes documentation for a complete list of scopes based on which specific Nylas APIs you need to use 1
+https://developer.nylas.com/docs/v3/auth/v3-scopes 
+
+https://www.nylas.com/products/email-api/what-is-email-authentication/ 
+
+https://www.nylas.com/api-guide/api-authentication-authorization/api-authentication-methods/

@@ -48,12 +48,18 @@ export function generateNylasAuthUrl(email) {
       throw new Error('Nylas client not initialized');
     }
     
-    // Generate auth URL using the SDK
+    // Generate auth URL using the SDK with proper Google-specific scopes
     const authUrl = nylasClient.auth.urlForOAuth2({
       clientId: NYLAS_CLIENT_ID,
       redirectUri: NYLAS_REDIRECT_URI,
       loginHint: email,
-      scope: ['email.read_only', 'email.modify', 'email.send', 'email.folders.read_only', 'email.folders.modify'],
+      // Use Google-specific scopes instead of Nylas generic scopes
+      scope: [
+        'https://www.googleapis.com/auth/gmail.readonly',  // For reading emails
+        'https://www.googleapis.com/auth/gmail.modify',    // For modifying emails
+        'https://www.googleapis.com/auth/gmail.send',      // For sending emails
+        'https://www.googleapis.com/auth/gmail.labels'     // For managing folders/labels
+      ],
     });
     
     console.log('Generated Nylas auth URL with SDK');
