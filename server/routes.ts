@@ -234,6 +234,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Handle Nylas OAuth callback
+  app.get("/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        console.error('No authorization code provided in callback');
+        return res.status(400).send('Error: No authorization code provided');
+      }
+      
+      console.log('Received Nylas callback with code:', code);
+      
+      // Process the authorization code
+      const nylasHelper = await import('./nylas-direct.js');
+      const accessToken = await nylasHelper.exchangeCodeForToken(code, 'http://localhost:3000/callback');
+      
+      // Store the access token in session
+      if (req.session) {
+        req.session.nylasAccessToken = accessToken;
+        
+        // Create folder structure for the user
+        await nylasHelper.createFolderStructure(accessToken);
+      }
+      
+      // Display success page
+      res.send(`
+        <html>
+          <head>
+            <title>Email Connected Successfully</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                margin-top: 50px;
+                background-color: #f7f7f7;
+              }
+              .container {
+                background-color: white;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 40px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              }
+              h1 { color: #0e7490; }
+              .success-icon {
+                font-size: 60px;
+                color: #22c55e;
+                margin-bottom: 20px;
+              }
+              .btn {
+                display: inline-block;
+                background-color: #0e7490;
+                color: white;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                margin-top: 20px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="success-icon">✓</div>
+              <h1>Email Connected Successfully!</h1>
+              <p>Your email account has been successfully connected to AskEdith.</p>
+              <p>We've created folders to organize provider responses by category.</p>
+              <a href="/email-preview" class="btn">Return to Email Preview</a>
+            </div>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Error processing OAuth callback:', error);
+      res.status(500).send('Error connecting your email account. Please try again.');
+    }
+  });
+
   // Store user email preference
   app.post("/api/store-user-email", (req, res) => {
     try {
