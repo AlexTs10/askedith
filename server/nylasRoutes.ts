@@ -10,7 +10,7 @@ import {
   sendEmailWithNylas,
   checkNylasConnection,
   getMessagesFromCategory
-} from './nylasService';
+} from './direct-nylas-api.js';
 import { EmailData } from './emailService';
 
 const router = Router();
@@ -24,11 +24,8 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Always use the fixed, registered redirect URI
-    const callbackUri = 'https://askcara-project.elias18.repl.co/callback';
-    console.log('Using registered callback URI for Nylas:', callbackUri);
-    
-    const authUrl = generateAuthUrl(email, callbackUri);
+    // Our direct API implementation handles the redirect URI internally
+    const authUrl = generateAuthUrl(email);
     
     res.json({ authUrl });
   } catch (error) {
@@ -46,14 +43,11 @@ router.get('/nylas/callback', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Always use the exact same registered redirect URI
-    // This MUST match exactly what was used in the initial auth URL generation
-    const redirectUri = 'https://askcara-project.elias18.repl.co/callback';
-    
-    console.log('Using exact redirect URI for token exchange:', redirectUri);
+    // Our direct API implementation handles the redirect URI internally
+    console.log('Exchanging code for access token');
     
     // Exchange the auth code for an access token
-    const accessToken = await exchangeCodeForToken(code, redirectUri);
+    const accessToken = await exchangeCodeForToken(code);
     
     // Store the token in session
     if (req.session) {
