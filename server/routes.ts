@@ -1,8 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+// Import the Nylas routes
+const nylasRoutes = require('./nylas-routes');
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register Nylas routes
+  app.use('/api', nylasRoutes);
   // Get all resources
   app.get("/api/resources", async (req, res) => {
     try {

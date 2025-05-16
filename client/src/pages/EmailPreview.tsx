@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Edit, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
+import { NylasConnect } from '@/components/NylasConnect';
 
 export default function EmailPreview() {
   const { index = "0" } = useParams();
@@ -151,8 +152,12 @@ export default function EmailPreview() {
                 </p>
               </div>
               
-              <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
-                Email {currentIndex + 1} of {state.emailsToSend.length}
+              <div className="flex items-center gap-3">
+                <NylasConnect userEmail={currentEmail?.replyTo || state.answers?.q14?.email} />
+                
+                <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
+                  Email {currentIndex + 1} of {state.emailsToSend.length}
+                </div>
               </div>
             </div>
           </div>
