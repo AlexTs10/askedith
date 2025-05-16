@@ -6,8 +6,8 @@ import { storage } from "./storage";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register Nylas routes dynamically
   try {
-    // Use ESM dynamic import for the Nylas routes
-    const { default: nylasRoutes } = await import('./nylas-routes.js');
+    // Use ESM dynamic import for the Nylas routes (updated to TypeScript version)
+    const { default: nylasRoutes } = await import('./nylasRoutes');
     app.use('/api', nylasRoutes);
   } catch (error) {
     console.error('Failed to load Nylas routes:', error);
@@ -65,23 +65,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required email fields" });
       }
       
-      // Check if the user has a Nylas connection
+      // Check if the user has a Nylas connection using V3 SDK
       try {
-        const nylasHelper = await import('./nylas-helper.js');
-        const hasNylasConnection = req.session?.nylasAccessToken && 
-          await nylasHelper.checkNylasConnection(req.session.nylasAccessToken);
+        const nylasSDK = await import('./nylas-sdk-v3.js');
+        const hasNylasConnection = req.session?.nylasGrantId && 
+          await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
         
         let result;
         
-        if (hasNylasConnection && req.session?.nylasAccessToken) {
-          // Use Nylas to send the email if the user has connected their account
-          console.log('Using Nylas to send email');
+        if (hasNylasConnection && req.session?.nylasGrantId) {
+          // Use Nylas V3 SDK to send the email if the user has connected their account
+          console.log('Using Nylas V3 SDK to send email with grant ID');
           const emailData = { to, subject, body, replyTo };
           // Use the email category if provided, otherwise use a default
           const emailCategory = category || 'Other';
           
-          result = await nylasHelper.sendEmailWithNylas(
-            req.session.nylasAccessToken, 
+          result = await nylasSDK.sendEmailWithNylas(
+            req.session.nylasGrantId, 
             emailData, 
             emailCategory
           );
@@ -152,21 +152,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       try {
-        // Check if the user has a Nylas connection
-        const nylasHelper = await import('./nylas-helper.js');
-        const hasNylasConnection = req.session?.nylasAccessToken && 
-          await nylasHelper.checkNylasConnection(req.session.nylasAccessToken);
+        // Check if the user has a Nylas connection using V3 SDK
+        const nylasSDK = await import('./nylas-sdk-v3.js');
+        const hasNylasConnection = req.session?.nylasGrantId && 
+          await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
         
         let result;
         
-        if (hasNylasConnection && req.session?.nylasAccessToken) {
-          // Use Nylas for batch email sending
-          console.log('Using Nylas to send batch emails');
+        if (hasNylasConnection && req.session?.nylasGrantId) {
+          // Use Nylas V3 SDK for batch email sending
+          console.log('Using Nylas V3 SDK to send batch emails with grant ID');
           
           // Send all emails through Nylas
           const nylasResults = await Promise.all(
-            emails.map(email => nylasHelper.sendEmailWithNylas(
-              req.session.nylasAccessToken,
+            emails.map(email => nylasSDK.sendEmailWithNylas(
+              req.session.nylasGrantId,
               {
                 to: email.to,
                 subject: email.subject,
@@ -267,24 +267,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Received Nylas callback with code:', code);
       
-      // Process the authorization code
-      // Use the same callback URL that was used to generate the auth URL
-      const callbackUrl = 'http://localhost:3000/callback';
-      console.log('Using callback URL for token exchange:', callbackUrl);
+      // Process the authorization code using Nylas SDK V3
+      const nylasHelper = await import('./nylas-sdk-v3.js');
+      const grantId = await nylasHelper.exchangeCodeForToken(code);
       
-      const nylasHelper = await import('./nylas-direct.js');
-      const accessToken = await nylasHelper.exchangeCodeForToken(code, callbackUrl);
+      console.log('Successfully obtained Nylas grant ID');
       
-      console.log('Successfully obtained Nylas access token');
-      
-      // Store the access token in session
+      // Store the grant ID in session
       if (req.session) {
-        req.session.nylasAccessToken = accessToken;
-        console.log('Saved Nylas access token in session');
+        req.session.nylasGrantId = grantId;
+        console.log('Saved Nylas grant ID in session');
         
-        // Create folder structure for the user
+        // Create folder structure for the user using their grant ID
         console.log('Creating folder structure in email account...');
-        const folderResult = await nylasHelper.createFolderStructure(accessToken);
+        const folderResult = await nylasHelper.createFolderStructure(grantId);
         console.log('Folder creation result:', folderResult);
       }
       
