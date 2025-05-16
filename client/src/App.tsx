@@ -13,6 +13,7 @@ import Callback from "@/pages/Callback";
 import Confirmation from "@/pages/Confirmation";
 import AdminDashboard from "@/pages/Admin";
 import PrintableResults from "@/pages/PrintableResults";
+import NylasTest from "@/pages/NylasTest";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/printable" component={PrintableResults} />
+      <Route path="/nylas-test" component={NylasTest} />
       <Route component={NotFound} />
     </Switch>
   );
