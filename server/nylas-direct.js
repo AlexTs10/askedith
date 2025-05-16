@@ -32,9 +32,7 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
  */
 export function generateAuthUrl(email, redirectUri) {
   try {
-    // According to Nylas documentation, we should use a fixed redirect URI 
-    // that's registered in the Nylas dashboard
-    // Using your Replit domain with a standard callback path
+    // Always use the registered callback URL
     const callbackUrl = 'https://askcara-project.elias18.repl.co/callback';
     
     console.log('Using standard callback URL for OAuth:', callbackUrl);
@@ -42,16 +40,16 @@ export function generateAuthUrl(email, redirectUri) {
     // Based on Nylas V3 docs, these are the scopes needed for Gmail integration
     const scopes = 'email.read_only email.modify email.send email.folders.read_only email.folders.modify';
     
-    // Build the OAuth URL exactly as specified in the Nylas docs
-    const url = new URL(`${API_BASE_URL}/oauth/authorize`);
-    url.searchParams.append('client_id', process.env.NYLAS_CLIENT_ID);
-    url.searchParams.append('response_type', 'code');
-    url.searchParams.append('scope', scopes);
-    url.searchParams.append('redirect_uri', callbackUrl);
-    url.searchParams.append('login_hint', email);
+    // Directly build the URL string with proper encoding to avoid any parameter issues
+    const authUrl = `${API_BASE_URL}/oauth/authorize` + 
+                    `?client_id=${encodeURIComponent(process.env.NYLAS_CLIENT_ID)}` +
+                    `&response_type=code` +
+                    `&scope=${encodeURIComponent(scopes)}` +
+                    `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+                    `&login_hint=${encodeURIComponent(email)}`;
     
-    console.log('Generated Nylas auth URL:', url.toString());
-    return url.toString();
+    console.log('Generated Nylas auth URL:', authUrl);
+    return authUrl;
   } catch (error) {
     console.error('Error generating auth URL:', error);
     throw error;

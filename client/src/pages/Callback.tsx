@@ -24,13 +24,11 @@ export default function NylasCallback() {
         
         console.log('Authorization code received:', code);
         
-        // Get the current URL to use as the redirect URI
-        // This must match exactly what was used to generate the auth URL
-        const currentUrl = window.location.href;
-        const baseUrl = currentUrl.split('/').slice(0, 3).join('/');
-        const callbackUrl = `${baseUrl}/callback`;
+        // Use the exact same redirect URI that we registered with Nylas
+        // This MUST match exactly what was used in the auth URL generation
+        const callbackUrl = 'https://askcara-project.elias18.repl.co/callback';
         
-        console.log('Using callback URL for token exchange:', callbackUrl);
+        console.log('Using registered callback URL for token exchange:', callbackUrl);
         
         // Send the code to the backend with the exact same redirect URI
         const response = await fetch(`/api/nylas/callback?code=${code}&redirect_uri=${encodeURIComponent(callbackUrl)}`);

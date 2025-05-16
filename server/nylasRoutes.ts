@@ -24,9 +24,9 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Use the provided redirectUri from the frontend or generate one
-    const callbackUri = redirectUri || `${req.protocol}://${req.get('host')}/callback`;
-    console.log('Using callback URI for Nylas:', callbackUri);
+    // Always use the fixed, registered redirect URI
+    const callbackUri = 'https://askcara-project.elias18.repl.co/callback';
+    console.log('Using registered callback URI for Nylas:', callbackUri);
     
     const authUrl = generateAuthUrl(email, callbackUri);
     
@@ -46,16 +46,9 @@ router.get('/nylas/callback', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Use the redirect URI provided by the client
+    // Always use the exact same registered redirect URI
     // This MUST match exactly what was used in the initial auth URL generation
-    let redirectUri: string;
-    
-    if (redirect_uri && typeof redirect_uri === 'string') {
-      redirectUri = redirect_uri;
-    } else {
-      // Fallback if no redirect_uri is provided (should be rare)
-      redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-    }
+    const redirectUri = 'https://askcara-project.elias18.repl.co/callback';
     
     console.log('Using exact redirect URI for token exchange:', redirectUri);
     
