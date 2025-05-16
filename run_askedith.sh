@@ -1,3 +1,3 @@
 #!/bin/bash
 cd AskEdith
-npm run dev
+PORT=5001 NODE_ENV=development tsx server/index.ts
