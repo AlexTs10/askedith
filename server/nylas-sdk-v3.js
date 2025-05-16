@@ -8,10 +8,12 @@
 import Nylas from 'nylas';
 
 // Nylas configuration
-const NYLAS_CLIENT_ID = '12acd056-2644-46b2-9199-5d7fdcf9a86b';
+const NYLAS_CLIENT_ID = process.env.NYLAS_CLIENT_ID || '12acd056-2644-46b2-9199-5d7fdcf9a86b';
 const NYLAS_CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET;
-const NYLAS_API_KEY = process.env.NYLAS_CLIENT_SECRET; // Using client secret as API key
+const NYLAS_API_KEY = process.env.NYLAS_CLIENT_SECRET; // In V3, the client secret is used as the API key
 const NYLAS_API_URI = 'https://api.us.nylas.com'; // US region API URI
+// Make sure this matches what's registered in the Nylas dashboard
+// (Default Replit URL with specific callback path)
 const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
 
 // Configure Nylas instance

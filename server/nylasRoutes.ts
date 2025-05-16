@@ -83,9 +83,9 @@ router.get('/nylas/connection-status', async (req: Request, res: Response) => {
 
 // Send email via Nylas
 router.post('/nylas/send-email', async (req: Request, res: Response) => {
-  const accessToken = req.session?.nylasAccessToken;
+  const grantId = req.session?.nylasGrantId;
   
-  if (!accessToken) {
+  if (!grantId) {
     return res.status(401).json({
       error: 'Not authenticated with email provider',
       needsAuth: true
@@ -106,7 +106,7 @@ router.post('/nylas/send-email', async (req: Request, res: Response) => {
       replyTo
     };
     
-    const result = await sendEmailWithNylas(accessToken, emailData, category);
+    const result = await sendEmailWithNylas(grantId, emailData, category);
     
     if (result.success) {
       res.json({ success: true, messageId: result.messageId });
@@ -125,9 +125,9 @@ router.post('/nylas/send-email', async (req: Request, res: Response) => {
 
 // Get messages from a specific category
 router.get('/nylas/messages/:category', async (req: Request, res: Response) => {
-  const accessToken = req.session?.nylasAccessToken;
+  const grantId = req.session?.nylasGrantId;
   
-  if (!accessToken) {
+  if (!grantId) {
     return res.status(401).json({
       error: 'Not authenticated with email provider',
       needsAuth: true
@@ -139,7 +139,7 @@ router.get('/nylas/messages/:category', async (req: Request, res: Response) => {
     const { limit } = req.query;
     const limitNum = limit && !isNaN(Number(limit)) ? Number(limit) : 20;
     
-    const messages = await getMessagesFromCategory(accessToken, category, limitNum);
+    const messages = await getMessagesFromCategory(grantId, category, limitNum);
     res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -149,9 +149,9 @@ router.get('/nylas/messages/:category', async (req: Request, res: Response) => {
 
 // Send batch emails through Nylas
 router.post('/nylas/send-batch', async (req: Request, res: Response) => {
-  const accessToken = req.session?.nylasAccessToken;
+  const grantId = req.session?.nylasGrantId;
   
-  if (!accessToken) {
+  if (!grantId) {
     return res.status(401).json({
       error: 'Not authenticated with email provider',
       needsAuth: true
@@ -180,7 +180,7 @@ router.post('/nylas/send-batch', async (req: Request, res: Response) => {
           replyTo
         };
         
-        return sendEmailWithNylas(accessToken, emailData, category);
+        return sendEmailWithNylas(grantId, emailData, category);
       })
     );
     
