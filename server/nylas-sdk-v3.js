@@ -61,6 +61,9 @@ export function generateNylasAuthUrl(email) {
     
     // Add provider-specific parameters
     if (isGmail) {
+      // Use the provided Google Cloud Client ID
+      const GOOGLE_CLIENT_ID = "1044417285008-shes6p79lclto98shfbhminm8ki557fm.apps.googleusercontent.com";
+      
       // Gmail requires specific scopes and parameters
       authConfig.scope = [
         'https://www.googleapis.com/auth/gmail.readonly',
@@ -69,6 +72,9 @@ export function generateNylasAuthUrl(email) {
       ];
       authConfig.prompt = 'consent';
       authConfig.access_type = 'offline';
+      authConfig.googleClientId = GOOGLE_CLIENT_ID;
+      
+      console.log('Using Google Client ID for authentication:', GOOGLE_CLIENT_ID);
     }
     
     // Generate the OAuth URL with the appropriate configuration
