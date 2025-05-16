@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import * as nylasHelper from './nylas-helper.js';
+import * as nylasApi from './nylas-direct.js';
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.post('/nylas/auth-url', (req, res) => {
     
     // Generate the redirect URI based on the current request
     const redirectUri = `${req.protocol}://${req.get('host')}/api/nylas/callback`;
-    const authUrl = nylasHelper.generateAuthUrl(email, redirectUri);
+    const authUrl = nylasApi.generateAuthUrl(email, redirectUri);
     
     res.json({ authUrl });
   } catch (error) {
@@ -37,14 +37,14 @@ router.get('/nylas/callback', async (req, res) => {
     }
     
     const redirectUri = `${req.protocol}://${req.get('host')}/api/nylas/callback`;
-    const accessToken = await nylasHelper.exchangeCodeForToken(code, redirectUri);
+    const accessToken = await nylasApi.exchangeCodeForToken(code, redirectUri);
     
     // Store the token in session
     if (req.session) {
       req.session.nylasAccessToken = accessToken;
       
       // Create folder structure for the user
-      await nylasHelper.createFolderStructure(accessToken);
+      await nylasApi.createFolderStructure(accessToken);
     }
     
     // Redirect back to the email preview page
@@ -62,7 +62,7 @@ router.get('/nylas/connection-status', async (req, res) => {
   }
   
   try {
-    const connected = await nylasHelper.checkNylasConnection(req.session.nylasAccessToken);
+    const connected = await nylasApi.checkNylasConnection(req.session.nylasAccessToken);
     res.json({ connected });
   } catch (error) {
     console.error('Error checking connection status:', error);
@@ -95,7 +95,7 @@ router.post('/nylas/send-email', async (req, res) => {
       replyTo
     };
     
-    const result = await nylasHelper.sendEmailWithNylas(accessToken, emailData, category);
+    const result = await nylasApi.sendEmailWithNylas(accessToken, emailData, category);
     
     if (result.success) {
       res.json({ success: true, messageId: result.messageId });
@@ -128,7 +128,7 @@ router.get('/nylas/messages/:category', async (req, res) => {
     const { limit } = req.query;
     const limitNum = limit && !isNaN(Number(limit)) ? Number(limit) : 20;
     
-    const messages = await nylasHelper.getMessagesFromCategory(accessToken, category, limitNum);
+    const messages = await nylasApi.getMessagesFromCategory(accessToken, category, limitNum);
     res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -169,7 +169,7 @@ router.post('/nylas/send-batch', async (req, res) => {
           replyTo
         };
         
-        return nylasHelper.sendEmailWithNylas(accessToken, emailData, category);
+        return nylasApi.sendEmailWithNylas(accessToken, emailData, category);
       })
     );
     
