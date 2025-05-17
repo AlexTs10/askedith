@@ -21,9 +21,17 @@ console.log('- API URI:', NYLAS_API_URI);
 
 // Use the exact redirect URI that's registered in the Nylas dashboard
 // This must match exactly what's configured in the Nylas application settings
+// Note: Different email providers might handle the callback URL differently
 const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
 
+// Alternative formats that might be used by the OAuth provider
+const ALTERNATE_URIS = [
+  'https://askcara-project-elias18.repl.co/callback',
+  'https://workspace.elias134.repl.co/callback'
+];
+
 console.log('Using Nylas redirect URI:', NYLAS_REDIRECT_URI);
+console.log('Also supporting alternate URIs:', ALTERNATE_URIS);
 
 // Configure Nylas instance
 let nylasClient;

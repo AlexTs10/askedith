@@ -246,8 +246,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Handle Nylas OAuth callback with improved error handling
-  app.get("/callback", async (req, res) => {
+  // Add an extra route to handle the alternate dash format
+  app.get("/alt-callback", (req, res) => {
+    console.log("Alternate callback received, redirecting to main callback");
+    res.redirect(`/callback?${new URLSearchParams(req.query).toString()}`);
+  });
+  
+  // Handle all variants of the Nylas OAuth callback URL
+  // The OAuth provider might return with different URL formats
+  app.get(["/callback", "/callback/", "/callback/*"], async (req, res) => {
     try {
       console.log('Callback received with query params:', req.query);
       const { code, error, error_description } = req.query;
