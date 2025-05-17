@@ -19,19 +19,14 @@ console.log('- Client ID:', NYLAS_CLIENT_ID);
 console.log('- Client Secret:', NYLAS_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
 console.log('- API URI:', NYLAS_API_URI);
 
-// Use the exact redirect URI that's registered in the Nylas dashboard
-// This must match exactly what's configured in the Nylas application settings
-// Note: Different email providers might handle the callback URL differently
-const NYLAS_REDIRECT_URI = 'https://askcara-project.elias18.repl.co/callback';
-
-// Alternative formats that might be used by the OAuth provider
-const ALTERNATE_URIS = [
-  'https://askcara-project-elias18.repl.co/callback',
-  'https://workspace.elias134.repl.co/callback'
-];
+// Use your current Replit URL for the callback
+// This ensures the OAuth flow can properly redirect back to your application
+const REPL_SLUG = process.env.REPL_SLUG || 'workspace';
+const REPL_OWNER = process.env.REPL_OWNER || 'elias134';
+const NYLAS_REDIRECT_URI = `https://${REPL_SLUG}.${REPL_OWNER}.repl.co/callback`;
 
 console.log('Using Nylas redirect URI:', NYLAS_REDIRECT_URI);
-console.log('Also supporting alternate URIs:', ALTERNATE_URIS);
+console.log('IMPORTANT: Make sure this URL is registered in the Nylas dashboard');
 
 // Configure Nylas instance
 let nylasClient;

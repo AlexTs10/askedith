@@ -16,6 +16,8 @@ import PrintableResults from "@/pages/PrintableResults";
 import NylasTest from "@/pages/NylasTest";
 import EmailSetup from "@/pages/EmailSetup";
 import EmailConnect from "@/pages/EmailConnect";
+import NylasSetup from "@/pages/NylasSetup";
+import SendGridTest from "@/pages/SendGridTest";
 
 function Router() {
   return (
