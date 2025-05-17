@@ -249,7 +249,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add an extra route to handle the alternate dash format
   app.get("/alt-callback", (req, res) => {
     console.log("Alternate callback received, redirecting to main callback");
-    res.redirect(`/callback?${new URLSearchParams(req.query).toString()}`);
+    res.redirect(`/callback?${new URLSearchParams(req.query as Record<string, string>).toString()}`);
+  });
+  
+  // Manual code exchange endpoint for when the callback URL fails
+  app.post("/api/nylas/manual-exchange", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Authorization code is required" 
+        });
+      }
+      
+      console.log('Manually exchanging code for token:', code);
+      
+      // Process the authorization code using Nylas SDK V3
+      const nylasHelper = await import('./nylas-sdk-v3.js');
+      const grantId = await nylasHelper.exchangeCodeForToken(code);
+      
+      console.log('Successfully obtained Nylas grant ID via manual exchange');
+      
+      // Store the grant ID in session
+      if (req.session) {
+        req.session.nylasGrantId = grantId;
+        console.log('Saved Nylas grant ID in session');
+        
+        // Create folder structure for the user using their grant ID
+        console.log('Creating folder structure in email account...');
+        await nylasHelper.createFolderStructure(grantId);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Email account connected successfully" 
+      });
+    } catch (error) {
+      console.error('Error processing manual code exchange:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to connect your email account" 
+      });
+    }
   });
   
   // Handle all variants of the Nylas OAuth callback URL
