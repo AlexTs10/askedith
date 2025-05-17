@@ -31,6 +31,8 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/printable" component={PrintableResults} />
       <Route path="/nylas-test" component={NylasTest} />
+      <Route path="/nylas-setup" component={NylasSetup} />
+      <Route path="/sendgrid-test" component={SendGridTest} />
       <Route path="/email-setup" component={EmailSetup} />
       <Route path="/email-connect" component={EmailConnect} />
       <Route component={NotFound} />
