@@ -1,8 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import path from "path";
+import express from "express";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static assets from public directory
+  app.use('/assets', express.static(path.join(process.cwd(), 'public/assets')));
   // Import and register Nylas routes dynamically
   try {
     // Use ESM dynamic import for the Nylas routes (updated to TypeScript version)
