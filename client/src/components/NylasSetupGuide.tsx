@@ -210,12 +210,6 @@ export const NylasSetupGuide = () => {
                     </Link>
                   </Button>
                   
-                  <Button asChild variant="outline">
-                    <Link to="/nylas-manual-connect">
-                      Manual Connection (Recommended)
-                    </Link>
-                  </Button>
-                  
                   <Button asChild>
                     <Link to="/email-preview">
                       Continue with Simple Sending

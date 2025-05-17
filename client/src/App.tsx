@@ -14,7 +14,6 @@ import Confirmation from "@/pages/Confirmation";
 import AdminDashboard from "@/pages/Admin";
 import PrintableResults from "@/pages/PrintableResults";
 import NylasTest from "@/pages/NylasTest";
-import NylasManualConnect from "@/pages/NylasManualConnect";
 import EmailSetup from "@/pages/EmailSetup";
 import EmailConnect from "@/pages/EmailConnect";
 
@@ -30,7 +29,6 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/printable" component={PrintableResults} />
       <Route path="/nylas-test" component={NylasTest} />
-      <Route path="/nylas-manual-connect" component={NylasManualConnect} />
       <Route path="/email-setup" component={EmailSetup} />
       <Route path="/email-connect" component={EmailConnect} />
       <Route component={NotFound} />
