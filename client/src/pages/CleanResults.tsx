@@ -215,7 +215,7 @@ export default function CleanResults() {
   return (
     <div className="bg-amber-50 min-h-screen">
       {/* Search Header - Exactly as specified */}
-      <div className="w-full bg-purple-100 py-6">
+      <div className="w-full bg-gray-50 py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -279,10 +279,10 @@ export default function CleanResults() {
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
                     >
                       {/* Image Area - Exactly as specified */}
-                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden p-4">
+                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden">
                         <img 
                           src={getDefaultImageForCategory(resource.category)}
                           alt={resource.category || "Resource"}
@@ -291,8 +291,8 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute -top-3 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs border border-gray-200 shadow-sm z-10">
-                          {getCategoryLabel(resource.category)}
+                        <div className="absolute top-0 left-0 bg-white text-gray-700 px-3 py-1 text-xs z-10">
+                          Legal Services
                         </div>
                       </div>
                       
@@ -329,10 +329,10 @@ export default function CleanResults() {
                         {/* Check to Contact Button - Exactly as specified */}
                         <button 
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full mt-4 py-3 px-4 text-sm text-center rounded-md transition-colors ${
+                          className={`w-full mt-4 py-2 px-4 text-sm text-center rounded-md transition-colors ${
                             state.selectedResourceIds.includes(resource.id)
                               ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                              : 'bg-teal-50 hover:bg-teal-100 text-teal-800'
+                              : 'bg-teal-50 hover:bg-teal-100 text-teal-600'
                           }`}
                         >
                           {state.selectedResourceIds.includes(resource.id) ? (
