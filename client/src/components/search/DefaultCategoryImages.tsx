@@ -9,26 +9,25 @@ export const getDefaultImageForCategory = (category?: string): string => {
   // Default fallback image
   if (!category) return '/assets/caregiver-illustration.png';
   
-  switch (category) {
-    case "Home Care Companies":
-    case "Home Care":
-      return "/assets/Home Care.png"; 
-    case "Senior Living":
-      return "/assets/Senior Living.png"; 
-    case "Government Agencies":
-    case "Local Government Offices":
-      return "/assets/Local Government Offices.png"; 
-    case "Elder Law Attorneys":
-      return "/assets/caregiver-illustration.png"; // Default image for Elder Law
-    case "Aging Life Care Professionals":
-      return "/assets/Aging Life Care Professionals.png";
-    case "Veteran Benefits":
-      return "/assets/Veteran Benefits.png";
-    case "Financial Advisors":
-      return "/assets/Financial Advisors.png";
-    default:
-      return '/assets/caregiver-illustration.png';
+  // Force matching to the specific images for the Lovable.dev design
+  if (category === "Veteran Benefits") {
+    return "/assets/Veteran Benefits.png";
+  } else if (category === "Senior Living") {
+    return "/assets/Senior Living.png";
+  } else if (category === "Financial Advisors") {
+    return "/assets/Financial Advisors.png";
+  } else if (category === "Aging Life Care Professionals") {
+    return "/assets/Aging Life Care Professionals.png";
+  } else if (category === "Home Care" || category === "Home Care Companies") {
+    return "/assets/Home Care.png";
+  } else if (category === "Local Government Offices" || category === "Government Agencies") {
+    return "/assets/Local Government Offices.png";
+  } else if (category === "Elder Law Attorneys") {
+    return "/assets/caregiver-illustration.png";
   }
+  
+  // Default fallback
+  return '/assets/caregiver-illustration.png';
 };
 
 /**

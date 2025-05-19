@@ -236,7 +236,7 @@ export default function CleanResults() {
       </div>
       
       {/* Main content with sidebar and results */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Category sidebar - Exactly as specified */}
           <aside className="w-full md:w-64 md:shrink-0 mb-6 md:mb-0">
@@ -275,7 +275,7 @@ export default function CleanResults() {
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-5">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
@@ -291,8 +291,8 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute top-0 right-0 bg-white text-gray-700 px-3 py-1 text-xs z-10 transform translate-x-1/4 -translate-y-1/6">
-                          {getCategoryLabel(resource.category)}
+                        <div className="absolute top-0 right-0 bg-white text-gray-700 px-2 py-1 text-xs z-10 rounded-sm shadow-sm" style={{ transform: 'translateX(50%) translateY(25%)' }}>
+                          Legal Services
                         </div>
                       </div>
                       
