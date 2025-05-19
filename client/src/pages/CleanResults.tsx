@@ -215,7 +215,7 @@ export default function CleanResults() {
   return (
     <div className="bg-amber-50 min-h-screen">
       {/* Search Header - Exactly as specified */}
-      <div className="w-full bg-gray-100 py-6">
+      <div className="w-full bg-purple-100 py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -236,7 +236,7 @@ export default function CleanResults() {
       </div>
       
       {/* Main content with sidebar and results */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Category sidebar - Exactly as specified */}
           <aside className="w-full md:w-64 md:shrink-0 mb-6 md:mb-0">
@@ -275,14 +275,14 @@ export default function CleanResults() {
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border-2 border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                      className="bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
                     >
                       {/* Image Area - Exactly as specified */}
-                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden">
+                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden p-4">
                         <img 
                           src={getDefaultImageForCategory(resource.category)}
                           alt={resource.category || "Resource"}
@@ -291,7 +291,7 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute -bottom-3 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs border border-gray-200 shadow-sm z-10">
+                        <div className="absolute -top-3 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs border border-gray-200 shadow-sm z-10">
                           {getCategoryLabel(resource.category)}
                         </div>
                       </div>
