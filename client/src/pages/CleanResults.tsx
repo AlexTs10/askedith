@@ -213,7 +213,7 @@ export default function CleanResults() {
   
   // Success state with clean design based on detailed specs
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-amber-50 min-h-screen">
       {/* Search Header - Exactly as specified */}
       <div className="w-full bg-gray-100 py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -279,7 +279,7 @@ export default function CleanResults() {
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                      className="bg-white border-2 border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
                     >
                       {/* Image Area - Exactly as specified */}
                       <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden">
@@ -291,7 +291,7 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute top-2 right-2 bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs">
+                        <div className="absolute -bottom-3 right-4 bg-white text-gray-800 px-3 py-1 rounded-full text-xs border border-gray-200 shadow-sm z-10">
                           {getCategoryLabel(resource.category)}
                         </div>
                       </div>
@@ -329,7 +329,7 @@ export default function CleanResults() {
                         {/* Check to Contact Button - Exactly as specified */}
                         <button 
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full mt-4 py-2 text-sm text-center rounded-md transition-colors ${
+                          className={`w-full mt-4 py-3 px-4 text-sm text-center rounded-md transition-colors ${
                             state.selectedResourceIds.includes(resource.id)
                               ? 'bg-teal-600 hover:bg-teal-700 text-white'
                               : 'bg-teal-50 hover:bg-teal-100 text-teal-800'

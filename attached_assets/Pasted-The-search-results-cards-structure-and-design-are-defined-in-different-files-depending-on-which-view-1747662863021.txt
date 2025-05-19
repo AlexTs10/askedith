@@ -1,0 +1,81 @@
+The search results cards structure and design are defined in different files depending on which view you're looking at. Since you mentioned you're currently on the /clean-search route, I'll focus on explaining the components used in the CleanSearch results interface.
+
+The structure and design for the cards in the CleanSearchResults.tsx file is defined around lines 170-222. Here's a breakdown of the key elements:
+Card Structure and Design (CleanSearch/pages/CleanSearchResults.tsx)
+
+// Around line 170-172: Main card container with border, background, hover effects
+<div key={result.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all flex flex-col h-full">
+
+This creates:
+
+    Light gray border: border border-gray-200
+    White background: bg-white
+    Rounded corners: rounded-lg
+    Hover effect: hover:shadow-md transition-all
+    Card layout: flex flex-col h-full
+
+Image Area (CleanSearch/pages/CleanSearchResults.tsx)
+
+// Around line 174-191: Image container
+<div className="h-48 relative bg-white flex items-center justify-center p-4">
+  {/* Image content with fallbacks */}
+</div>
+
+This creates:
+
+    Fixed height image area: h-48 (192px)
+    Centered content: flex items-center justify-center
+    Padding around image: p-4
+
+Category Label (CleanSearch/pages/CleanSearchResults.tsx)
+
+// Around line 190-194: Category label that appears on the image
+{result.category && (
+  <span className="absolute top-2 right-2 bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs">
+    {result.category}
+  </span>
+)}
+
+This creates:
+
+    Positioned in top right: absolute top-2 right-2
+    Semi-transparent white background: bg-white/90
+    Rounded pill shape: rounded-full
+    Small text: text-xs
+    Gray text color: text-gray-800
+    Padding: px-2 py-1
+
+Content Area (CleanSearch/pages/CleanSearchResults.tsx)
+
+// Around line 197: Content container
+<div className="p-4 flex flex-col flex-grow">
+  {/* Card content */}
+</div>
+
+This creates:
+
+    Padding around content: p-4
+    Vertical layout: flex flex-col
+    Expanding to fill space: flex-grow
+
+Check to Contact Button (CleanSearch/pages/CleanSearchResults.tsx)
+
+// Around line 214-222: Button at bottom of card
+<Button 
+  onClick={() => handleContactToggle(result.id)}
+  className={`w-full ${isItemContacted(result.id) 
+    ? 'bg-teal-600 hover:bg-teal-700 text-white' 
+    : 'bg-teal-50 hover:bg-teal-100 text-teal-800'} flex items-center justify-center mt-auto`}
+>
+  {isItemContacted(result.id) && <Check className="h-4 w-4 mr-1" />}
+  Check to Contact
+</Button>
+
+This creates:
+
+    Full width button: w-full
+    Positioned at bottom: mt-auto
+    Dynamic styling based on state (selected/unselected)
+    Check icon when selected
+
+These CSS classes work together to create the card layout with the buffer spaces, borders, and content positioning that you see in the UI.
