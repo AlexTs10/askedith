@@ -316,11 +316,25 @@ export default function EmailPreview() {
                 </p>
               </div>
               
-              <div className="flex items-center gap-3">
-                <NylasConnect userEmail={currentEmail?.replyTo || state.answers?.q14?.email} />
-                <SetNylasGrantIdButton />
+              <div className="flex flex-col gap-3">
+                <div className="bg-teal-50 rounded-lg p-4 border border-teal-100">
+                  <h4 className="text-sm font-medium text-teal-800 mb-2">Connect Your Email (Optional)</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <DirectGrantButton />
+                      <p className="text-xs text-gray-500 mt-1">Quick connect with one click</p>
+                    </div>
+                    <div>
+                      <NylasConnect userEmail={currentEmail?.replyTo || state.answers?.q14?.email} />
+                      <p className="text-xs text-gray-500 mt-1">Connect with OAuth</p>
+                    </div>
+                    <div>
+                      <SetNylasGrantIdButton />
+                    </div>
+                  </div>
+                </div>
                 
-                <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
+                <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600 self-center">
                   Email {currentIndex + 1} of {state.emailsToSend.length}
                 </div>
               </div>
