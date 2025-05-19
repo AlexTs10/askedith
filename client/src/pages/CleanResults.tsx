@@ -211,57 +211,59 @@ export default function CleanResults() {
   const categoryGroups = groupResourcesByCategory();
   const categories = Object.keys(categoryGroups);
   
-  // Success state with clean design based on screenshots
+  // Success state with clean design based on detailed specs
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Search Header */}
-      <div className="w-full px-4 py-6">
-        <div className="max-w-6xl mx-auto">
+      {/* Search Header - Exactly as specified */}
+      <div className="w-full bg-gray-100 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">Search Results</h1>
-              <p className="text-gray-600">Showing results for "senior support"</p>
+              <p className="text-gray-500">Showing results for "senior support"</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="border-gray-300 flex items-center gap-2">
+              <Button variant="outline" className="border-gray-200 flex items-center gap-2 text-gray-700 hover:bg-gray-50">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 6h18M6 12h12M9 18h6"></path>
                 </svg>
                 Filter
               </Button>
-              <Button variant="outline" className="border-gray-300">Sort</Button>
+              <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50">Sort</Button>
             </div>
           </div>
         </div>
       </div>
       
       {/* Main content with sidebar and results */}
-      <div className="max-w-6xl mx-auto px-4 pb-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Category sidebar */}
-          <aside className="w-full md:w-64 mb-6 md:mb-0">
+          {/* Category sidebar - Exactly as specified */}
+          <aside className="w-full md:w-64 md:shrink-0 mb-6 md:mb-0">
             <h2 className="font-medium text-lg pb-2 border-b border-gray-200 mb-4">Categories</h2>
             <ul className="space-y-2">
               {categories.map(category => (
                 <li key={category} className="flex items-center justify-between">
                   <button
                     onClick={() => setActiveCategory(category)}
-                    className="flex items-center text-left py-1"
+                    className={`flex items-center text-left px-3 py-2 rounded-md w-full transition-all ${
+                      activeCategory === category 
+                        ? 'bg-teal-50 text-teal-600 font-medium' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
                     <span className="mr-2">{getCategoryIcon(category)}</span>
-                    <span className={`${activeCategory === category ? 'text-teal-600 font-medium' : 'text-gray-700'}`}>
-                      {category}
+                    <span className="flex-grow truncate">{category}</span>
+                    <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs ml-2">
+                      {categoryGroups[category].length}
                     </span>
                   </button>
-                  <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
-                    {categoryGroups[category].length}
-                  </span>
                 </li>
               ))}
             </ul>
           </aside>
           
-          {/* Results section */}
+          {/* Results section - Exactly as specified */}
           <div className="flex-1">
             {categories.map(category => (
               <div 
@@ -273,35 +275,43 @@ export default function CleanResults() {
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {categoryGroups[category].map(resource => (
-                    <div key={resource.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                      {/* Category image */}
-                      <div className="h-44 relative overflow-hidden">
+                    <div 
+                      key={resource.id} 
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                    >
+                      {/* Image Area - Exactly as specified */}
+                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden">
                         <img 
                           src={getDefaultImageForCategory(resource.category)}
                           alt={resource.category || "Resource"}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/assets/caregiver-illustration.png';
+                          }}
                         />
                         <div className="absolute top-2 right-2 bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs">
                           {getCategoryLabel(resource.category)}
                         </div>
                       </div>
                       
-                      {/* Resource details */}
+                      {/* Content Area - Exactly as specified */}
                       <div className="p-4 flex-grow flex flex-col">
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">{resource.name}</h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2 min-h-[3.5rem] line-clamp-2">
+                          {resource.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 mb-4">
                           {resource.address || resource.city || ""}
                         </p>
                         
-                        <div className="mt-auto flex space-x-2">
+                        <div className="mt-auto flex flex-wrap gap-2">
                           {resource.website && (
                             <a 
                               href={resource.website}
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full"
+                              className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
                             >
                               Website
                             </a>
@@ -309,22 +319,32 @@ export default function CleanResults() {
                           {resource.phone && (
                             <a 
                               href={`tel:${resource.phone}`}
-                              className="text-xs bg-purple-100 text-purple-800 px-3 py-1 rounded-full"
+                              className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
                             >
                               Call
                             </a>
                           )}
                         </div>
                         
+                        {/* Check to Contact Button - Exactly as specified */}
                         <button 
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full mt-3 py-2 text-sm text-center rounded-md transition ${
+                          className={`w-full mt-4 py-2 text-sm text-center rounded-md transition-colors ${
                             state.selectedResourceIds.includes(resource.id)
-                              ? 'bg-teal-600 text-white'
-                              : 'bg-teal-50 text-teal-600'
+                              ? 'bg-teal-600 hover:bg-teal-700 text-white'
+                              : 'bg-teal-50 hover:bg-teal-100 text-teal-800'
                           }`}
                         >
-                          Check to Contact
+                          {state.selectedResourceIds.includes(resource.id) ? (
+                            <span className="flex items-center justify-center">
+                              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              Selected to Contact
+                            </span>
+                          ) : (
+                            "Check to Contact"
+                          )}
                         </button>
                       </div>
                     </div>
@@ -335,11 +355,11 @@ export default function CleanResults() {
           </div>
         </div>
         
-        {/* Continue button */}
+        {/* Continue button - Exactly as specified */}
         <div className="mt-8">
           <Button 
             onClick={handleContinue}
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 px-8 rounded-lg"
+            className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 px-8 rounded-md transition-colors"
             disabled={state.selectedResourceIds.length === 0}
           >
             Continue with Selected Resources

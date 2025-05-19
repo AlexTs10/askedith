@@ -1,0 +1,132 @@
+Here's a detailed step-by-step guide for implementing the CleanSearch design in Replit:
+Color Palette
+
+    Primary Teal: #14b8a6 (main buttons, links, highlighted text)
+    Text Colors:
+        Headings: text-teal-600 (#0d9488)
+        Body text: text-gray-700 (#374151)
+        Secondary text: text-gray-500 (#6b7280)
+    Button Colors:
+        Default: bg-teal-600 (#0d9488) with text-white
+        Hover: bg-teal-700 (#0f766e)
+        Outline: border-teal-600 with text-teal-600
+        Selected: bg-teal-50 (#f0fdfa) with text-teal-800
+    Card Background: bg-white with border-gray-200 (#e5e7eb)
+    Category Pill Background: bg-gray-100 (#f3f4f6) with text-gray-700
+
+Spacing & Dimensions
+
+    Page Container: max-w-6xl mx-auto px-4 sm:px-6 lg:px-8
+    Cards:
+        Height: Full height with flex flex-col
+        Width: Responsive (1 column on mobile, 2 on medium, 3 on large screens)
+        Gap between cards: gap-8
+    Logo/Image Area:
+        Height: h-48 (192px)
+        Padding: p-4
+    Content Area: p-4 with flex flex-col flex-grow
+
+Border Radius & Shadows
+
+    Cards: rounded-lg (0.5rem)
+    Buttons: rounded-md (0.375rem)
+    Category Pills: rounded-full
+    Shadows:
+        Default: shadow-sm
+        Hover: hover:shadow-md
+        Transition: transition-all or transition-shadow
+
+Typography
+
+    Headings: font-serif (Playfair Display)
+    Body Text: font-sans (Source Sans Pro)
+    Font Sizes:
+        Main Headings: text-2xl
+        Card Titles: text-lg
+        Body Text: text-base or text-sm
+        Small Labels: text-xs
+
+Category Sidebar (Left)
+
+    Width: md:w-64 shrink-0
+    Category Items:
+        Padding: px-3 py-2
+        Border Radius: rounded-md
+        Selected State: bg-teal-50 text-teal-600 font-medium
+        Unselected State: text-gray-700 hover:bg-gray-50
+    Category Count Pills:
+        Background: bg-gray-100
+        Text: text-gray-700
+        Size: text-xs
+        Padding: px-2 py-0.5
+        Border Radius: rounded-full
+
+Result Cards
+
+    Card Structure:
+        Border: border border-gray-200
+        Background: bg-white
+        Hover: hover:shadow-md transition-all
+        Layout: flex flex-col h-full
+    Image Area:
+        Height: h-48
+        Layout: relative bg-white flex items-center justify-center
+        Image Style: max-w-full max-h-full object-contain/object-cover
+    Category Label on Image:
+        Position: absolute top-2 right-2
+        Style: bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs
+    Content Area:
+        Title: text-lg font-medium text-gray-900 mb-2 min-h-[3.5rem]
+        Address: text-sm text-gray-500 mb-4
+        Action Links: bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full
+
+"Check to Contact" Button
+
+    Unchecked State:
+        Background: bg-teal-50
+        Text: text-teal-800
+        Hover: hover:bg-teal-100
+        Width: w-full
+    Checked State:
+        Background: bg-teal-600
+        Text: text-white
+        Hover: hover:bg-teal-700
+        Icon: Check icon (h-4 w-4 mr-1)
+    Position: mt-auto (pushes to bottom of card)
+
+Responsive Layout
+
+    Mobile (default):
+        Single column layout
+        Stacked category sidebar
+        Full-width cards
+    Tablet (md: 768px+):
+        Sidebar appears on left
+        2 cards per row
+    Desktop (lg: 1024px+):
+        3 cards per row
+        More horizontal spacing
+
+Navigation Elements
+
+    Header:
+        Height: py-4
+        Border: border-b border-gray-200
+        Logo: font-serif text-xl text-teal-600
+    Search Header:
+        Background: bg-gray-100
+        Padding: py-6
+    Footer:
+        Background: bg-gray-50
+        Border: border-t border-gray-200
+        Padding: py-8
+
+Image Handling
+
+    Default Category Images:
+        "Senior Living" categories: /lovable-uploads/98e92fde-0012-47ca-8071-1908cbb6f947.png
+        "In-Home Care" categories: /lovable-uploads/59ca4042-c924-4970-8334-c6b250c3ef3e.png
+        "Government Office": /lovable-uploads/5260028f-201b-4666-9005-2ba5fd7f708a.png
+        Logo fallback: Use these images when logo loading fails
+
+This detailed specification should help Replit implement the CleanSearch design consistently by providing exact dimensions, colors, and styling attributes for all UI elements.

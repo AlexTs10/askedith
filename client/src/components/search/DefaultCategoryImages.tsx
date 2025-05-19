@@ -11,11 +11,11 @@ export const getDefaultImageForCategory = (category?: string): string => {
   
   switch (category) {
     case "Home Care Companies":
-      return "/assets/categories/home-care.png";
+      return "/assets/categories/home-care.png"; // In-Home Care image
     case "Senior Living":
-      return "/assets/categories/senior-living.png";
+      return "/assets/categories/senior-living.png"; // Senior Living image
     case "Government Agencies":
-      return "/assets/categories/local-government-offices.png";
+      return "/assets/categories/local-government-offices.png"; // Government Office image
     default:
       return '/assets/caregiver-illustration.png';
   }
@@ -38,6 +38,10 @@ export const getCategoryLabel = (category?: string): string => {
       return "Assisted Living";
     case "Elder Law Attorneys":
       return "Legal Services";
+    case "Aging Life Care Professionals":
+      return "Care Management";
+    case "Veteran Benefits":
+      return "Veteran Services";
     default:
       return category;
   }
@@ -62,6 +66,8 @@ export const getCategoryIcon = (category?: string): string => {
       return "⚖️";
     case "Aging Life Care Professionals":
       return "👴";
+    case "Veteran Benefits":
+      return "🎖️";
     default:
       return "";
   }
