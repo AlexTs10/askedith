@@ -317,6 +317,7 @@ export default function EmailPreview() {
               
               <div className="flex items-center gap-3">
                 <NylasConnect userEmail={currentEmail?.replyTo || state.answers?.q14?.email} />
+                <NylasGrantIdSetter />
                 
                 <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
                   Email {currentIndex + 1} of {state.emailsToSend.length}
