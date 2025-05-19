@@ -1,0 +1,253 @@
+
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { searchCategories } from "@/data/mockSearchData";
+import { Check, Filter, ImageOff } from "lucide-react";
+import { getDefaultImageForCategory } from "@/components/search/DefaultCategoryImages";
+
+// Define a type for the contacted items that includes category information
+interface ContactedItem {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+}
+
+const CleanSearchResults = () => {
+  const [selectedCategoryId, setSelectedCategoryId] = useState(searchCategories[0]?.id || '');
+  // Update the state to store objects with id and category information instead of just strings
+  const [contactedItems, setContactedItems] = useState<ContactedItem[]>([]);
+  const [failedLogoLoads, setFailedLogoLoads] = useState<Set<string>>(new Set());
+  
+  // Find the selected category
+  const selectedCategory = searchCategories.find(cat => cat.id === selectedCategoryId) || searchCategories[0];
+
+  // Updated function to handle contact toggle with category information
+  const handleContactToggle = (resultId: string) => {
+    setContactedItems(prev => {
+      // Check if this item is already in the contacted items
+      const existingIndex = prev.findIndex(item => item.id === resultId);
+      
+      if (existingIndex >= 0) {
+        // If it exists, remove it
+        return prev.filter(item => item.id !== resultId);
+      } else {
+        // If it doesn't exist, add it with category information
+        return [
+          ...prev, 
+          { 
+            id: resultId, 
+            categoryId: selectedCategory.id, 
+            categoryName: selectedCategory.name 
+          }
+        ];
+      }
+    });
+  };
+  
+  // Function to check if an item is in the contacted items
+  const isItemContacted = (resultId: string): boolean => {
+    return contactedItems.some(item => item.id === resultId);
+  };
+  
+  // Function to get all contacted items for a specific category
+  const getContactedItemsByCategory = (categoryId: string): ContactedItem[] => {
+    return contactedItems.filter(item => item.categoryId === categoryId);
+  };
+  
+  // Generate a logo URL using logo.dev
+  const getLogoUrl = (companyName: string) => {
+    // Encode the company name for use in URL
+    const encodedName = encodeURIComponent(companyName);
+    return `https://logo.dev/${encodedName}`;
+  };
+  
+  // Handle image load error
+  const handleImageError = (companyName: string) => {
+    setFailedLogoLoads(prev => new Set(prev).add(companyName));
+  };
+
+  // This function could be used to prepare data for email templates based on category
+  const prepareContactsByCategory = () => {
+    // Group contacted items by category
+    const contactsByCategory: Record<string, {categoryName: string, items: string[]}> = {};
+    
+    contactedItems.forEach(item => {
+      if (!contactsByCategory[item.categoryId]) {
+        contactsByCategory[item.categoryId] = {
+          categoryName: item.categoryName,
+          items: []
+        };
+      }
+      contactsByCategory[item.categoryId].items.push(item.id);
+    });
+    
+    return contactsByCategory;
+  };
+
+  // For debugging - you can check the console to see contacted items by category
+  console.log("Contacted items by category:", prepareContactsByCategory());
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900">
+      {/* Navigation bar */}
+      <header className="w-full px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center border-b border-gray-200">
+        <div className="font-serif text-xl text-teal-600">AskEdith</div>
+        <div className="flex space-x-4">
+          <Button variant="outline" className="border-gray-300 text-gray-700">Sign In</Button>
+          <Button className="bg-teal-600 hover:bg-teal-700 text-white">Sign Up</Button>
+        </div>
+      </header>
+
+      {/* Search header */}
+      <div className="w-full bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-800">Search Results</h1>
+              <p className="text-gray-600">Showing results for "senior support"</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                <span>Filter</span>
+              </Button>
+              <Button variant="outline">Sort</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Category sidebar */}
+          <aside className="md:w-64 shrink-0 space-y-4">
+            <h2 className="font-medium text-lg pb-2 border-b border-gray-200">Categories</h2>
+            <ul className="space-y-2">
+              {searchCategories.map((category) => (
+                <li key={category.id}>
+                  <button
+                    onClick={() => setSelectedCategoryId(category.id)}
+                    className={`flex items-center w-full px-3 py-2 rounded-md text-left transition-colors ${
+                      selectedCategoryId === category.id 
+                        ? 'bg-teal-50 text-teal-600 font-medium' 
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="mr-2">{category.icon}</span>
+                    <span>{category.name}</span>
+                    <span className="ml-auto bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                      {category.results.length}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </aside>
+
+          {/* Results grid */}
+          <div className="flex-1">
+            <h2 className="font-serif text-2xl text-teal-600 mb-6 flex items-center">
+              <span className="mr-2">{selectedCategory?.icon}</span>
+              {selectedCategory?.name}
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {selectedCategory?.results.map((result) => (
+                <div key={result.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-all flex flex-col h-full">
+                  {/* Logo area */}
+                  <div className="h-48 relative bg-white flex items-center justify-center p-4">
+                    {failedLogoLoads.has(result.name) ? (
+                      // Show default category image if logo fails to load
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <img 
+                          src={getDefaultImageForCategory(result.category)}
+                          alt={`${result.category || 'Default'} image`}
+                          className="max-w-full max-h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      // Try to load the logo first
+                      <img 
+                        src={getLogoUrl(result.name)}
+                        alt={`${result.name} logo`}
+                        className="max-w-full max-h-full object-contain"
+                        loading="lazy"
+                        onError={() => handleImageError(result.name)}
+                      />
+                    )}
+                    {result.category && (
+                      <span className="absolute top-2 right-2 bg-white/90 text-gray-800 px-2 py-1 rounded-full text-xs">
+                        {result.category}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Content area */}
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2 min-h-[3.5rem]">{result.name}</h3>
+                    <p className="text-sm text-gray-500 mb-4">{result.address}</p>
+                    
+                    <div className="flex space-x-2 mb-4 mt-auto">
+                      {result.website && (
+                        <a 
+                          href={result.website}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
+                        >
+                          Website
+                        </a>
+                      )}
+                      {result.phone && (
+                        <a 
+                          href={`tel:${result.phone}`}
+                          className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
+                        >
+                          Call
+                        </a>
+                      )}
+                    </div>
+                    
+                    <Button 
+                      onClick={() => handleContactToggle(result.id)}
+                      className={`w-full ${isItemContacted(result.id) 
+                        ? 'bg-teal-600 hover:bg-teal-700 text-white' 
+                        : 'bg-teal-50 hover:bg-teal-100 text-teal-800'} flex items-center justify-center mt-auto`}
+                      data-category-id={selectedCategory.id}
+                      data-category-name={selectedCategory.name}
+                    >
+                      {isItemContacted(result.id) && <Check className="h-4 w-4 mr-1" />}
+                      Check to Contact
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      {/* Footer */}
+      <footer className="w-full bg-gray-50 py-8 border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="font-serif text-xl text-teal-600 mb-4 md:mb-0">AskEdith</div>
+            <div className="flex space-x-6">
+              <a href="#" className="text-gray-600 hover:text-teal-600 transition-colors">Privacy</a>
+              <a href="#" className="text-gray-600 hover:text-teal-600 transition-colors">Terms</a>
+              <a href="#" className="text-gray-600 hover:text-teal-600 transition-colors">Contact</a>
+            </div>
+            <div className="text-gray-500 text-sm mt-4 md:mt-0">
+              © 2025 AskEdith. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default CleanSearchResults;

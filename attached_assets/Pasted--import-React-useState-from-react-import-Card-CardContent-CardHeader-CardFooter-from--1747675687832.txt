@@ -1,0 +1,92 @@
+
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MapPin, Globe, Phone, ExternalLink } from "lucide-react";
+import { SearchResult } from "@/data/mockSearchData";
+
+interface VisualSearchResultCardProps {
+  result: SearchResult;
+  imageUrl: string;
+}
+
+const VisualSearchResultCard = ({ result, imageUrl }: VisualSearchResultCardProps) => {
+  const [isContactActive, setIsContactActive] = useState(false);
+  
+  const handleContactClick = () => {
+    setIsContactActive(true);
+  };
+
+  return (
+    <Card className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden h-full flex flex-col">
+      {/* Visual image header */}
+      <div className="relative h-48 w-full overflow-hidden">
+        <img 
+          src={imageUrl}
+          alt={result.name} 
+          className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+        />
+        
+        {/* Category badge */}
+        {result.category && (
+          <span className="absolute top-3 right-3 bg-white/90 text-teal-700 px-2 py-1 rounded-full text-xs font-medium">
+            {result.category}
+          </span>
+        )}
+      </div>
+      
+      <CardHeader className="pb-2 pt-4">
+        <h3 className="font-serif text-lg text-teal-600">{result.name}</h3>
+      </CardHeader>
+      
+      <CardContent className="flex-grow">
+        <div className="space-y-4 text-gray-600">
+          {/* Address */}
+          <div className="flex items-start">
+            <MapPin className="h-4 w-4 mr-2 mt-1 shrink-0 text-teal-500" />
+            <span className="text-sm">{result.address}</span>
+          </div>
+          
+          {/* Contact information */}
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {result.website && (
+              <a 
+                href={result.website} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center text-sm text-teal-600 hover:text-teal-700 hover:underline transition-colors"
+              >
+                <Globe className="h-3.5 w-3.5 mr-1 shrink-0" />
+                <span className="truncate max-w-[150px]">
+                  {result.website.replace(/(^\w+:|^)\/\//, '')}
+                </span>
+              </a>
+            )}
+            
+            {result.phone && (
+              <a 
+                href={`tel:${result.phone}`} 
+                className="flex items-center text-sm hover:text-teal-600 transition-colors"
+              >
+                <Phone className="h-3.5 w-3.5 mr-1 shrink-0" />
+                <span>{result.phone}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      </CardContent>
+      
+      <CardFooter className="pt-2 pb-4">
+        <Button 
+          onClick={handleContactClick}
+          className={`w-full ${isContactActive ? 'bg-green-500 hover:bg-green-600' : 'border-teal-600 text-teal-600 hover:bg-teal-50'}`}
+          variant={isContactActive ? "default" : "outline"}
+        >
+          Tap to Contact
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default VisualSearchResultCard;
