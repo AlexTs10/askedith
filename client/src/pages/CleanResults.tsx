@@ -237,9 +237,9 @@ export default function CleanResults() {
       
       {/* Main content with sidebar and results */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8">
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Category sidebar - Exactly as specified */}
-          <aside className="w-full md:w-64 md:shrink-0 mb-6 md:mb-0">
+          <aside className="w-full lg:w-64 lg:shrink-0 mb-6 lg:mb-0">
             <h2 className="font-medium text-lg pb-2 border-b border-gray-200 mb-4">Categories</h2>
             <ul className="space-y-2">
               {categories.map(category => (
@@ -264,18 +264,18 @@ export default function CleanResults() {
           </aside>
           
           {/* Results section - Exactly as specified */}
-          <div className="flex-1">
+          <div className="flex-1 w-full">
             {categories.map(category => (
               <div 
                 key={category}
-                className={activeCategory === category ? 'block' : 'hidden'}
+                className={activeCategory === category ? 'block w-full' : 'hidden'}
               >
                 <h2 className="font-serif text-2xl text-teal-600 mb-6 flex items-center">
                   <span className="mr-2">{getCategoryIcon(category)}</span>
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
