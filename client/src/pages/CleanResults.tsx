@@ -291,9 +291,7 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-gray-700 px-2 py-1 text-xs z-10 rounded-sm shadow-sm">
-                          {getCategoryLabel(resource.category)}
-                        </div>
+{/* Category label removed as requested */}
                       </div>
                       
                       {/* Content Area - Exactly as specified */}
