@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import { NylasConnect } from '@/components/NylasConnect';
 import { SetNylasGrantIdButton } from '@/components/SetNylasGrantIdButton';
+import { DirectGrantButton } from '@/components/DirectGrantButton';
 
 // Helper function to determine resource category from email data
 const getResourceCategory = (email: any) => {
