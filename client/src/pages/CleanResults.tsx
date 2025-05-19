@@ -235,11 +235,11 @@ export default function CleanResults() {
         </div>
       </div>
       
-      {/* Main content with sidebar and results */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      {/* Main content with sidebar and results - fixed for Lovable.dev specifications */}
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8" style={{ maxWidth: "1600px" }}>
+        <div className="flex flex-col xl:flex-row gap-4">
           {/* Category sidebar - Exactly as specified */}
-          <aside className="w-full lg:w-64 lg:shrink-0 mb-6 lg:mb-0">
+          <aside className="w-full xl:w-52 xl:shrink-0 mb-6 xl:mb-0">
             <h2 className="font-medium text-lg pb-2 border-b border-gray-200 mb-4">Categories</h2>
             <ul className="space-y-2">
               {categories.map(category => (
@@ -253,7 +253,7 @@ export default function CleanResults() {
                     }`}
                   >
                     <span className="mr-2">{getCategoryIcon(category)}</span>
-                    <span className="flex-grow truncate">{category}</span>
+                    <span className="flex-grow truncate text-sm">{category}</span>
                     <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs ml-2">
                       {categoryGroups[category].length}
                     </span>
@@ -264,22 +264,22 @@ export default function CleanResults() {
           </aside>
           
           {/* Results section - Exactly as specified */}
-          <div className="flex-1 w-full">
+          <div className="flex-1 min-w-0">
             {categories.map(category => (
               <div 
                 key={category}
                 className={activeCategory === category ? 'block w-full' : 'hidden'}
               >
-                <h2 className="font-serif text-2xl text-teal-600 mb-6 flex items-center">
+                <h2 className="font-serif text-xl text-teal-600 mb-6 flex items-center">
                   <span className="mr-2">{getCategoryIcon(category)}</span>
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full w-full min-w-[288px]"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
                     >
                       {/* Image Area - Exactly as specified */}
                       <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden p-6">
