@@ -9,6 +9,7 @@ import { Edit, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import { NylasConnect } from '@/components/NylasConnect';
+import { NylasGrantIdSetter } from '@/components/NylasGrantIdSetter';
 
 // Helper function to determine resource category from email data
 const getResourceCategory = (email: any) => {

@@ -201,4 +201,57 @@ router.post('/nylas/send-batch', async (req: Request, res: Response) => {
   }
 });
 
+// Set Nylas Grant ID directly
+router.post('/nylas/set-grant-id', async (req: Request, res: Response) => {
+  try {
+    const { grantId } = req.body;
+    
+    if (!grantId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Grant ID is required' 
+      });
+    }
+    
+    console.log('Setting Nylas grant ID manually:', grantId);
+    
+    // Store the grant ID in session
+    if (req.session) {
+      req.session.nylasGrantId = grantId;
+      console.log('Saved Nylas grant ID in session');
+      
+      // Verify the connection works
+      const connected = await checkNylasConnection(grantId);
+      
+      if (connected) {
+        // Create folder structure for the user using their grant ID
+        console.log('Creating folder structure in email account...');
+        await createFolderStructure(grantId);
+        
+        return res.json({
+          success: true,
+          message: "Nylas Grant ID set successfully and connection verified"
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "The provided Grant ID could not be verified with Nylas"
+        });
+      }
+    } else {
+      return res.status(500).json({
+        success: false,
+        error: "Session not available"
+      });
+    }
+  } catch (error) {
+    console.error('Error setting Nylas Grant ID:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to set Nylas Grant ID',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;
