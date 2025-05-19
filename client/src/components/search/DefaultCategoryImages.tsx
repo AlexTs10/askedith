@@ -11,11 +11,21 @@ export const getDefaultImageForCategory = (category?: string): string => {
   
   switch (category) {
     case "Home Care Companies":
-      return "/assets/categories/home-care.png"; // In-Home Care image
+    case "Home Care":
+      return "/assets/Home Care.png"; 
     case "Senior Living":
-      return "/assets/categories/senior-living.png"; // Senior Living image
+      return "/assets/Senior Living.png"; 
     case "Government Agencies":
-      return "/assets/categories/local-government-offices.png"; // Government Office image
+    case "Local Government Offices":
+      return "/assets/Local Government Offices.png"; 
+    case "Elder Law Attorneys":
+      return "/assets/caregiver-illustration.png"; // Default image for Elder Law
+    case "Aging Life Care Professionals":
+      return "/assets/Aging Life Care Professionals.png";
+    case "Veteran Benefits":
+      return "/assets/Veteran Benefits.png";
+    case "Financial Advisors":
+      return "/assets/Financial Advisors.png";
     default:
       return '/assets/caregiver-illustration.png';
   }

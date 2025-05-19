@@ -275,14 +275,14 @@ export default function CleanResults() {
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full w-full"
                     >
                       {/* Image Area - Exactly as specified */}
-                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden">
+                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden p-4">
                         <img 
                           src={getDefaultImageForCategory(resource.category)}
                           alt={resource.category || "Resource"}
@@ -291,8 +291,8 @@ export default function CleanResults() {
                             e.currentTarget.src = '/assets/caregiver-illustration.png';
                           }}
                         />
-                        <div className="absolute top-0 left-0 bg-white text-gray-700 px-3 py-1 text-xs z-10">
-                          Legal Services
+                        <div className="absolute top-0 right-0 bg-white text-gray-700 px-3 py-1 text-xs z-10 transform translate-x-1/4 -translate-y-1/6">
+                          {getCategoryLabel(resource.category)}
                         </div>
                       </div>
                       
@@ -329,7 +329,7 @@ export default function CleanResults() {
                         {/* Check to Contact Button - Exactly as specified */}
                         <button 
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full mt-4 py-2 px-4 text-sm text-center rounded-md transition-colors ${
+                          className={`w-full mt-4 py-2 px-4 text-sm text-center rounded-md transition-colors whitespace-nowrap ${
                             state.selectedResourceIds.includes(resource.id)
                               ? 'bg-teal-600 hover:bg-teal-700 text-white'
                               : 'bg-teal-50 hover:bg-teal-100 text-teal-600'
@@ -340,7 +340,7 @@ export default function CleanResults() {
                               <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
-                              Selected to Contact
+                              <span className="whitespace-nowrap">Selected to Contact</span>
                             </span>
                           ) : (
                             "Check to Contact"

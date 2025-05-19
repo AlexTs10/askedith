@@ -1,0 +1,126 @@
+Let me provide the specific dimensions and styling details for the CleanSearch results interface:
+Entire Search Results Container (Including "Categories" Bar)
+
+    Maximum Width: max-w-6xl (72rem or approximately 1152px)
+    Height: min-h-screen (full viewport height)
+    Horizontal Padding:
+        Mobile: px-4 (1rem, 16px)
+        Tablet: sm:px-6 (1.5rem, 24px)
+        Desktop: lg:px-8 (2rem, 32px)
+    Vertical Padding: py-8 (2rem, 32px)
+
+"Categories" Bar (Sidebar)
+
+    Width: md:w-64 (16rem or 256px) on medium screens and larger
+    Height: Not explicitly defined (takes full height of parent container)
+    Spacing Between Items: space-y-2 (0.5rem, 8px)
+    Padding:
+        Category Headings: pb-2 (0.5rem, 8px) bottom padding
+        Category Items: px-3 py-2 (horizontal: 0.75rem/12px, vertical: 0.5rem/8px)
+
+Results Cards
+
+    Width: Responsive, determined by grid columns
+        Mobile: Single column (full width)
+        Tablet: md:grid-cols-2 (2 cards per row)
+        Desktop: lg:grid-cols-3 (3 cards per row)
+    Height: h-full (full height of grid cell)
+    Gap Between Cards: gap-8 (2rem, 32px)
+
+Image Container
+
+    Height: h-48 (12rem or 192px)
+    Padding Inside Image Container: p-4 (1rem, 16px)
+
+Buffer Between Content and Border
+
+    Content Area Padding: p-4 (1rem, 16px)
+    Spacing Between Elements:
+        Title bottom margin: mb-2 (0.5rem, 8px)
+        Address bottom margin: mb-4 (1rem, 16px)
+        Button top margin: mt-auto (pushes to bottom)
+
+Gray Border Details
+
+    Border Thickness: border (1px by default in Tailwind)
+    Border Color: border-gray-200 (#e5e7eb)
+    Border Radius: rounded-lg (0.5rem, 8px)
+    Shadow Effects:
+        Default: shadow-sm (small shadow)
+        Hover: hover:shadow-md (medium shadow)
+
+"Check to Contact" Button
+
+    Width: w-full (full width of card)
+    Height: Default button height (approximately 2.5rem, 40px)
+    Padding: Default button padding from Button component
+    Vertical Position: mt-auto (pushed to bottom of card)
+    Horizontal Alignment: justify-center (centered)
+    Border Radius: Inherited from Button component (rounded-md, 0.375rem)
+
+These dimensions and spacing values are defined in the CSS classes throughout the CleanSearchResults.tsx file, particularly in the card rendering section (around lines 170-222).
+
+Let me provide the specific dimensions and styling details for the CleanSearch results interface:
+Entire Search Results Container (Including "Categories" Bar)
+
+    Maximum Width: max-w-6xl (72rem or approximately 1152px)
+    Height: min-h-screen (full viewport height)
+    Horizontal Padding:
+        Mobile: px-4 (1rem, 16px)
+        Tablet: sm:px-6 (1.5rem, 24px)
+        Desktop: lg:px-8 (2rem, 32px)
+    Vertical Padding: py-8 (2rem, 32px)
+
+"Categories" Bar (Sidebar)
+
+    Width: md:w-64 (16rem or 256px) on medium screens and larger
+    Height: Not explicitly defined (takes full height of parent container)
+    Spacing Between Items: space-y-2 (0.5rem, 8px)
+    Padding:
+        Category Headings: pb-2 (0.5rem, 8px) bottom padding
+        Category Items: px-3 py-2 (horizontal: 0.75rem/12px, vertical: 0.5rem/8px)
+
+Results Cards
+
+    Width: Responsive, determined by grid columns
+        Mobile: Single column (full width)
+        Tablet: md:grid-cols-2 (2 cards per row)
+        Desktop: lg:grid-cols-3 (3 cards per row)
+    Height: h-full (full height of grid cell)
+    Gap Between Cards: gap-8 (2rem, 32px)
+
+Image Container
+
+    Height: h-48 (12rem or 192px)
+    Padding Inside Image Container: p-4 (1rem, 16px)
+
+Buffer Between Content and Border
+
+    Content Area Padding: p-4 (1rem, 16px)
+    Spacing Between Elements:
+        Title bottom margin: mb-2 (0.5rem, 8px)
+        Address bottom margin: mb-4 (1rem, 16px)
+        Button top margin: mt-auto (pushes to bottom)
+
+Gray Border Details
+
+    Border Thickness: border (1px by default in Tailwind)
+    Border Color: border-gray-200 (#e5e7eb)
+    Border Radius: rounded-lg (0.5rem, 8px)
+    Shadow Effects:
+        Default: shadow-sm (small shadow)
+        Hover: hover:shadow-md (medium shadow)
+
+"Check to Contact" Button
+
+    Width: w-full (full width of card)
+    Height: Default button height (approximately 2.5rem, 40px)
+    Padding: Default button padding from Button component
+    Vertical Position: mt-auto (pushed to bottom of card)
+    Horizontal Alignment: justify-center (centered)
+    Border Radius: Inherited from Button component (rounded-md, 0.375rem)
+
+These dimensions and spacing values are defined in the CSS classes throughout the CleanSearchResults.tsx file, particularly in the card rendering section (around lines 170-222).
+Upload images
+
+Drop JPG, PNG, or WEBP files here
