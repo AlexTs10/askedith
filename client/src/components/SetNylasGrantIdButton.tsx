@@ -9,7 +9,7 @@ export function SetNylasGrantIdButton() {
   const { toast } = useToast();
   
   // The preset Grant ID provided by the user
-  const presetGrantId = "5bd4e911-f684-4141-bc83-247e2077c9a5";
+  const presetGrantId = '5bd4e911-f684-4141-bc83-247e2077c9a5';
 
   // Handle button click to set the Grant ID
   const handleSetGrantId = async () => {
