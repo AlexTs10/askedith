@@ -8,6 +8,8 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Wizard from "@/pages/Wizard";
 import Results from "@/pages/Results";
+import CleanResults from "@/pages/CleanResults";
+import CleanResultsPage from "@/pages/CleanResultsPage";
 import EmailPreview from "@/pages/EmailPreview";
 import Callback from "@/pages/Callback";
 import Confirmation from "@/pages/Confirmation";
@@ -24,6 +26,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/wizard/:step?" component={Wizard} />
       <Route path="/results" component={Results} />
+      <Route path="/clean-results" component={CleanResults} />
+      <Route path="/clean-results-page" component={CleanResultsPage} />
       <Route path="/email-preview/:index?" component={EmailPreview} />
       <Route path="/callback" component={Callback} />
       <Route path="/confirmation" component={Confirmation} />
