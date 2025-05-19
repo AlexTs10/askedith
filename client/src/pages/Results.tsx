@@ -4,11 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Phone, Globe, MapPin, Clock, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import generateEmails from '@/lib/emailGenerator';
 import { Resource } from '@shared/schema';
+import { getDefaultImageForCategory } from '@/components/search/DefaultCategoryImages';
 
 export default function Results() {
   const [_, navigate] = useLocation();
@@ -216,10 +217,16 @@ export default function Results() {
           {/* Header section */}
           <div className="bg-teal-50 p-8 pt-10 pb-12 md:p-10 rounded-t-lg">
             <h2 className="text-2xl md:text-3xl font-serif text-teal-600 mb-4">Your Matched Resources</h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
-              Based on your assessment, we've identified these resources that may help.
-              Select the ones you'd like to contact.
-            </p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
+                Based on your assessment, we've identified these resources that may help.
+                Check the boxes to select the ones you'd like to contact.
+              </p>
+              <div className="text-center bg-white p-4 rounded-lg shadow-sm border border-teal-100">
+                <span className="block text-sm font-medium text-gray-500 mb-1">Share Once. Reach Many.</span>
+                <span className="block text-2xl font-medium text-teal-600">{resources.length} Resources</span>
+              </div>
+            </div>
           </div>
           
           {/* Resources list - grouped by category */}
@@ -238,64 +245,90 @@ export default function Results() {
                     </h3>
                   </div>
                   
-                  {/* Card Grid Layout for Resources - Changed to 3 cards per row as requested */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Card Grid Layout for Resources with Category Images */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {categoryResources.map(resource => (
                       <div 
                         key={resource.id} 
-                        className={`rounded-lg p-4 transition-all duration-300 h-full border border-teal-200
+                        className={`rounded-xl overflow-hidden transition-all duration-300 h-full border border-gray-200 shadow-sm hover:shadow-md
                          ${state.selectedResourceIds.includes(resource.id) 
-                           ? 'ring-1 ring-teal-600/30 bg-gray-50/60' 
-                           : 'bg-gray-50/60 hover:bg-gray-50/80'}`}
+                           ? 'ring-2 ring-teal-500' 
+                           : 'hover:border-teal-200'}`}
                         onClick={() => toggleResource(resource.id)}
                       >
-                        <div className="flex flex-col h-full">
+                        {/* Category Image Header */}
+                        <div className="relative h-36 overflow-hidden bg-gray-100">
+                          <img
+                            src={getDefaultImageForCategory(resource.category)}
+                            alt={resource.category || "Resource Image"}
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                            onError={(e) => {
+                              // Fallback if image fails to load
+                              e.currentTarget.src = "/assets/caregiver-illustration.png";
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                          <div className="absolute bottom-3 left-3 right-3">
+                            <div className="text-xs font-medium text-white bg-teal-600/80 py-1 px-2 rounded-full inline-block backdrop-blur-sm">
+                              {resource.category}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="p-4">
                           {/* Header with checkbox and name */}
                           <div className="flex items-start gap-3 mb-3">
                             <Checkbox 
                               id={`resource-${resource.id}`}
                               checked={state.selectedResourceIds.includes(resource.id)}
                               onCheckedChange={() => toggleResource(resource.id)}
-                              className="h-4 w-4 mt-1"
+                              className="h-4 w-4 mt-1 text-teal-600"
                             />
                             
-                            <div>
-                              <h3 className="text-base font-serif text-teal-600 line-clamp-1">{resource.name}</h3>
-                              <div className="mt-1 text-[10px] font-medium text-teal-600 bg-teal-50 py-1 px-2 rounded-full inline-block">
-                                Recommended Match
+                            <div className="flex-1">
+                              <h3 className="text-base font-medium text-gray-800 line-clamp-1">{resource.name}</h3>
+                              <div className="mt-1 text-xs text-teal-600">
+                                {resource.companyName && <span>{resource.companyName}</span>}
                               </div>
                             </div>
                           </div>
                           
-                          {/* Resource details with smaller font size as requested */}
-                          <div className="mt-2 text-[11px] text-gray-600 space-y-2 flex-grow">
-                            <p className="flex items-start gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0 mt-1">
-                                <path d="M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
-                                <path d="M8 2h8"></path>
-                                <path d="M12 10v4"></path>
-                                <path d="M12 18h.01"></path>
-                              </svg>
-                              <span>{resource.address}</span>
-                            </p>
+                          {/* Resource details */}
+                          <div className="mt-3 text-sm text-gray-600 space-y-2">
+                            {resource.address && (
+                              <p className="flex items-start gap-2 text-xs">
+                                <MapPin className="h-3.5 w-3.5 text-gray-400 mt-0.5" />
+                                <span className="line-clamp-2">{resource.address}</span>
+                              </p>
+                            )}
                             
-                            <p className="flex items-start gap-2">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 shrink-0 mt-1">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <polyline points="12 6 12 12 16 14"></polyline>
-                              </svg>
-                              <span>{resource.hours}</span>
-                            </p>
+                            {resource.phone && (
+                              <p className="flex items-center gap-2 text-xs">
+                                <Phone className="h-3.5 w-3.5 text-gray-400" />
+                                <span>{resource.phone}</span>
+                              </p>
+                            )}
+                            
+                            {resource.website && (
+                              <p className="flex items-center gap-2 text-xs">
+                                <Globe className="h-3.5 w-3.5 text-gray-400" />
+                                <span className="truncate">{resource.website}</span>
+                              </p>
+                            )}
+                            
+                            {resource.hours && (
+                              <p className="flex items-center gap-2 text-xs">
+                                <Clock className="h-3.5 w-3.5 text-gray-400" />
+                                <span>{resource.hours}</span>
+                              </p>
+                            )}
                           </div>
                           
                           {/* Email at the bottom */}
-                          <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="mt-4 pt-3 border-t border-gray-100">
                             <p className="flex items-center gap-2 text-teal-600 text-xs">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-teal-600">
-                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                              </svg>
-                              <span>{resource.email}</span>
+                              <Mail className="h-3.5 w-3.5" />
+                              <span className="truncate">{resource.email}</span>
                             </p>
                           </div>
                         </div>
@@ -307,18 +340,33 @@ export default function Results() {
             </div>
             
             <div className="mt-10 space-y-4">
-              <Button 
-                onClick={handleContinue}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 px-8 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
-                disabled={state.selectedResourceIds.length === 0}
-              >
-                Continue with Selected Resources
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              <p className="text-center text-sm text-muted-foreground">
-                You'll have a chance to review and edit your message before sending
-              </p>
+              <div className="bg-white p-5 rounded-lg border border-teal-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-medium text-gray-700">
+                    Selected Resources: <span className="text-teal-600">{state.selectedResourceIds.length}</span>
+                  </h3>
+                  {state.selectedResourceIds.length > 0 && (
+                    <span className="text-xs bg-teal-50 text-teal-600 py-1 px-3 rounded-full">
+                      {state.selectedResourceIds.length} {state.selectedResourceIds.length === 1 ? 'provider' : 'providers'} selected
+                    </span>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={handleContinue}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 px-8 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md"
+                  disabled={state.selectedResourceIds.length === 0}
+                >
+                  {state.selectedResourceIds.length === 0 
+                    ? "Select Resources to Continue" 
+                    : `Continue with ${state.selectedResourceIds.length} Selected Resources`}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                
+                <p className="text-center text-sm text-gray-500 mt-3">
+                  You'll have a chance to review and edit your message before sending
+                </p>
+              </div>
             </div>
           </div>
         </div>
