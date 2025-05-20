@@ -8,8 +8,8 @@ import caregiverIllustration from '../assets/caregiver-illustration.png';
 export default function Home() {
   const [_, navigate] = useLocation();
 
-  const startJourney = () => {
-    navigate('/introduction');
+  const startWizard = () => {
+    navigate('/wizard/1');
   };
 
   return (
@@ -61,11 +61,11 @@ export default function Home() {
             </div>
             
             <Button 
-              onClick={startJourney}
+              onClick={startWizard}
               size="lg"
               className="bg-teal-600 hover:bg-teal-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1 w-full md:w-auto"
             >
-              Learn About Elder Care
+              Let's Begin 
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             

@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import ApiSecretChecker from "@/components/ApiSecretChecker";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import Introduction from "@/pages/Introduction";
 import Wizard from "@/pages/Wizard";
 import Results from "@/pages/Results";
 import CleanResults from "@/pages/CleanResults";
@@ -25,7 +24,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/introduction" component={Introduction} />
       <Route path="/wizard/:step?" component={Wizard} />
       <Route path="/results" component={Results} />
       <Route path="/clean-results" component={CleanResults} />
