@@ -73,6 +73,13 @@ router.get('/nylas/connection-status', async (req: Request, res: Response) => {
   }
   
   try {
+    // Check if we're using the direct grant approach
+    if (req.session?.usingMockGrant) {
+      console.log('Using mock grant for connection status check');
+      return res.json({ connected: true, testMode: true });
+    }
+    
+    // Otherwise, verify with Nylas API
     const connected = await checkNylasConnection(req.session.nylasGrantId);
     res.json({ connected });
   } catch (error) {

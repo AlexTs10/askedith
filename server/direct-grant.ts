@@ -6,11 +6,17 @@ const router = Router();
 // Set Grant ID directly in session without validation
 router.post('/set-direct-grant', (req: Request, res: Response) => {
   try {
-    const grantId = '5bd4e911-f684-4141-bc83-247e2077c9a5'; // Hardcoded ID for testing
+    // This is the hardcoded Grant ID for testing
+    // Important: We're intentionally bypassing the Nylas API verification for testing
+    const grantId = '5bd4e911-f684-4141-bc83-247e2077c9a5';
     
     if (req.session) {
+      // Store the grant ID in session
       req.session.nylasGrantId = grantId;
-      console.log('Set Nylas grant ID directly:', grantId);
+      console.log('Set Nylas grant ID directly (bypass verification):', grantId);
+      
+      // For testing: Also create a simple flag to indicate we're using mock grant
+      req.session.usingMockGrant = true;
       
       return res.json({
         success: true,
