@@ -35,7 +35,12 @@ export default function CleanResults() {
         console.log("Resources fetched:", data);
         
         setResources(data);
-        updateState({ resources: data });
+        
+        // Make sure we start with no selected resources
+        updateState({ 
+          resources: data,
+          selectedResourceIds: [] // Initialize as empty to ensure no resources are pre-selected
+        });
         
         // Set first category as active by default
         const categories = getCategoriesFromResources(data);
