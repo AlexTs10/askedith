@@ -71,30 +71,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Try to use Nylas if available
       try {
-        // Check if we're using the mock grant for testing
-        const { isUsingMockGrant, sendEmailDirect } = await import('./direct-email-helper');
-        
-        // If using mock grant, use direct implementation
-        if (req.session?.nylasGrantId && isUsingMockGrant(req)) {
-          console.log('Using direct email implementation with mock grant ID');
-          const emailData = { to, subject, body, replyTo };
-          
-          const result = await sendEmailDirect(emailData);
-          
-          if (result.success) {
-            return res.json({
-              success: true,
-              queued: false,
-              message: "Email sent successfully via your connected email account"
-            });
-          }
-        }
-        
         // Import the direct sending module
         const nylasDirect = await import('./nylas-direct-send.js');
         
-        // Check if user has a Nylas grant ID (and not using mock)
-        if (req.session?.nylasGrantId && !isUsingMockGrant(req)) {
+        // Check if user has a Nylas grant ID
+        if (req.session?.nylasGrantId) {
           const nylasSDK = await import('./nylas-sdk-v3.js');
           const hasNylasConnection = await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
           
@@ -169,22 +150,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       try {
-        // Check if we're using mock/test mode
-        const { isUsingMockGrant, sendBatchEmailsDirect } = await import('./direct-email-helper');
-        
-        // If using test mode with mock grant ID
-        if (req.session?.nylasGrantId && isUsingMockGrant(req)) {
-          console.log('Using direct mock implementation for batch emails');
-          const result = await sendBatchEmailsDirect(emails);
-          return res.json(result);
-        }
-        
         // Check if we have Nylas available
         let useNylas = false;
         let hasNylasError = false;
         let nylasResults = null;
         
-        if (req.session?.nylasGrantId && !isUsingMockGrant(req)) {
+        if (req.session?.nylasGrantId) {
           try {
             const nylasSDK = await import('./nylas-sdk-v3.js');
             const hasNylasConnection = await nylasSDK.checkNylasConnection(req.session.nylasGrantId);

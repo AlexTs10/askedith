@@ -2,7 +2,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import directGrantRouter from "./direct-grant";
 
 const app = express();
 app.use(express.json());
@@ -18,9 +17,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
-
-// Register the direct grant router
-app.use('/api/direct', directGrantRouter);
 
 app.use((req, res, next) => {
   const start = Date.now();
