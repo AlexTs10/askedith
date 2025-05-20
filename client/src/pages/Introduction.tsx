@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getDefaultImageForCategory } from '@/components/search/DefaultCategoryImages';
 import { ArrowRight, Home, UserRound, Building, Briefcase, Award, CircleDollarSign } from 'lucide-react';
+import caregiverIllustration from '../assets/caregiver-illustration.png';
 
 const categories = [
   {
@@ -56,20 +57,29 @@ export default function Introduction() {
   const [activeTab, setActiveTab] = useState('how-it-works');
 
   const goToQuestionnaire = () => {
-    navigate('/questionnaire');
+    navigate('/wizard/1');
   };
 
   return (
     <div className="bg-amber-50 min-h-screen p-4 md:p-8">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-2 text-teal-600">
+      <div className="text-center mb-12">
+        <h1 className="font-serif text-5xl md:text-6xl font-normal tracking-normal mb-6 text-teal-600">
           <span>A</span>
           <span style={{ fontSize: 'calc(100% - 2pt)' }}>sk</span>
           <span>E</span>
           <span style={{ fontSize: 'calc(100% - 2pt)' }}>dith</span>
         </h1>
-        <p className="text-2xl md:text-3xl text-gray-600 font-light">Welcome to your elder care journey</p>
+        <p className="text-2xl md:text-3xl text-gray-600 font-light mb-8">Share Once. Reach Many.</p>
+        
+        {/* Added AskEdith image */}
+        <div className="max-w-sm mx-auto">
+          <img 
+            src={caregiverIllustration} 
+            alt="AskEdith" 
+            className="rounded-lg w-full"
+          />
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto">
