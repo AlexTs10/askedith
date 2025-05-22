@@ -1,0 +1,97 @@
+CleanSearch Design Specifications
+Overview
+Create a clean, minimal search results interface for senior support services using React and Tailwind CSS. The design follows a teal color scheme with a serif/sans-serif font pairing for an elegant yet accessible look.
+
+Color Palette
+Primary teal: #14b8a6 (for buttons, headings, and interactive elements)
+Darker teal: #0f766e (for hover states)
+White background: #ffffff (main content areas)
+Light gray background: #f3f4f6 (for separation areas like headers/footers)
+Border colors: #e5e7eb (light gray for subtle borders)
+Text colors:
+Primary text: #111827 (dark gray, almost black)
+Secondary text: #6b7280 (medium gray for less important text)
+Teal text: #14b8a6 (for headings and interactive elements)
+Typography
+Headings: "Playfair Display" (serif) for an elegant feel
+Main headers use font-serif text-2xl text-teal-600
+Body text: "Source Sans Pro" (sans-serif) for good readability
+Body text uses text-gray-600 or text-gray-900 depending on importance
+Layout Structure
+Navigation Bar
+
+Fixed to top, white background with bottom border
+AskEdith logo (font-serif text-xl text-teal-600) on left
+Sign In/Sign Up buttons on right with appropriate teal styling
+Search Header
+
+Light gray background (bg-gray-100)
+Contains search title and query text ("Showing results for "senior support"")
+Filter and Sort buttons aligned to the right
+Main Content Area
+
+Two-column layout on desktop (sidebar + results grid)
+Single column on mobile (stacked)
+Max width of 6xl (max-w-6xl mx-auto) with appropriate padding
+Category Sidebar
+
+Width of 64 (md:w-64) with right margin
+List of categories with icons, name, and result count badge
+Selected category has teal background highlight (bg-teal-50 text-teal-600)
+Results Grid
+
+3 columns on desktop, 2 on tablet, 1 on mobile
+Gap of 8 between cards (gap-8)
+Result Cards
+
+White background with subtle border and shadow on hover
+48px height logo/image area at top
+Padding of 4 (p-4) for content areas
+"Check to Contact" button at bottom that changes to teal when selected
+Footer
+
+Light gray background with top border
+Three-section layout (logo, links, copyright)
+Stacks vertically on mobile
+Icons
+Use Lucide React for all icons
+Category icons:
+<BuildingIcon /> - For facilities and buildings
+<HomeIcon /> - For in-home services
+<UsersIcon /> - For community services
+<BriefcaseIcon /> - For professional services
+<LandPlotIcon /> - For real estate options
+UI icons:
+<Filter /> - For filtering interface
+<Check /> - To indicate selection
+<ImageOff /> - For failed image loads
+Interactive Elements
+Category Selection
+
+Clicking a category updates the displayed results
+Selected category has teal highlight styling
+Contact Toggle
+
+"Check to Contact" button toggles selection state
+When selected: bg-teal-600 text-white with check icon
+When unselected: bg-teal-50 text-teal-800 without check icon
+Image Fallbacks
+
+Use category-specific default images when logos fail to load
+Track failed loads in state to prevent repeated failures
+Responsive Design
+Desktop (1024px+): Full three-column grid with sidebar visible
+Tablet (768px-1023px): Two-column grid, sidebar visible
+Mobile (<768px):
+Single column layout
+Stacked components (header, sidebar categories as horizontal scroll, results)
+Full-width cards
+Data Structure
+Search results are organized by categories
+Each result contains: id, name, address, category, website (optional), phone (optional)
+Selected category determines which results to display
+Track contacted items with their associated category information
+Special Features
+Logo generation using https://logo.dev/{companyName}
+Fallback images when logos fail to load
+Ability to group selected contacts by category
