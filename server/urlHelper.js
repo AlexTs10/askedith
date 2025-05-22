@@ -11,11 +11,21 @@
  * @returns {string} - Base URL (e.g., "https://domain.com")
  */
 export function getBaseUrl(req) {
+  // Safety check for request object
+  if (!req || typeof req.get !== 'function') {
+    console.error('Invalid request object passed to getBaseUrl');
+    throw new Error('Request object is required and must have get() method');
+  }
+  
   // Check for forwarded protocol first (for reverse proxies)
   const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
   
   // Get the host from various possible headers
   const host = req.get('x-forwarded-host') || req.get('host');
+  
+  if (!host) {
+    throw new Error('Unable to determine host from request headers');
+  }
   
   return `${protocol}://${host}`;
 }
