@@ -7,9 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Phone, Globe, Clock, X } from 'lucide-react';
 
-// Set Mapbox access token
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_KEY || '';
-
 interface ResourceMapProps {
   resources: Resource[];
   selectedCategory?: string | null;
@@ -35,6 +32,7 @@ const ResourceMap: React.FC<ResourceMapProps> = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [mapboxKey, setMapboxKey] = useState<string>('');
 
   // Filter resources based on selected category
   const filteredResources = selectedCategory 
@@ -44,8 +42,26 @@ const ResourceMap: React.FC<ResourceMapProps> = ({
   // Get unique categories from resources
   const categories = Array.from(new Set(resources.map(r => r.category)));
 
+  // Fetch Mapbox API key
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    const fetchMapboxKey = async () => {
+      try {
+        const response = await fetch('/api/mapbox-key');
+        const data = await response.json();
+        if (data.mapboxPublicKey) {
+          setMapboxKey(data.mapboxPublicKey);
+          mapboxgl.accessToken = data.mapboxPublicKey;
+        }
+      } catch (error) {
+        console.error('Failed to fetch Mapbox key:', error);
+      }
+    };
+
+    fetchMapboxKey();
+  }, []);
+
+  useEffect(() => {
+    if (!mapContainer.current || map.current || !mapboxKey) return;
 
     // Initialize map
     map.current = new mapboxgl.Map({
@@ -64,7 +80,7 @@ const ResourceMap: React.FC<ResourceMapProps> = ({
         map.current = null;
       }
     };
-  }, []);
+  }, [mapboxKey]);
 
   // Update markers when resources or filter changes
   useEffect(() => {

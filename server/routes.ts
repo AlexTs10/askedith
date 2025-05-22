@@ -16,6 +16,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error('Failed to load Nylas routes:', error);
   }
   
+  // API endpoint to provide Mapbox public key to frontend
+  app.get("/api/mapbox-key", (req, res) => {
+    res.json({ 
+      mapboxPublicKey: process.env.MAPBOX_PUBLIC_KEY || '' 
+    });
+  });
+
   // Get all resources
   app.get("/api/resources", async (req, res) => {
     try {
