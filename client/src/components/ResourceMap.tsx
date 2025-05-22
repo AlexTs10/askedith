@@ -42,22 +42,11 @@ const ResourceMap: React.FC<ResourceMapProps> = ({
   // Get unique categories from resources
   const categories = Array.from(new Set(resources.map(r => r.category)));
 
-  // Fetch Mapbox API key
+  // Set Mapbox API key
   useEffect(() => {
-    const fetchMapboxKey = async () => {
-      try {
-        const response = await fetch('/api/mapbox-key');
-        const data = await response.json();
-        if (data.mapboxPublicKey) {
-          setMapboxKey(data.mapboxPublicKey);
-          mapboxgl.accessToken = data.mapboxPublicKey;
-        }
-      } catch (error) {
-        console.error('Failed to fetch Mapbox key:', error);
-      }
-    };
-
-    fetchMapboxKey();
+    const apiKey = 'pk.eyJ1IjoiZWxpYXNwMTIzIiwiYSI6ImNtOHFjdXl5eDBqaTkybXEyMGVvaWFsdzIifQ.dg0YQHjrTHMrobBHP35KJQ';
+    setMapboxKey(apiKey);
+    mapboxgl.accessToken = apiKey;
   }, []);
 
   useEffect(() => {
