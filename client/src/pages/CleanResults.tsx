@@ -221,7 +221,7 @@ export default function CleanResults() {
     <div className="bg-white min-h-screen">
       {/* Navigation Bar - Fixed to top, white background with bottom border */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="font-serif text-xl text-teal-600">AskEdith</div>
             <div className="flex space-x-4">
@@ -234,7 +234,7 @@ export default function CleanResults() {
 
       {/* Search Header - Light gray background */}
       <div className="pt-16 bg-gray-100 py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="font-serif text-2xl text-teal-600 mb-1">Search Results</h1>
@@ -252,7 +252,7 @@ export default function CleanResults() {
       </div>
       
       {/* Main content with sidebar and results */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Category sidebar - Width of 64 (w-64) with right margin */}
           <aside className="w-full md:w-64 md:flex-shrink-0">
@@ -402,7 +402,7 @@ export default function CleanResults() {
 
       {/* Footer - Light gray background with top border */}
       <footer className="bg-gray-100 border-t border-gray-200 py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Logo section */}
             <div>
