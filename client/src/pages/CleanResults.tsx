@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Filter, Check, ImageOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import generateEmails from '@/lib/emailGenerator';
@@ -218,132 +218,157 @@ export default function CleanResults() {
   
   // Success state with clean design based on detailed specs
   return (
-    <div className="bg-amber-50 min-h-screen">
-      {/* Search Header - Exactly as specified */}
-      <div className="w-full bg-gray-50 py-6">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+    <div className="bg-white min-h-screen">
+      {/* Navigation Bar - Fixed to top, white background with bottom border */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="font-serif text-xl text-teal-600">AskEdith</div>
+            <div className="flex space-x-4">
+              <Button variant="ghost" className="text-gray-600 hover:text-teal-600">Sign In</Button>
+              <Button className="bg-teal-600 hover:bg-teal-700 text-white">Sign Up</Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Search Header - Light gray background */}
+      <div className="pt-16 bg-gray-100 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-800">Search Results</h1>
-              <p className="text-gray-500">Showing results for "senior support"</p>
+              <h1 className="font-serif text-2xl text-teal-600 mb-1">Search Results</h1>
+              <p className="text-gray-600">Showing results for "senior support"</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="border-gray-200 flex items-center gap-2 text-gray-700 hover:bg-gray-50">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 6h18M6 12h12M9 18h6"></path>
-                </svg>
+              <Button variant="outline" className="border-gray-300 flex items-center gap-2 text-gray-700 hover:bg-gray-50">
+                <Filter className="h-4 w-4" />
                 Filter
               </Button>
-              <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50">Sort</Button>
+              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">Sort</Button>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Main content with sidebar and results - fixed for Lovable.dev specifications */}
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 pb-8 mt-8" style={{ maxWidth: "1600px" }}>
-        <div className="flex flex-col xl:flex-row gap-4">
-          {/* Category sidebar - Exactly as specified */}
-          <aside className="w-full xl:w-52 xl:shrink-0 mb-6 xl:mb-0">
-            <h2 className="font-medium text-lg pb-2 border-b border-gray-200 mb-4">Categories</h2>
-            <ul className="space-y-2">
+      {/* Main content with sidebar and results */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Category sidebar - Width of 64 (w-64) with right margin */}
+          <aside className="w-full md:w-64 md:flex-shrink-0">
+            <h2 className="font-medium text-lg text-gray-900 mb-4">Categories</h2>
+            <nav className="space-y-1">
               {categories.map(category => (
-                <li key={category} className="flex items-center justify-between">
-                  <button
-                    onClick={() => setActiveCategory(category)}
-                    className={`flex items-center text-left px-3 py-2 rounded-md w-full transition-all ${
-                      activeCategory === category 
-                        ? 'bg-teal-50 text-teal-600 font-medium' 
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="mr-2">{getCategoryIcon(category)}</span>
-                    <span className="flex-grow truncate text-sm">{category}</span>
-                    <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs ml-2">
-                      {categoryGroups[category].length}
-                    </span>
-                  </button>
-                </li>
+                <button
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-left rounded-md transition-colors ${
+                    activeCategory === category 
+                      ? 'bg-teal-50 text-teal-600 font-medium' 
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <span className="mr-3">{getCategoryIcon(category)}</span>
+                    <span className="text-sm">{category}</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${
+                    activeCategory === category 
+                      ? 'bg-teal-100 text-teal-700' 
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {categoryGroups[category].length}
+                  </span>
+                </button>
               ))}
-            </ul>
+            </nav>
           </aside>
           
-          {/* Results section - Exactly as specified */}
+          {/* Results section */}
           <div className="flex-1 min-w-0">
             {categories.map(category => (
               <div 
                 key={category}
-                className={activeCategory === category ? 'block w-full' : 'hidden'}
+                className={activeCategory === category ? 'block' : 'hidden'}
               >
-                <h2 className="font-serif text-xl text-teal-600 mb-6 flex items-center">
-                  <span className="mr-2">{getCategoryIcon(category)}</span>
+                <h2 className="font-serif text-2xl text-teal-600 mb-6 flex items-center">
+                  <span className="mr-3">{getCategoryIcon(category)}</span>
                   {category}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {/* Three columns on desktop, two on tablet, one on mobile with gap-8 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                     >
-                      {/* Image Area - Exactly as specified */}
-                      <div className="h-48 relative bg-white flex items-center justify-center overflow-hidden p-6">
+                      {/* Logo/image area - 48px height as specified */}
+                      <div className="h-48 bg-white flex items-center justify-center p-4">
                         <img 
-                          src={getDefaultImageForCategory(resource.category)}
-                          alt={resource.category || "Resource"}
-                          className="w-full h-full object-cover"
+                          src={`https://logo.dev/${encodeURIComponent(resource.companyName || resource.name)}`}
+                          alt={`${resource.name} logo`}
+                          className="max-w-full max-h-full object-contain"
                           onError={(e) => {
-                            e.currentTarget.src = '/assets/caregiver-illustration.png';
+                            // Fallback to category-specific default image
+                            e.currentTarget.src = getDefaultImageForCategory(resource.category);
+                            e.currentTarget.onerror = (e2) => {
+                              // Final fallback: show ImageOff icon
+                              const target = e2.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent && !parent.querySelector('.fallback-icon')) {
+                                const iconDiv = document.createElement('div');
+                                iconDiv.className = 'fallback-icon flex items-center justify-center w-full h-full text-gray-400';
+                                iconDiv.innerHTML = '<svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 9 3 3m0 0 3 3m-3-3 3-3m-3 3-3 3M3 18V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>';
+                                parent.appendChild(iconDiv);
+                              }
+                            };
                           }}
                         />
-{/* Category label removed as requested */}
                       </div>
                       
-                      {/* Content Area - Exactly as specified */}
-                      <div className="p-4 flex-grow flex flex-col">
-                        <h3 className="text-lg font-medium text-gray-900 mb-2 min-h-[3.5rem] line-clamp-2">
+                      {/* Content area with padding of 4 (p-4) */}
+                      <div className="p-4">
+                        <h3 className="font-medium text-gray-900 mb-2 text-lg">
                           {resource.name}
                         </h3>
-                        <p className="text-sm text-gray-500 mb-4">
-                          {resource.address || resource.city || ""}
+                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                          {resource.address}
                         </p>
                         
-                        <div className="mt-auto flex flex-wrap gap-2">
+                        {/* Contact info */}
+                        <div className="space-y-2 mb-4">
                           {resource.website && (
                             <a 
                               href={resource.website}
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
+                              className="text-teal-600 hover:text-teal-700 text-sm inline-block"
                             >
-                              Website
+                              Visit Website →
                             </a>
                           )}
                           {resource.phone && (
-                            <a 
-                              href={`tel:${resource.phone}`}
-                              className="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full transition-colors"
-                            >
-                              Call
-                            </a>
+                            <div className="text-gray-600 text-sm">
+                              {resource.phone}
+                            </div>
                           )}
                         </div>
                         
-                        {/* Check to Contact Button - Exactly as specified */}
+                        {/* Check to Contact button at bottom */}
                         <button 
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full mt-4 py-2 px-4 text-sm text-center rounded-md transition-colors whitespace-nowrap ${
+                          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                             state.selectedResourceIds.includes(resource.id)
-                              ? 'bg-teal-600 hover:bg-teal-700 text-white'
-                              : 'bg-teal-50 hover:bg-teal-100 text-teal-600'
+                              ? 'bg-teal-600 text-white hover:bg-teal-700'
+                              : 'bg-teal-50 text-teal-800 hover:bg-teal-100'
                           }`}
                         >
                           {state.selectedResourceIds.includes(resource.id) ? (
                             <span className="flex items-center justify-center">
-                              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                              <span className="whitespace-nowrap">Selected to Contact</span>
+                              <Check className="h-4 w-4 mr-2" />
+                              Selected to Contact
                             </span>
                           ) : (
                             "Check to Contact"
@@ -358,22 +383,61 @@ export default function CleanResults() {
           </div>
         </div>
         
-        {/* Continue button - Exactly as specified */}
-        <div className="mt-8">
-          <Button 
-            onClick={handleContinue}
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 px-8 rounded-md transition-colors"
-            disabled={state.selectedResourceIds.length === 0}
-          >
-            Continue with Selected Resources
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-          
-          <p className="text-center text-sm text-gray-500 mt-3">
-            You'll have a chance to review and edit your message before sending
-          </p>
-        </div>
+        {/* Continue button */}
+        {state.selectedResourceIds.length > 0 && (
+          <div className="mt-12 text-center">
+            <Button 
+              onClick={handleContinue}
+              className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 text-lg"
+            >
+              Continue with {state.selectedResourceIds.length} Selected Resource{state.selectedResourceIds.length !== 1 ? 's' : ''}
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <p className="text-gray-600 text-sm mt-3">
+              You'll have a chance to review and edit your message before sending
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Footer - Light gray background with top border */}
+      <footer className="bg-gray-100 border-t border-gray-200 py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Logo section */}
+            <div>
+              <div className="font-serif text-xl text-teal-600 mb-4">AskEdith</div>
+              <p className="text-gray-600 text-sm">
+                Connecting seniors and their families with the support they need.
+              </p>
+            </div>
+            
+            {/* Links section */}
+            <div>
+              <h3 className="font-medium text-gray-900 mb-4">Quick Links</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><a href="#" className="hover:text-teal-600">About Us</a></li>
+                <li><a href="#" className="hover:text-teal-600">How It Works</a></li>
+                <li><a href="#" className="hover:text-teal-600">Resources</a></li>
+                <li><a href="#" className="hover:text-teal-600">Contact</a></li>
+              </ul>
+            </div>
+            
+            {/* Copyright section */}
+            <div>
+              <h3 className="font-medium text-gray-900 mb-4">Support</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li><a href="#" className="hover:text-teal-600">Help Center</a></li>
+                <li><a href="#" className="hover:text-teal-600">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-teal-600">Terms of Service</a></li>
+              </ul>
+              <p className="text-gray-500 text-xs mt-6">
+                © 2024 AskEdith. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
