@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import useWizardState from "@/lib/useWizardState";
 import generateEmails from "@/lib/emailGenerator";
 import { Resource } from "@shared/schema";
+import ResourceMap from "@/components/ResourceMap";
 import {
   getDefaultImageForCategory,
   getCategoryLabel,
@@ -433,6 +434,15 @@ export default function CleanResults() {
             </p>
           </div>
         )}
+
+        {/* Interactive Map */}
+        <div className="mt-16">
+          <ResourceMap 
+            resources={resources}
+            selectedCategory={activeCategory}
+            onCategoryFilter={setActiveCategory}
+          />
+        </div>
       </div>
 
       {/* Footer - Light gray background with top border */}
