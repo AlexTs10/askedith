@@ -381,9 +381,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nylasHelper = await import('./nylas-sdk-v3.js');
       
       try {
+        // Generate the same callback URL used for auth
+        const protocol = req.get('x-forwarded-proto') || 'https';
+        const callbackUrl = `${protocol}://${req.get('host')}/callback`;
+        
         // Exchange code for token with detailed error logging
         console.log('Attempting to exchange code for token...');
-        const grantId = await nylasHelper.exchangeCodeForToken(code);
+        const grantId = await nylasHelper.exchangeCodeForToken(code, callbackUrl);
         console.log('Successfully obtained Nylas grant ID');
         
         // Store the grant ID in session

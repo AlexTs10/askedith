@@ -1,0 +1,90 @@
+
+
+
+
+Generated callback URL: https://977d07b1-9904-4aed-8d90-b3459d871857-00-1b89xf1hkxhpw.kirk.replit.dev/callback
+Using Nylas redirect URI: https://977d07b1-9904-4aed-8d90-b3459d871857-00-1b89xf1hkxhpw.kirk.replit.dev/callback
+Using Google OAuth credentials for authentication
+Generated Nylas auth URL with SDK
+6:51:26 PM [express] POST /api/nylas/auth-url 200 in 2ms :: {"authUrl":"https://api.us.nylas.com/v3/…
+6:51:26 PM [express] POST /api/store-user-email 200 in 2ms :: {"success":true,"message":"Email prefe…
+Callback received with query params: {
+  code: 'DOirD4X38RXRmYWitIYESB1INnoVHjrZefu1xesqXD6R6Mk04B-1CrthLjWi1LJf63TUu0zY7CRoWbGPUa8vMvrw4D_tMVZD'
+}
+Received Nylas callback with code: DOirD4X38RXRmYWitIYESB1INnoVHjrZefu1xesqXD6R6Mk04B-1CrthLjWi1LJf63TUu0zY7CRoWbGPUa8vMvrw4D_tMVZD
+Attempting to exchange code for token...
+Exchanging code for token using Nylas SDK
+Token exchange parameters: {
+  clientId: '12acd056-2644-46b2-9199-5d7fdcf9a86b',
+  clientSecret: '***hidden***',
+  code: 'DOirD4X38RXRmYWitIYESB1INnoVHjrZefu1xesqXD6R6Mk04B-1CrthLjWi1LJf63TUu0zY7CRoWbGPUa8vMvrw4D_tMVZD',
+  redirectUri: undefined,
+  googleClientId: '1044417285008-shes6p79lclto98shfbhminm8ki557fm.apps.googleusercontent.com',
+  googleClientSecret: '***hidden***'
+}
+6:51:39 PM [express] GET /api/email-service-status 304 in 1ms :: {"sendgridAvailable":true,"nodemail…
+Error exchanging code for token: NylasOAuthError: Invalid input payload: 'redirect_uri' field required
+    at APIClient.sendRequest (file:///home/runner/workspace/node_modules/nylas/lib/esm/apiClient.js:102:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async APIClient.request (file:///home/runner/workspace/node_modules/nylas/lib/esm/apiClient.js:168:26)
+    at async Module.exchangeCodeForToken (file:///home/runner/workspace/server/nylas-sdk-v3.js:133:22)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:386:25) {
+  error: 'invalid_request_payload',
+  errorCode: 700,
+  errorDescription: "Invalid input payload: 'redirect_uri' field required",
+  errorUri: 'https://developer.nylas.com/docs/v3/api-references/event-codes',
+  statusCode: 400,
+  requestId: undefined,
+  flowId: '2256805011',
+  headers: {
+    'accept-ranges': 'bytes',
+    'cache-control': 'no-store',
+    connection: 'keep-alive',
+    'content-length': '267',
+    'content-type': 'application/json',
+    date: 'Thu, 22 May 2025 18:51:39 GMT',
+    'strict-transport-security': 'max-age=31557600',
+    via: '1.1 google, 1.1 varnish, 1.1 varnish',
+    'x-cache': 'MISS, MISS, MISS',
+    'x-cache-hits': '0, 0, 0',
+    'x-content-type-options': 'nosniff',
+    'x-fastly-id': '2256805011',
+    'x-frame-options': 'deny',
+    'x-served-by': 'cache-chi-kigq8000035-CHI, cache-chi-kigq8000035-CHI, cache-bfi-kbfi7400082-BFI',
+    'x-timer': 'S1747939900.680130,VS0,VE208',
+    'x-xss-protection': '1; mode=block'
+  }
+}
+Token exchange error: NylasOAuthError: Invalid input payload: 'redirect_uri' field required
+    at APIClient.sendRequest (file:///home/runner/workspace/node_modules/nylas/lib/esm/apiClient.js:102:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async APIClient.request (file:///home/runner/workspace/node_modules/nylas/lib/esm/apiClient.js:168:26)
+    at async Module.exchangeCodeForToken (file:///home/runner/workspace/server/nylas-sdk-v3.js:133:22)
+    at async <anonymous> (/home/runner/workspace/server/routes.ts:386:25) {
+  error: 'invalid_request_payload',
+  errorCode: 700,
+  errorDescription: "Invalid input payload: 'redirect_uri' field required",
+  errorUri: 'https://developer.nylas.com/docs/v3/api-references/event-codes',
+  statusCode: 400,
+  requestId: undefined,
+  flowId: '2256805011',
+  headers: {
+    'accept-ranges': 'bytes',
+    'cache-control': 'no-store',
+    connection: 'keep-alive',
+    'content-length': '267',
+    'content-type': 'application/json',
+    date: 'Thu, 22 May 2025 18:51:39 GMT',
+    'strict-transport-security': 'max-age=31557600',
+    via: '1.1 google, 1.1 varnish, 1.1 varnish',
+    'x-cache': 'MISS, MISS, MISS',
+    'x-cache-hits': '0, 0, 0',
+    'x-content-type-options': 'nosniff',
+    'x-fastly-id': '2256805011',
+    'x-frame-options': 'deny',
+    'x-served-by': 'cache-chi-kigq8000035-CHI, cache-chi-kigq8000035-CHI, cache-bfi-kbfi7400082-BFI',
+    'x-timer': 'S1747939900.680130,VS0,VE208',
+    'x-xss-protection': '1; mode=block'
+  }
+}
+6:51:40 PM [express] GET /api/email-service-status 304 in 1ms :: {"sendgridAvailable":true,"nodemail…
