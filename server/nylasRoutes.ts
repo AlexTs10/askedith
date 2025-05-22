@@ -25,8 +25,10 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Generate callback URL using current host
-    const callbackUrl = `${req.protocol}://${req.get('host')}/callback`;
+    // Generate callback URL using current host (force HTTPS for production)
+    const protocol = req.get('x-forwarded-proto') || 'https'; // Force HTTPS in production
+    const callbackUrl = `${protocol}://${req.get('host')}/callback`;
+    console.log('Generated callback URL:', callbackUrl);
     const authUrl = generateNylasAuthUrl(email, callbackUrl);
     
     res.json({ authUrl });
