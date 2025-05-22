@@ -296,8 +296,8 @@ export default function CleanResults() {
                   {category}
                 </h2>
                 
-                {/* Three columns on desktop, two on tablet, one on mobile with gap-8 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Two columns on desktop, one on tablet and mobile with gap-8 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {categoryGroups[category].map(resource => (
                     <div 
                       key={resource.id} 
