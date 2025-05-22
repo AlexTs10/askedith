@@ -25,8 +25,9 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Use our new V3 direct implementation with request object for dynamic URLs
-    const authUrl = generateNylasAuthUrl(email, req);
+    // Generate callback URL using current host
+    const callbackUrl = `${req.protocol}://${req.get('host')}/callback`;
+    const authUrl = generateNylasAuthUrl(email, callbackUrl);
     
     res.json({ authUrl });
   } catch (error) {

@@ -19,10 +19,7 @@ console.log('- Client ID:', NYLAS_CLIENT_ID);
 console.log('- Client Secret:', NYLAS_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
 console.log('- API URI:', NYLAS_API_URI);
 
-// Import URL helper for dynamic redirect URIs
-import { generateCallbackUrl } from './urlHelper.js';
-
-// Note: Redirect URIs are now generated dynamically based on the current request
+// Note: Redirect URIs are now passed directly from the calling function
 // This eliminates the need for hardcoded URLs and supports multiple environments
 
 // Configure Nylas instance
@@ -51,17 +48,15 @@ const RESOURCE_CATEGORIES = [
 /**
  * Generate an OAuth URL for connecting a user's email account
  * @param {string} email - User's email address
- * @param {Object} req - Express request object (for dynamic URL generation)
+ * @param {string} callbackUrl - Callback URL for OAuth redirect
  */
-export function generateNylasAuthUrl(email, req) {
+export function generateNylasAuthUrl(email, callbackUrl) {
   try {
     if (!nylasClient) {
       throw new Error('Nylas client not initialized');
     }
     
-    // Generate dynamic redirect URI based on current request
-    const redirectUri = generateCallbackUrl(req, '/callback');
-    console.log('Using Nylas redirect URI:', redirectUri);
+    console.log('Using Nylas redirect URI:', callbackUrl);
     
     // Detect the email provider to use appropriate parameters
     const isGmail = email.endsWith('@gmail.com');
@@ -70,7 +65,7 @@ export function generateNylasAuthUrl(email, req) {
     // Base configuration for all providers
     const authConfig = {
       clientId: NYLAS_CLIENT_ID,
-      redirectUri: redirectUri,
+      redirectUri: callbackUrl,
       loginHint: email
     };
     
