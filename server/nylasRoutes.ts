@@ -47,11 +47,13 @@ router.get('/nylas/callback', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Our direct API implementation handles the redirect URI internally
-    console.log('Exchanging code for access token');
+    // Generate the same callback URL used for auth
+    const protocol = req.get('x-forwarded-proto') || 'https';
+    const callbackUrl = `${protocol}://${req.get('host')}/callback`;
+    console.log('Exchanging code for access token with callback URL:', callbackUrl);
     
     // Exchange the auth code for an access token
-    const accessToken = await exchangeCodeForToken(code);
+    const accessToken = await exchangeCodeForToken(code, callbackUrl);
     
     // Store the grant ID in session (V3 API uses grant IDs instead of access tokens)
     if (req.session) {

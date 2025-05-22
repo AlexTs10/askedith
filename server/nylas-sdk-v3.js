@@ -102,7 +102,7 @@ export function generateNylasAuthUrl(email, callbackUrl) {
 /**
  * Exchange an authorization code for a grant ID
  */
-export async function exchangeCodeForToken(code) {
+export async function exchangeCodeForToken(code, redirectUri) {
   try {
     if (!nylasClient) {
       throw new Error('Nylas client not initialized');
@@ -119,7 +119,7 @@ export async function exchangeCodeForToken(code) {
       clientId: NYLAS_CLIENT_ID,
       clientSecret: NYLAS_CLIENT_SECRET,
       code: code,
-      redirectUri: NYLAS_REDIRECT_URI,
+      redirectUri: redirectUri,
     };
     
     // Always include Google credentials regardless of code content
