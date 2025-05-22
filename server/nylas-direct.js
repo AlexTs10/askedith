@@ -27,13 +27,15 @@ if (!process.env.NYLAS_CLIENT_ID || !process.env.NYLAS_CLIENT_SECRET) {
   console.log('Nylas credentials found. Email integration is available.');
 }
 
+import { generateCallbackUrl } from './urlHelper.js';
+
 /**
  * Generate an OAuth URL for connecting a user's email account
  */
-export function generateAuthUrl(email, redirectUri) {
+export function generateAuthUrl(email, req) {
   try {
-    // Always use the registered callback URL
-    const callbackUrl = 'https://askcara-project.elias18.repl.co/callback';
+    // Generate dynamic callback URL based on the current request
+    const callbackUrl = generateCallbackUrl(req, '/callback');
     
     console.log('Using standard callback URL for OAuth:', callbackUrl);
     

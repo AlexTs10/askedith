@@ -4,6 +4,7 @@
 
 import { Router } from 'express';
 import * as nylasApi from './nylas-direct.js';
+import { generateApiCallbackUrl } from './urlHelper.js';
 
 const router = Router();
 
@@ -16,9 +17,8 @@ router.post('/nylas/auth-url', (req, res) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
     
-    // Generate the redirect URI based on the current request
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/nylas/callback`;
-    const authUrl = nylasApi.generateAuthUrl(email, redirectUri);
+    // Generate the redirect URI using the URL helper
+    const authUrl = nylasApi.generateAuthUrl(email, req);
     
     res.json({ authUrl });
   } catch (error) {
@@ -36,7 +36,7 @@ router.get('/nylas/callback', async (req, res) => {
       return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/nylas/callback`;
+    const redirectUri = generateApiCallbackUrl(req);
     const accessToken = await nylasApi.exchangeCodeForToken(code, redirectUri);
     
     // Store the token in session
