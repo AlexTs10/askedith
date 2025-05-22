@@ -120,13 +120,15 @@ export async function exchangeCodeForToken(code, redirectUri) {
       clientSecret: NYLAS_CLIENT_SECRET,
       code: code,
       redirectUri: redirectUri,
+      googleClientId: GOOGLE_CLIENT_ID,
+      googleClientSecret: GOOGLE_CLIENT_SECRET
     };
     
-    // Always include Google credentials regardless of code content
-    // This helps with authentication regardless of the email provider
-    exchangeParams.googleClientId = GOOGLE_CLIENT_ID;
-    exchangeParams.googleClientSecret = GOOGLE_CLIENT_SECRET;
-    console.log('Including Google OAuth credentials for token exchange');
+    console.log('Token exchange parameters:', {
+      ...exchangeParams,
+      clientSecret: '***hidden***',
+      googleClientSecret: '***hidden***'
+    });
     
     const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
     
