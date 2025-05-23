@@ -322,39 +322,29 @@ export default function CleanResults() {
                   {category}
                 </h2>
 
-                {/* Three columns on desktop, two on tablet, one on mobile */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Three columns on desktop, two on tablet, one on mobile - All cards same height */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
                   {categoryGroups[category].map((resource) => (
                     <div
                       key={resource.id}
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden h-full flex flex-col"
                     >
-                      {/* Logo/image area - 48px height as specified */}
-                      <div className="h-48 bg-white flex items-center justify-center p-4">
+                      {/* Logo/image area - Fixed height */}
+                      <div className="h-32 bg-gray-50 flex items-center justify-center p-3 shrink-0">
                         <img
                           src={`https://logo.dev/${encodeURIComponent(resource.companyName || resource.name)}`}
                           alt={`${resource.name} logo`}
                           className="max-w-full max-h-full object-contain"
                           onError={(e) => {
-                            // Fallback to category-specific default image
-                            e.currentTarget.src = getDefaultImageForCategory(
-                              resource.category,
-                            );
-                            e.currentTarget.onerror = (e2) => {
-                              // Final fallback: show ImageOff icon
-                              const target =
-                                e2.currentTarget as HTMLImageElement;
+                            const target = e.target as HTMLImageElement;
+                            target.src = getDefaultImageForCategory(resource.category);
+                            target.onerror = () => {
                               target.style.display = "none";
                               const parent = target.parentElement;
-                              if (
-                                parent &&
-                                !parent.querySelector(".fallback-icon")
-                              ) {
+                              if (parent && !parent.querySelector(".fallback-icon")) {
                                 const iconDiv = document.createElement("div");
-                                iconDiv.className =
-                                  "fallback-icon flex items-center justify-center w-full h-full text-gray-400";
-                                iconDiv.innerHTML =
-                                  '<svg class="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 9 3 3m0 0 3 3m-3-3 3-3m-3 3-3 3M3 18V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>';
+                                iconDiv.className = "fallback-icon flex items-center justify-center w-full h-full text-gray-400";
+                                iconDiv.innerHTML = '<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 9 3 3m0 0 3 3m-3-3 3-3m-3 3-3 3M3 18V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>';
                                 parent.appendChild(iconDiv);
                               }
                             };
@@ -362,52 +352,57 @@ export default function CleanResults() {
                         />
                       </div>
 
-                      {/* Content area with padding of 4 (p-4) - flex grow to fill space */}
-                      <div className="p-4 flex flex-col flex-grow">
-                        <h3 className="font-medium text-gray-900 mb-2 text-lg">
+                      {/* Content area - structured for consistent layout */}
+                      <div className="p-4 flex flex-col flex-1">
+                        {/* Title - fixed space */}
+                        <h3 className="font-serif text-lg text-teal-600 mb-2 line-clamp-2 h-14 flex items-start">
                           {resource.name}
                         </h3>
-                        <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                        
+                        {/* Address - fixed space */}
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2 h-10 flex items-start">
                           {resource.address}
                         </p>
 
-                        {/* Contact info - flex grow to push button to bottom */}
-                        <div className="space-y-2 mb-4 flex-grow">
-                          {resource.website && (
-                            <a
-                              href={resource.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-teal-600 hover:text-teal-700 text-sm inline-block"
-                            >
-                              Visit Website →
-                            </a>
-                          )}
-                          {resource.phone && (
-                            <div className="text-gray-600 text-sm">
-                              {resource.phone}
-                            </div>
-                          )}
-                        </div>
+                        {/* Contact info section - flexible space but consistent structure */}
+                        <div className="flex-1 flex flex-col justify-between min-h-[80px]">
+                          <div className="space-y-1 mb-3">
+                            {resource.website && (
+                              <a
+                                href={resource.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-teal-600 hover:text-teal-700 text-sm inline-block truncate max-w-full"
+                              >
+                                Visit Website →
+                              </a>
+                            )}
+                            {resource.phone && (
+                              <div className="text-gray-600 text-sm">
+                                {resource.phone}
+                              </div>
+                            )}
+                          </div>
 
-                        {/* Check to Contact button at bottom - always at the same position */}
-                        <button
-                          onClick={() => toggleResource(resource.id)}
-                          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors mt-auto ${
-                            state.selectedResourceIds.includes(resource.id)
-                              ? "bg-teal-600 text-white hover:bg-teal-700"
-                              : "bg-teal-50 text-teal-800 hover:bg-teal-100"
-                          }`}
-                        >
-                          {state.selectedResourceIds.includes(resource.id) ? (
-                            <span className="flex items-center justify-center">
-                              <Check className="h-4 w-4 mr-2" />
-                              Selected to Contact
-                            </span>
-                          ) : (
-                            "Check to Contact"
-                          )}
-                        </button>
+                          {/* Check to Contact button - always at bottom */}
+                          <button
+                            onClick={() => toggleResource(resource.id)}
+                            className={`w-full py-2.5 px-4 rounded-md text-sm font-medium transition-colors mt-auto ${
+                              state.selectedResourceIds.includes(resource.id)
+                                ? "bg-teal-600 text-white hover:bg-teal-700"
+                                : "bg-teal-50 text-teal-800 hover:bg-teal-100"
+                            }`}
+                          >
+                            {state.selectedResourceIds.includes(resource.id) ? (
+                              <span className="flex items-center justify-center">
+                                <Check className="h-4 w-4 mr-2" />
+                                Selected to Contact
+                              </span>
+                            ) : (
+                              "Check to Contact"
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
