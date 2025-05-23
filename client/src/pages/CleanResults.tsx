@@ -274,10 +274,10 @@ export default function CleanResults() {
       </div>
 
       {/* Main content with sidebar and results */}
-      <div className="max-w-full mx-auto px-8 sm:px-12 lg:px-16 py-8">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Category sidebar - Width of 64 (w-64) with right margin */}
-          <aside className="w-full md:w-64 md:flex-shrink-0">
+          <aside className="w-full lg:w-72 lg:flex-shrink-0">
             <h2 className="font-medium text-lg text-gray-900 mb-4">
               Categories
             </h2>
@@ -323,7 +323,7 @@ export default function CleanResults() {
                 </h2>
 
                 {/* Three columns on desktop, two on tablet, one on mobile */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {categoryGroups[category].map((resource) => (
                     <div
                       key={resource.id}
