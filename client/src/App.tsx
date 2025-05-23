@@ -49,7 +49,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-neutral-lightest">
-          <div className="max-w-5xl mx-auto px-4 py-8 md:py-12 space-y-8">
+          <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-8">
             <ApiSecretChecker>
               <Router />
             </ApiSecretChecker>
