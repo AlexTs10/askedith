@@ -329,12 +329,12 @@ export default function CleanResults() {
                       key={resource.id}
                       className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden h-full flex flex-col"
                     >
-                      {/* Logo/image area - Fixed height */}
-                      <div className="h-32 bg-gray-50 flex items-center justify-center p-3 shrink-0">
+                      {/* Logo/image area - Fixed height, image fills container */}
+                      <div className="h-32 bg-gray-50 overflow-hidden shrink-0 relative">
                         <img
                           src={`https://logo.dev/${encodeURIComponent(resource.companyName || resource.name)}`}
                           alt={`${resource.name} logo`}
-                          className="max-w-full max-h-full object-contain"
+                          className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.src = getDefaultImageForCategory(resource.category);
@@ -343,7 +343,7 @@ export default function CleanResults() {
                               const parent = target.parentElement;
                               if (parent && !parent.querySelector(".fallback-icon")) {
                                 const iconDiv = document.createElement("div");
-                                iconDiv.className = "fallback-icon flex items-center justify-center w-full h-full text-gray-400";
+                                iconDiv.className = "fallback-icon absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-100";
                                 iconDiv.innerHTML = '<svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 9 3 3m0 0 3 3m-3-3 3-3m-3 3-3 3M3 18V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>';
                                 parent.appendChild(iconDiv);
                               }
