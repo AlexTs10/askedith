@@ -274,7 +274,7 @@ export default function CleanResults() {
       </div>
 
       {/* Main content with sidebar and results */}
-      <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-8">
+      <div className="w-full px-6 sm:px-8 lg:px-12 py-8">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Category sidebar - Width of 64 (w-64) with right margin */}
           <aside className="w-full lg:w-72 lg:flex-shrink-0">
