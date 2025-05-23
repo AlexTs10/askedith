@@ -327,7 +327,7 @@ export default function CleanResults() {
                   {categoryGroups[category].map((resource) => (
                     <div
                       key={resource.id}
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                      className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full"
                     >
                       {/* Logo/image area - 48px height as specified */}
                       <div className="h-48 bg-white flex items-center justify-center p-4">
@@ -362,8 +362,8 @@ export default function CleanResults() {
                         />
                       </div>
 
-                      {/* Content area with padding of 4 (p-4) */}
-                      <div className="p-4">
+                      {/* Content area with padding of 4 (p-4) - flex grow to fill space */}
+                      <div className="p-4 flex flex-col flex-grow">
                         <h3 className="font-medium text-gray-900 mb-2 text-lg">
                           {resource.name}
                         </h3>
@@ -371,8 +371,8 @@ export default function CleanResults() {
                           {resource.address}
                         </p>
 
-                        {/* Contact info */}
-                        <div className="space-y-2 mb-4">
+                        {/* Contact info - flex grow to push button to bottom */}
+                        <div className="space-y-2 mb-4 flex-grow">
                           {resource.website && (
                             <a
                               href={resource.website}
@@ -390,10 +390,10 @@ export default function CleanResults() {
                           )}
                         </div>
 
-                        {/* Check to Contact button at bottom */}
+                        {/* Check to Contact button at bottom - always at the same position */}
                         <button
                           onClick={() => toggleResource(resource.id)}
-                          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors mt-auto ${
                             state.selectedResourceIds.includes(resource.id)
                               ? "bg-teal-600 text-white hover:bg-teal-700"
                               : "bg-teal-50 text-teal-800 hover:bg-teal-100"
