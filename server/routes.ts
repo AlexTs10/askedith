@@ -78,9 +78,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Try to use Nylas if available
       try {
-        // Import the direct sending module
-        const nylasDirect = await import('./nylas-direct-send.js');
-        
         // Check if user has a Nylas grant ID
         if (req.session?.nylasGrantId) {
           const nylasSDK = await import('./nylas-sdk-v3.js');
@@ -88,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (hasNylasConnection) {
             // Use connected account if available
-            console.log('Using Nylas V3 SDK with grant ID');
+            console.log('Using Nylas V3 SDK with grant ID for single email');
             const emailData = { to, subject, body, replyTo };
             const emailCategory = category || 'Other';
             
@@ -106,6 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
             } 
             // Fall through to SendGrid if Nylas fails
+            console.warn('Nylas sendEmailWithNylas failed, falling through to SendGrid.');
           }
         }
         
@@ -119,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
       } catch (nylasError) {
         // If there's any error with Nylas, fall back to SendGrid
-        console.error("Nylas error, falling back to SendGrid:", nylasError);
+        console.error("Nylas error during single email send, falling back to SendGrid:", nylasError);
         const { sendEmail } = await import('./sendgrid-helper');
         const result = await sendEmail({ 
           to, subject, body, from, replyTo, resourceId, questionnaireId, userId
@@ -187,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               );
             }
           } catch (err) {
-            console.error('Nylas error:', err);
+            console.error('Nylas error during batch email processing:', err);
             hasNylasError = true;
           }
         }
@@ -207,6 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               message: `${successCount} of ${emails.length} emails sent successfully via your connected email account`
             });
           }
+          console.warn('Nylas batch send reported 0 successes or nylasResults was falsy, falling through to SendGrid.');
         }
         
         // Fall back to SendGrid if Nylas failed or wasn't used
@@ -216,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(result);
       } catch (error) {
         // Fall back to SendGrid on any error
-        console.error("Error in email sending, falling back to SendGrid:", error);
+        console.error("Error in batch email sending, falling back to SendGrid:", error);
         const { sendBatchEmails } = await import('./sendgrid-helper');
         const result = await sendBatchEmails(emails);
         res.json(result);
@@ -257,53 +256,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add an extra route to handle the alternate dash format
+  // Add an extra route to handle the alternate dash format for callback
   app.get("/alt-callback", (req, res) => {
     console.log("Alternate callback received, redirecting to main callback");
     res.redirect(`/callback?${new URLSearchParams(req.query as Record<string, string>).toString()}`);
-  });
-  
-  // Manual code exchange endpoint for when the callback URL fails
-  app.post("/api/nylas/manual-exchange", async (req, res) => {
-    try {
-      const { code } = req.body;
-      
-      if (!code) {
-        return res.status(400).json({ 
-          success: false, 
-          error: "Authorization code is required" 
-        });
-      }
-      
-      console.log('Manually exchanging code for token:', code);
-      
-      // Process the authorization code using Nylas SDK V3
-      const nylasHelper = await import('./nylas-sdk-v3.js');
-      const grantId = await nylasHelper.exchangeCodeForToken(code);
-      
-      console.log('Successfully obtained Nylas grant ID via manual exchange');
-      
-      // Store the grant ID in session
-      if (req.session) {
-        req.session.nylasGrantId = grantId;
-        console.log('Saved Nylas grant ID in session');
-        
-        // Create folder structure for the user using their grant ID
-        console.log('Creating folder structure in email account...');
-        await nylasHelper.createFolderStructure(grantId);
-      }
-      
-      res.json({ 
-        success: true, 
-        message: "Email account connected successfully" 
-      });
-    } catch (error) {
-      console.error('Error processing manual code exchange:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "Failed to connect your email account" 
-      });
-    }
   });
   
   // Handle all variants of the Nylas OAuth callback URL
@@ -463,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </body>
           </html>
         `);
-      } catch (tokenError) {
+      } catch (tokenError: any) {
         console.error('Token exchange error:', tokenError);
         return res.send(`
           <html>
@@ -524,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           </html>
         `);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing OAuth callback:', error);
       res.status(500).send(`
         <html>

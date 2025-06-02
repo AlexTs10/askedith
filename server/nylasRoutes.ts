@@ -11,7 +11,7 @@ import {
   sendEmailWithNylas,
   checkNylasConnection,
   getMessagesFromCategory
-} from './nylas-sdk-v3.js';
+} from './nylas-sdk-v3';
 import { EmailData } from './emailService';
 
 const router = Router();
@@ -26,10 +26,12 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
     }
     
     // Generate callback URL using current host (force HTTPS for production)
-    const protocol = req.get('x-forwarded-proto') || 'https'; // Force HTTPS in production
-    const callbackUrl = `${protocol}://${req.get('host')}/callback`;
-    console.log('Generated callback URL:', callbackUrl);
-    const authUrl = generateNylasAuthUrl(email, callbackUrl);
+    // The redirectUri from client is not used here; server generates it.
+    // This ensures consistency with how the /callback route will receive it.
+    const protocol = req.get('x-forwarded-proto') || 'https'; 
+    const dynamicCallbackUrl = `${protocol}://${req.get('host')}/callback`;
+    console.log('Generated callback URL for auth:', dynamicCallbackUrl);
+    const authUrl = generateNylasAuthUrl(email, dynamicCallbackUrl);
     
     res.json({ authUrl });
   } catch (error) {
@@ -38,38 +40,57 @@ router.post('/nylas/auth-url', (req: Request, res: Response) => {
   }
 });
 
-// OAuth callback endpoint
-router.get('/nylas/callback', async (req: Request, res: Response) => {
+// Manual code exchange endpoint for when the callback URL fails
+router.post("/nylas/manual-exchange", async (req: Request, res: Response) => {
   try {
-    const { code, redirect_uri } = req.query;
+    const { code } = req.body;
     
-    if (!code || typeof code !== 'string') {
-      return res.status(400).json({ error: 'Authorization code is required' });
+    if (!code) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Authorization code is required" 
+      });
     }
     
-    // Generate the same callback URL used for auth
+    console.log('Manually exchanging code for token:', code);
+    
+    // Process the authorization code using Nylas SDK V3
+    // For manual exchange, the redirect URI used in the initial auth flow is implicitly the one Nylas expects.
+    // We don't need to pass it again if `exchangeCodeForToken` in `nylas-sdk-v3.js` uses a fixed one or it's configured in Nylas.
+    // However, to be safe and consistent, let's assume the registered redirect URI.
+    // The `exchangeCodeForToken` function in nylas-sdk-v3.js takes redirectUri as a parameter.
+    // It should be the same one used in the auth URL generation.
     const protocol = req.get('x-forwarded-proto') || 'https';
-    const callbackUrl = `${protocol}://${req.get('host')}/callback`;
-    console.log('Exchanging code for access token with callback URL:', callbackUrl);
+    const callbackUrl = `${protocol}://${req.get('host')}/callback`; // This must match the one used for generating the auth URL.
+
+
+    const grantId = await exchangeCodeForToken(code, callbackUrl);
     
-    // Exchange the auth code for an access token
-    const accessToken = await exchangeCodeForToken(code, callbackUrl);
+    console.log('Successfully obtained Nylas grant ID via manual exchange');
     
-    // Store the grant ID in session (V3 API uses grant IDs instead of access tokens)
+    // Store the grant ID in session
     if (req.session) {
-      req.session.nylasGrantId = accessToken; // Variable name remains for backward compatibility
+      req.session.nylasGrantId = grantId;
+      console.log('Saved Nylas grant ID in session');
       
-      // Create folder structure for the user
-      await createFolderStructure(accessToken);
+      // Create folder structure for the user using their grant ID
+      console.log('Creating folder structure in email account...');
+      await createFolderStructure(grantId);
     }
     
-    // Redirect back to the email preview page
-    res.redirect('/email-preview');
+    res.json({ 
+      success: true, 
+      message: "Email account connected successfully" 
+    });
   } catch (error) {
-    console.error('OAuth callback error:', error);
-    res.status(500).json({ error: 'Failed to authenticate with email provider' });
+    console.error('Error processing manual code exchange:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to connect your email account" 
+    });
   }
 });
+
 
 // Check connection status
 router.get('/nylas/connection-status', async (req: Request, res: Response) => {
@@ -86,7 +107,7 @@ router.get('/nylas/connection-status', async (req: Request, res: Response) => {
   }
 });
 
-// Send email via Nylas
+// Send email via Nylas (This endpoint is used by client if a connection is established)
 router.post('/nylas/send-email', async (req: Request, res: Response) => {
   const grantId = req.session?.nylasGrantId;
   
@@ -170,7 +191,7 @@ router.post('/nylas/send-batch', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid emails array' });
     }
     
-    const results = await Promise.all(
+    const results: { success: boolean }[] = await Promise.all(
       emails.map(async (email) => {
         const { to, subject, body, category, replyTo } = email;
         

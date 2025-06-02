@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
+import viteConfigFunction from "../vite.config";
 import { nanoid } from "nanoid";
 
 const viteLogger = createLogger();
@@ -26,8 +26,10 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true,
   };
 
+  const resolvedViteConfig = await viteConfigFunction(); // Call the async function to get the config object
+
   const vite = await createViteServer({
-    ...viteConfig,
+    ...resolvedViteConfig,
     configFile: false,
     customLogger: {
       ...viteLogger,
@@ -46,7 +48,7 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
+        path.dirname(new URL(import.meta.url).pathname),
         "..",
         "client",
         "index.html",

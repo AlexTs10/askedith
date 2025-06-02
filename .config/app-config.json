@@ -1,0 +1,12 @@
+{
+  "emailService": {
+    "provider": "fallback",
+    "sendgrid": {
+      "apiKey": "",
+      "configured": false
+    },
+    "nodemailer": {
+      "configured": false
+    }
+  }
+}
