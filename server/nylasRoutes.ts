@@ -80,7 +80,8 @@ router.post("/nylas/manual-exchange", async (req: Request, res: Response) => {
     
     res.json({ 
       success: true, 
-      message: "Email account connected successfully" 
+      message: "Email account connected successfully",
+      grantId
     });
   } catch (error) {
     console.error('Error processing manual code exchange:', error);

@@ -1,9 +1,8 @@
 {
   "emailService": {
-    "provider": "fallback",
-    "sendgrid": {
-      "apiKey": "",
-      "configured": false
+    "provider": "nylas",
+    "nylas": {
+      "configured": true
     },
     "nodemailer": {
       "configured": false

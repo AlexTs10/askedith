@@ -49,6 +49,25 @@ export function NylasConnect({ userEmail, onConnect }: NylasConnectProps) {
     checkConnectionStatus();
   }, []);
 
+  // Add this useEffect to listen for NYLAS_CONNECTION_SUCCESS messages
+  useEffect(() => {
+    const messageListener = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'NYLAS_CONNECTION_SUCCESS') {
+        if (event.data.grantId) {
+          localStorage.setItem('nylas_grant_id', event.data.grantId);
+          fetch('/api/nylas/set-grant-id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ grantId: event.data.grantId }),
+          });
+        }
+        setIsConnected(true);
+      }
+    };
+    window.addEventListener('message', messageListener);
+    return () => window.removeEventListener('message', messageListener);
+  }, []);
+
   // Initialize form with user email if available
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

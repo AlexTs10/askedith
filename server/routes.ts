@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import path from "path";
 import express from "express";
+import emailService from "./emailService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static assets from public directory
@@ -76,17 +77,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required email fields" });
       }
       
-      // Try to use Nylas if available
-      try {
-        // Check if user has a Nylas grant ID
-        if (req.session?.nylasGrantId) {
-          const nylasSDK = await import('./nylas-sdk-v3.js');
+      // Check if user has a Nylas grant ID in session
+      if (req.session?.nylasGrantId) {
+        try {
+          const nylasSDK = await import('./nylas-sdk-v3');
           const hasNylasConnection = await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
           
           if (hasNylasConnection) {
-            // Use connected account if available
             console.log('Using Nylas V3 SDK with grant ID for single email');
-            const emailData = { to, subject, body, replyTo };
+            const emailData = { to, subject, body, replyTo }; // Pass replyTo
             const emailCategory = category || 'Other';
             
             const result = await nylasSDK.sendEmailWithNylas(
@@ -98,32 +97,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (result.success) {
               return res.json({
                 success: true,
-                queued: false,
+                queued: false, // Not queued if sent via Nylas directly
+                messageId: result.messageId, // Nylas returns a messageId
                 message: "Email sent successfully via your connected email account"
               });
-            } 
-            // Fall through to SendGrid if Nylas fails
-            console.warn('Nylas sendEmailWithNylas failed, falling through to SendGrid.');
+            } else {
+              // Nylas send failed, log error and potentially fall through or return error
+              console.error("Nylas sendEmailWithNylas failed:", result.error);
+              // Decide if you want to fallback here or just error out
+              // For now, let's error out if Nylas was attempted and failed.
+              return res.status(500).json({
+                  success: false,
+                  message: "Failed to send email via connected account. " + (result.error || "")
+              });
+            }
           }
+        } catch (nylasError) {
+          console.error("Error attempting to send with Nylas:", nylasError);
+          // Fall through to fallback email service if Nylas layer itself had an issue
         }
-        
-        // No Nylas connection or connection failed, use SendGrid
-        console.log('Using SendGrid for email');
-        const { sendEmail } = await import('./sendgrid-helper');
-        const result = await sendEmail({ 
-          to, subject, body, from, replyTo, resourceId, questionnaireId, userId
-        });
-        res.json(result);
-        
-      } catch (nylasError) {
-        // If there's any error with Nylas, fall back to SendGrid
-        console.error("Nylas error during single email send, falling back to SendGrid:", nylasError);
-        const { sendEmail } = await import('./sendgrid-helper');
-        const result = await sendEmail({ 
-          to, subject, body, from, replyTo, resourceId, questionnaireId, userId
-        });
-        res.json(result);
       }
+      
+      // Fallback: If no Nylas grantId or if the Nylas block had an exception (not a send failure)
+      console.log('No Nylas grant ID or Nylas system error, using fallback email service for single email');
+      const fallbackResult = await emailService.sendEmail({ 
+        to, subject, body, from, replyTo, resourceId, questionnaireId, userId, category // pass category to fallback too
+      });
+      res.json(fallbackResult); // This will use the console log fallback
+      
     } catch (error) {
       console.error("Email sending error:", error);
       res.status(500).json({ 
@@ -143,110 +144,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing or invalid emails array" });
       }
       
-      // Validate all emails have required fields
       for (const email of emails) {
         if (!email.to || !email.subject || !email.body) {
           return res.status(400).json({ message: "All emails require to, subject, and body fields" });
         }
-        // Ensure replyTo is passed through if available
         email.replyTo = email.replyTo || undefined;
-        // Ensure category is defined
         email.category = email.category || 'Other';
       }
       
-      try {
-        // Check if we have Nylas available
-        let useNylas = false;
-        let hasNylasError = false;
-        let nylasResults = null;
-        
-        if (req.session?.nylasGrantId) {
-          try {
-            const nylasSDK = await import('./nylas-sdk-v3.js');
-            const hasNylasConnection = await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
+      // Check if Nylas is available and connected for the user
+      if (req.session?.nylasGrantId) {
+        try {
+          const nylasSDK = await import('./nylas-sdk-v3.js');
+          const hasNylasConnection = await nylasSDK.checkNylasConnection(req.session.nylasGrantId);
+
+          if (hasNylasConnection) {
+            console.log('Using Nylas V3 SDK for batch emails');
+            // This is where you'd call a batch send if your Nylas SDK wrapper has one,
+            // or loop and send individually as currently in /api/nylas/send-batch
+            // For consistency, let's assume the client will call /api/nylas/send-batch if Nylas is connected.
+            // So, this primary /api/send-batch-emails will be for fallbacks.
+            // However, the original code had Nylas logic here, so let's adapt it slightly.
             
-            if (hasNylasConnection) {
-              // Use Nylas for batch email sending
-              console.log('Using Nylas V3 SDK for batch emails');
-              useNylas = true;
-              
-              // Send all emails through Nylas
-              nylasResults = await Promise.all(
-                emails.map(email => nylasSDK.sendEmailWithNylas(
-                  req.session.nylasGrantId,
-                  {
-                    to: email.to,
-                    subject: email.subject,
-                    body: email.body,
-                    replyTo: email.replyTo
-                  },
-                  email.category
-                ))
-              );
-            }
-          } catch (err) {
-            console.error('Nylas error during batch email processing:', err);
-            hasNylasError = true;
-          }
-        }
-        
-        // If Nylas was used successfully
-        if (useNylas && nylasResults && !hasNylasError) {
-          // Check if all emails were sent successfully
-          const allSuccessful = nylasResults.every(r => r.success);
-          const successCount = nylasResults.filter(r => r.success).length;
-          
-          if (allSuccessful || successCount > 0) {
+            const nylasResults = await Promise.all(
+              emails.map(email => nylasSDK.sendEmailWithNylas(
+                req.session.nylasGrantId,
+                {
+                  to: email.to,
+                  subject: email.subject,
+                  body: email.body,
+                  replyTo: email.replyTo
+                },
+                email.category
+              ))
+            );
+
+            const successCount = nylasResults.filter(r => r.success).length;
+            
             return res.json({
-              success: true,
-              queued: 0,
+              success: successCount > 0,
+              queued: 0, // Not queued if sent via Nylas
               sent: successCount,
+              failed: emails.length - successCount,
               total: emails.length,
-              message: `${successCount} of ${emails.length} emails sent successfully via your connected email account`
+              message: `${successCount} of ${emails.length} emails sent successfully via your connected email account.`
             });
           }
-          console.warn('Nylas batch send reported 0 successes or nylasResults was falsy, falling through to SendGrid.');
+        } catch (nylasError) {
+          console.error("Error attempting to send batch with Nylas:", nylasError);
+          // Fall through to fallback
         }
-        
-        // Fall back to SendGrid if Nylas failed or wasn't used
-        console.log('Using SendGrid for batch emails');
-        const { sendBatchEmails } = await import('./sendgrid-helper');
-        const result = await sendBatchEmails(emails);
-        res.json(result);
-      } catch (error) {
-        // Fall back to SendGrid on any error
-        console.error("Error in batch email sending, falling back to SendGrid:", error);
-        const { sendBatchEmails } = await import('./sendgrid-helper');
-        const result = await sendBatchEmails(emails);
-        res.json(result);
       }
+      
+      // Fallback: No Nylas grantId or Nylas system error
+      console.log('No Nylas grant ID or Nylas system error, using fallback email service for batch emails');
+      const fallbackResult = await emailService.sendBatchEmails(emails);
+      res.json(fallbackResult); // This will use the console log fallback
+
     } catch (error) {
       console.error("Batch email sending error:", error);
       res.status(500).json({ 
         success: false, 
         queued: 0,
         sent: 0,
-        failed: 0,
-        total: 0,
+        failed: emails?.length || 0,
+        total: emails?.length || 0,
         message: error instanceof Error ? error.message : "Failed to send batch emails" 
       });
     }
   });
-  
+
   // Email service status endpoint
   app.get("/api/email-service-status", async (req, res) => {
     try {
-      const { checkEmailServiceStatus, needsSendGridKey } = await import('./emailService');
+      // No longer need needsSendGridKey from emailService
+      const { checkEmailServiceStatus } = await import('./emailService');
       const status = await checkEmailServiceStatus();
-      
-      // Check if we need to request SendGrid key (now async)
-      const needsKey = await needsSendGridKey();
-      const statusWithKey = {
-        ...status,
-        needsSendGridKey: needsKey
-      };
-      
-      res.json(statusWithKey);
+      // The needsSendGridKey field is removed from the response of checkEmailServiceStatus
+      res.json(status);
     } catch (error) {
       console.error("Email service status check error:", error);
       res.status(500).json({ 
@@ -365,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Display success page
-        res.send(`
+        const html = `
           <html>
             <head>
               <title>Email Connected Successfully</title>
@@ -413,12 +388,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               <script>
                 // Notify parent window of successful connection
                 if (window.opener) {
-                  window.opener.postMessage({ type: 'NYLAS_CONNECTION_SUCCESS' }, '*');
+                  window.opener.postMessage({
+                    type: 'NYLAS_CONNECTION_SUCCESS',
+                    grantId: '«GRANT_ID»'   // injected below
+                  }, '*');
                 }
               </script>
             </body>
           </html>
-        `);
+        `.replace('«GRANT_ID»', grantId);
+        res.send(html);
       } catch (tokenError: any) {
         console.error('Token exchange error:', tokenError);
         return res.send(`

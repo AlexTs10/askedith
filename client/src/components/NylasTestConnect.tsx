@@ -53,6 +53,14 @@ export function NylasTestConnect() {
         // Add a message listener for the OAuth window callback
         const messageListener = (event: MessageEvent) => {
           if (event.data && event.data.type === 'NYLAS_CONNECTION_SUCCESS') {
+            if (event.data.grantId) {
+              localStorage.setItem('nylas_grant_id', event.data.grantId);
+              fetch('/api/nylas/set-grant-id', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ grantId: event.data.grantId }),
+              });
+            }
             console.log('Received connection success message');
             setConnected(true);
             setConnecting(false);

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import useWizardState from '@/lib/useWizardState';
 import { NylasConnect } from '@/components/NylasConnect';
 import { NylasGrantIdSetter } from '@/components/NylasGrantIdSetter';
+import { ensureNylasSession } from '@/lib/nylasSession';
 
 // Helper function to determine resource category from email data
 const getResourceCategory = (email: any) => {
@@ -110,6 +111,7 @@ export default function EmailPreview() {
   const sendAllEmails = async () => {
     try {
       setIsSendingAll(true);
+      await ensureNylasSession();
       
       // Save current edits first
       const updatedEmails = [...state.emailsToSend];
@@ -174,6 +176,7 @@ export default function EmailPreview() {
     try {
       console.log("Sending email to:", currentEmail.to);
       setIsSending(true);
+      await ensureNylasSession();
       
       // Update the email in state with edited content
       const updatedEmails = [...state.emailsToSend];

@@ -45,6 +45,14 @@ const ManualCodeExchange = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        if (data.grantId) {
+          localStorage.setItem('nylas_grant_id', data.grantId);
+          fetch('/api/nylas/set-grant-id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ grantId: data.grantId }),
+          });
+        }
         setSuccess(true);
       } else {
         setError(data.error || 'Failed to exchange code for token');

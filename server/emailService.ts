@@ -1,123 +1,31 @@
 /**
  * Email Service for AskEdith
  * 
- * This service handles email sending with support for high volume processing.
- * In production, it will use SendGrid and a queue system to handle 40,000+ users/month.
- * For development, it uses a simple fallback mode that logs to console.
+ * This service primarily acts as a fallback if Nylas isn't used.
+ * Main Nylas email sending is handled via nylasRoutes.ts and nylas-sdk-v3.js.
  */
 
 import { storage } from './storage';
 import { type InsertEmailLog } from '@shared/schema';
-import sgMail from '@sendgrid/mail';
+// No SendGrid imports needed
 
-// Email service configuration
-const DEFAULT_FROM_EMAIL = 'noreply@askedith.org';
+const DEFAULT_FROM_EMAIL = 'noreply@askedith.org'; // Generic fallback
+const MAX_RETRY_ATTEMPTS = 3; // Keep for potential queue retries
+const RATE_LIMIT_DELAY = 1000; // Keep for potential queue rate limiting
 
-/**
- * Runs diagnostics checks on the SendGrid API key
- * Helps identify common issues with SendGrid configuration
- */
-async function runSendGridDiagnostics() {
-  console.log('\n===== SENDGRID DIAGNOSTICS =====');
-  
-  try {
-    // Check if API key is present
-    if (!process.env.SENDGRID_API_KEY) {
-      console.log('❌ No SendGrid API key found in environment variables');
-      return;
-    }
-    
-    // Check API key format (basic validation)
-    const key = process.env.SENDGRID_API_KEY;
-    if (!key.startsWith('SG.')) {
-      console.log('❌ SendGrid API key has incorrect format. Should start with "SG."');
-    } else {
-      console.log('✓ SendGrid API key has correct format');
-    }
-    
-    // Diagnose common permission issues
-    console.log('\n🔍 Checking API key permissions:');
-    console.log('- Make sure API key has "Mail Send" permission enabled');
-    console.log('- Verify that email sending is enabled for your SendGrid account');
-    
-    // Diagnose sender verification issues
-    console.log('\n🔍 Checking sender verification:');
-    console.log('- Make sure your sender email (elias@secondactfs.com) is verified in SendGrid');
-    console.log('- If using own domain, verify domain authentication is complete');
-    console.log('- Check for Sender Authentication requirements in your SendGrid account');
-    
-    // Show diagnostic information for troubleshooting
-    console.log('\nIf emails are still not being delivered:');
-    console.log('1. Check SendGrid Activity logs for suppression issues');
-    console.log('2. Verify your account is not on probation/restrictions');
-    console.log('3. Test sending an email directly in SendGrid dashboard');
-    
-    console.log('================================\n');
-  } catch (error) {
-    console.error('Error during SendGrid diagnostics:', error);
-  }
-}
-const MAX_RETRY_ATTEMPTS = 3;
-const RATE_LIMIT_DELAY = 1000; // 1 second between emails for rate limiting
+// No SendGrid specific config imports needed from './config'
 
-// Import configuration module
-import { getSendGridApiKey, isSendGridConfigured } from './config';
+// No SendGrid initialization needed
 
-// Initialize SendGrid
-export async function initializeSendGrid() {
-  try {
-    // Check if SendGrid is configured
-    const configured = await isSendGridConfigured();
-    
-    if (configured) {
-      // Load the API key from config
-      const apiKey = await getSendGridApiKey();
-      
-      // Set the API key
-      if (apiKey) {
-        sgMail.setApiKey(apiKey);
-        console.log('SendGrid initialized successfully');
-        
-        // Run a diagnostics check on the API key
-        await runSendGridDiagnostics();
-        
-        return true;
-      }
-    }
-    
-    // Also check environment variable as fallback
-    if (process.env.SENDGRID_API_KEY) {
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      console.log('SendGrid initialized from environment variable');
-      
-      // Run a diagnostics check on the API key
-      await runSendGridDiagnostics();
-      
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error initializing SendGrid:', error);
-    return false;
-  }
-}
-
-// Initialize SendGrid on module load
-let sendgridInitialized = false;
-initializeSendGrid().then(result => {
-  sendgridInitialized = result;
-});
-
-// Email Providers - providing multiple fallbacks for reliability
+// Email Providers
 enum EmailProvider {
-  SENDGRID = 'sendgrid',
+  NYLAS = 'nylas', // Though direct Nylas calls are often made
   NODEMAILER = 'nodemailer',
   FALLBACK = 'fallback'
 }
 
 // Email Priority Levels
-enum EmailPriority {
+export enum EmailPriority { // Export if used elsewhere
   HIGH = 'high',
   NORMAL = 'normal',
   LOW = 'low',
@@ -127,8 +35,8 @@ enum EmailPriority {
 // Interface for email data
 export interface EmailData {
   to: string;
-  from?: string; // Includes the sender's name and email
-  replyTo?: string; // User's actual email for replies
+  from?: string;
+  replyTo?: string;
   subject: string;
   body: string;
   resourceId?: number;
@@ -136,41 +44,34 @@ export interface EmailData {
   userId?: number;
   priority?: EmailPriority;
   retryCount?: number;
+  category?: string; // Keep category for logging/potential future use
 }
 
-// Queue system for handling high volume
+// Queue system can remain if you want to queue fallback emails or other tasks
 class EmailQueue {
   private queue: EmailData[] = [];
   private processing = false;
   private rateLimitedUntil = 0;
   
-  // Add email to the queue
   public add(email: EmailData): void {
-    // Set defaults
     email.priority = email.priority || EmailPriority.NORMAL;
     email.retryCount = email.retryCount || 0;
     
-    // Add to queue based on priority
     if (email.priority === EmailPriority.HIGH) {
-      // High priority goes to the front
       this.queue.unshift(email);
     } else {
-      // Others go to the back
       this.queue.push(email);
     }
     
-    // Start processing if not already running
     if (!this.processing) {
       this.processQueue();
     }
   }
   
-  // Add multiple emails to the queue
   public addBatch(emails: EmailData[]): void {
     emails.forEach(email => this.add(email));
   }
   
-  // Process the email queue
   private async processQueue(): Promise<void> {
     if (this.queue.length === 0) {
       this.processing = false;
@@ -178,45 +79,30 @@ class EmailQueue {
     }
     
     this.processing = true;
-    
-    // Check rate limiting
     const now = Date.now();
     if (now < this.rateLimitedUntil) {
-      // We're rate limited, wait and try again
       const delay = this.rateLimitedUntil - now;
       await new Promise(resolve => setTimeout(resolve, delay));
     }
     
     try {
       const email = this.queue.shift();
-      
       if (email) {
-        // Process this email
-        const success = await processEmailSend(email);
-        
+        const success = await processEmailSend(email); // This will now mostly be fallback
         if (!success && (email.retryCount || 0) < MAX_RETRY_ATTEMPTS) {
-          // Failed but can retry
           email.retryCount = (email.retryCount || 0) + 1;
-          
-          // Put back in queue with exponential backoff
           const backoffDelay = Math.pow(2, email.retryCount || 1) * 1000;
           setTimeout(() => this.add(email), backoffDelay);
         }
       }
-      
-      // Rate limit ourselves
       this.rateLimitedUntil = Date.now() + RATE_LIMIT_DELAY;
-      
-      // Process next item with a delay
       setTimeout(() => this.processQueue(), RATE_LIMIT_DELAY);
     } catch (error) {
       console.error('Error processing email queue:', error);
-      // Continue processing after a delay
       setTimeout(() => this.processQueue(), RATE_LIMIT_DELAY * 2);
     }
   }
   
-  // Get queue stats
   public getStats(): { queueLength: number; isProcessing: boolean } {
     return {
       queueLength: this.queue.length,
@@ -225,247 +111,52 @@ class EmailQueue {
   }
 }
 
-// Create the email queue
 const emailQueue = new EmailQueue();
 
-// Fallback for development/testing - just log to console
 async function sendWithFallback(data: EmailData): Promise<boolean> {
-  // TESTING MODE: Override recipient with test email (even in fallback mode)
-  const testEmail = "elias@secondactfs.com";
+  const testEmail = "elias@secondactfs.com"; // Keep for testing fallback
   const originalRecipient = data.to;
   
-  console.log('==== EMAIL SENT (DEVELOPMENT MODE) ====');
+  console.log('==== EMAIL SENT (FALLBACK MODE) ====');
   console.log(`From: ${data.from || DEFAULT_FROM_EMAIL}`);
   console.log(`To: ${testEmail} (Original: ${originalRecipient})`);
-  console.log(`Subject: [TEST] ${data.subject}`);
-  console.log(`Body: \n${data.body}\n\n[TEST MODE] Original recipient: ${originalRecipient}`);
+  console.log(`Subject: [FALLBACK TEST] ${data.subject}`);
+  console.log(`Body: \n${data.body}\n\n[FALLBACK TEST MODE] Original recipient: ${originalRecipient}`);
   console.log('======================================');
   return true;
 }
 
-// SendGrid implementation
-// Define interface for SendGrid message to handle optional properties
-interface SendGridMessage {
-  to: string;
-  from: string;
-  subject: string;
-  text: string;
-  html: string;
-  replyTo?: string;
-}
-
-async function sendWithSendGrid(data: EmailData): Promise<boolean> {
-  try {
-    if (!process.env.SENDGRID_API_KEY) {
-      console.warn('SendGrid API key not set, falling back to development mode');
-      return sendWithFallback(data);
-    }
-    
-    // TESTING MODE: Override recipient with test email
-    const testEmail = "elias@secondactfs.com";
-    
-    // Ensure the 'from' email is properly formatted 
-    let fromEmail = data.from || DEFAULT_FROM_EMAIL;
-    
-    console.log('Original from email format:', fromEmail);
-    
-    // Check if from email is properly formatted with both name and email
-    if (!fromEmail.includes('@') || !fromEmail.includes('<') || !fromEmail.includes('>')) {
-      // If it has an @ but not proper bracketing, it might just be an email address
-      if (fromEmail.includes('@') && !fromEmail.includes('<') && !fromEmail.includes('>')) {
-        // It's just an email address, keep as is for now (we'll format it below for SendGrid)
-        console.log('Found plain email address:', fromEmail);
-        // For SendGrid, format as required - either use the email directly or format with a name
-        if (fromEmail.includes(' ')) {
-          // Seems to have a name and email without proper formatting
-          const parts = fromEmail.split(' ');
-          const possibleEmail = parts[parts.length - 1]; // Last part might be email
-          if (possibleEmail.includes('@')) {
-            // Format with name and email
-            const name = fromEmail.substring(0, fromEmail.length - possibleEmail.length).trim();
-            fromEmail = `${name} <${possibleEmail}>`;
-          }
-        }
-      } 
-      // If it doesn't have proper email formatting
-      else if (!fromEmail.includes('<') && !fromEmail.includes('>')) {
-        // Extract name if possible
-        const name = fromEmail.trim();
-        fromEmail = name ? `${name} <${DEFAULT_FROM_EMAIL}>` : DEFAULT_FROM_EMAIL;
-      } else {
-        // Fallback to default if formatting is incorrect
-        fromEmail = DEFAULT_FROM_EMAIL;
-      }
-    }
-    
-    console.log('Using from email:', fromEmail);
-    
-    // Use our verified sender domain that's been set up in SendGrid
-    // This MUST be exactly the email that was verified in SendGrid under "Sender Authentication"
-    const verifiedSenderEmail = 'elias@secondactfs.com';
-    
-    // Always use the verified sender - this is critical for deliverability
-    console.log('Using verified sender email for SendGrid:', verifiedSenderEmail);
-    
-    // Extract the name part from the fromEmail if available
-    let senderName = 'AskEdith';
-    if (fromEmail && fromEmail.includes('<') && fromEmail.includes('>')) {
-      const nameMatch = fromEmail.match(/(.*)<.*>/);
-      if (nameMatch && nameMatch[1]) {
-        senderName = nameMatch[1].trim();
-      }
-    }
-    
-    // Get the reply-to email if available
-    let replyToEmail = undefined;
-    if (data.replyTo && data.replyTo.includes('@')) {
-      replyToEmail = data.replyTo;
-    } else if (data.from && data.from.includes('@')) {
-      // Try to extract from the from field
-      if (data.from.includes('<') && data.from.includes('>')) {
-        const matches = data.from.match(/<([^>]+)>/);
-        if (matches && matches[1]) {
-          replyToEmail = matches[1];
-        }
-      } else if (data.from.includes('@')) {
-        replyToEmail = data.from;
-      }
-    }
-    
-    console.log('Using verified sender:', verifiedSenderEmail);
-    console.log('Using reply-to email:', replyToEmail || 'none');
-    
-    // Try two different SendGrid message formats
-    // First try the simplest format (string format)
-    // This format is more likely to work with new SendGrid accounts
-    const simplestMsg: SendGridMessage = {
-      to: testEmail,
-      from: verifiedSenderEmail, // Just email, no name object
-      subject: `[TEST] ${data.subject}`,
-      text: `${data.body}\n\n[TEST MODE] Original recipient: ${data.to}\n\nFrom: ${senderName}`,
-      html: `${data.body.replace(/\n/g, '<br>')}<br><br><em>[TEST MODE] Original recipient: ${data.to}</em><br><br><em>From: ${senderName}</em>` 
-    };
-    
-    // Simple string format for reply-to
-    if (replyToEmail) {
-      simplestMsg.replyTo = replyToEmail;
-    }
-    
-    console.log('Using simplest possible SendGrid format');
-    console.log('SendGrid email configuration:', {
-      to: simplestMsg.to,
-      from: simplestMsg.from,
-      replyTo: simplestMsg.replyTo,
-      subject: simplestMsg.subject
-    });
-    
-    try {
-      // Send the email using the simplest format
-      await sgMail.send(simplestMsg);
-      console.log('Email sent successfully via SendGrid');
-      
-      // Always display a fallback view of the email in console for testing
-      console.log('\n==== EMAIL SENT (CONSOLE FALLBACK) ====');
-      console.log('From:', simplestMsg.from);
-      console.log('To:', simplestMsg.to);
-      console.log('Subject:', simplestMsg.subject);
-      console.log('Body (excerpt):', simplestMsg.text.substring(0, 100) + '...');
-      console.log('======================================\n');
-      
-      return true;
-    } catch (sendError) {
-      console.error('SendGrid sending error:', sendError);
-      
-      // If using SendGrid in production, always log to console as a fallback
-      console.log('\n==== EMAIL FALLBACK (SEND FAILED) ====');
-      console.log('From:', simplestMsg.from);
-      console.log('To:', simplestMsg.to);
-      console.log('Subject:', simplestMsg.subject);
-      console.log('Body (excerpt):', simplestMsg.text.substring(0, 100) + '...');
-      console.log('======================================\n');
-      
-      // Return false to indicate failure
-      return false;
-    }
-  } catch (error) {
-    console.error('SendGrid error:', error);
-    
-    // Extract detailed error information for troubleshooting
-    const sendGridError = error as any;
-    if (sendGridError.response) {
-      // Handle rate limiting
-      if (sendGridError.response.statusCode === 429) {
-        console.warn('SendGrid rate limit hit, will retry later');
-      }
-      
-      // Handle authentication/authorization errors
-      if (sendGridError.response.statusCode === 401 || sendGridError.response.statusCode === 403) {
-        console.error('AUTHENTICATION ERROR: Your SendGrid API key may be invalid or missing permissions');
-        console.error('Please check that your SENDGRID_API_KEY environment variable is set correctly');
-        console.error('And ensure it has "Mail Send" permission in the SendGrid dashboard');
-      }
-      
-      // Extract and log detailed error messages
-      if (sendGridError.response.body && sendGridError.response.body.errors) {
-        console.error('SendGrid errors:');
-        sendGridError.response.body.errors.forEach((err: any, index: number) => {
-          console.error(`  Error ${index + 1}: ${err.message} (field: ${err.field || 'unknown'})`);
-          
-          // Special handling for common errors
-          if (err.message && err.message.includes('sender identity')) {
-            console.error('  SENDER VERIFICATION ERROR: The from email address is not verified in SendGrid');
-            console.error('  Please add Sender Authentication for this domain in SendGrid dashboard');
-          }
-        });
-      }
-    }
-    
-    // Log a fallback email to console for debugging
-    console.log('\n==== EMAIL CONTENT (FALLBACK MODE) ====');
-    console.log(`From: ${data.from || 'Not specified'}`);
-    console.log(`To: ${data.to}`);
-    console.log(`Subject: ${data.subject}`);
-    console.log('Body:');
-    console.log(data.body);
-    console.log('======================================\n');
-    
-    // Return false to indicate failure, the queue will retry if needed
-    return false;
-  }
-}
-
-// Core function to send email with provider fallbacks
+// processEmailSend now primarily handles fallback logic
 async function processEmailSend(data: EmailData): Promise<boolean> {
-  // Determine the provider to use
+  // In this new setup, direct Nylas calls are made from nylasRoutes.
+  // This function would be for fallbacks or system emails not going through a user's Nylas account.
   let success = false;
-  const providers = getAvailableProviders();
-  
-  // Try each provider in order until one works
+  const providers = getAvailableProviders(); // Will likely just be FALLBACK now
+
   for (const provider of providers) {
     try {
       switch (provider) {
-        case EmailProvider.SENDGRID:
-          success = await sendWithSendGrid(data);
-          break;
-          
+        // case EmailProvider.NYLAS:
+        //   // This path is less likely to be hit if nylasRoutes handles Nylas directly.
+        //   // If you want a centralized Nylas call here, you'd need to import and use nylas-sdk-v3.js functions.
+        //   // For now, assume nylasRoutes handles primary Nylas sends.
+        //   console.warn("Attempting Nylas send via emailService.ts - this might be unexpected.");
+        //   success = false; // Placeholder
+        //   break;
         case EmailProvider.NODEMAILER:
           // Not implemented yet
           break;
-          
         case EmailProvider.FALLBACK:
         default:
           success = await sendWithFallback(data);
           break;
       }
-      
-      if (success) break; // Stop if we succeeded
+      if (success) break;
     } catch (error) {
       console.error(`Provider ${provider} failed:`, error);
-      // Continue to next provider
     }
   }
   
-  // Log the email send attempt to database
   try {
     if (data.resourceId || data.questionnaireId) {
       const emailLog: InsertEmailLog = {
@@ -476,173 +167,100 @@ async function processEmailSend(data: EmailData): Promise<boolean> {
         emailFrom: data.from || DEFAULT_FROM_EMAIL,
         subject: data.subject,
         body: data.body,
-        status: success ? 'sent' : 'failed',
-        errorMessage: success ? null : 'Failed to send email',
+        status: success ? 'sent_fallback' : 'failed_fallback', // Indicate fallback
+        errorMessage: success ? null : 'Failed to send email via fallback',
         sentAt: new Date()
       };
-      
       await storage.logEmail(emailLog);
     }
   } catch (logError) {
     console.error('Failed to log email:', logError);
   }
-  
   return success;
 }
 
-// Get available providers in priority order
 function getAvailableProviders(): EmailProvider[] {
+  // Simplified: only fallback unless you add more non-Nylas providers
   const providers: EmailProvider[] = [];
-  
-  // If SendGrid is configured, use it first
-  if (process.env.SENDGRID_API_KEY) {
-    providers.push(EmailProvider.SENDGRID);
-  }
-  
-  // Fallback is always available
+  // providers.push(EmailProvider.NYLAS); // if you intend to call Nylas from here too
   providers.push(EmailProvider.FALLBACK);
-  
   return providers;
 }
 
-/**
- * Public API: Send an email
- * For high-volume sending (queued with rate limiting and retries)
- */
 export async function sendEmail(data: EmailData): Promise<{ success: boolean; message: string; queued: boolean }> {
+  // This function will now primarily queue for fallback or handle high-priority fallbacks
   try {
-    // For immediate sending (high priority emails)
     if (data.priority === EmailPriority.HIGH) {
-      const success = await processEmailSend(data);
+      const success = await processEmailSend(data); // Directly process high-priority fallbacks
       return {
         success,
         queued: false,
         message: success 
-          ? 'Email sent successfully' 
-          : 'Failed to send email. Please try again later.'
+          ? 'Email sent successfully (via fallback)' 
+          : 'Failed to send email (via fallback). Please try again later.'
       };
     }
-    
-    // For all other emails, add to the queue
-    emailQueue.add(data);
-    
+    emailQueue.add(data); // Queue normal priority fallbacks
     return {
       success: true,
       queued: true,
-      message: 'Email added to send queue'
+      message: 'Email added to fallback send queue'
     };
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending email (via fallback service):', error);
     return {
       success: false,
       queued: false,
-      message: 'An error occurred while processing your email request.'
+      message: 'An error occurred while processing your email request (fallback service).'
     };
   }
 }
 
-/**
- * Send a batch of emails to multiple recipients
- * Useful for sending to multiple resources at once
- * Uses the queue system for high volume handling
- */
 export async function sendBatchEmails(
   dataList: EmailData[]
 ): Promise<{ success: boolean; queued: number; message: string }> {
+  // This function will now primarily queue for fallback
   try {
-    // Add all emails to the queue
     emailQueue.addBatch(dataList);
-    
     return {
       success: true,
       queued: dataList.length,
-      message: `Queued ${dataList.length} emails for sending`
+      message: `Queued ${dataList.length} emails for sending (via fallback)`
     };
   } catch (error) {
-    console.error('Error in batch email operation:', error);
+    console.error('Error in batch email operation (via fallback service):', error);
     return {
       success: false,
       queued: 0,
-      message: 'An error occurred during the batch email operation.'
+      message: 'An error occurred during the batch email operation (fallback service).'
     };
   }
 }
 
-/**
- * Check the status of the email sending system
- * Useful for diagnostics and monitoring
- */
 export async function checkEmailServiceStatus(): Promise<{
-  sendgridAvailable: boolean;
+  nylasAvailable: boolean; // Check if Nylas creds are set, etc.
   nodemailerAvailable: boolean;
   queueEnabled: boolean;
   queueStats: { queueLength: number; isProcessing: boolean };
   preferredProvider: string;
 }> {
   const queueStats = emailQueue.getStats();
-  const providers = getAvailableProviders();
-  
-  // Check both environment variable and config file
-  let sendgridAvailable = !!process.env.SENDGRID_API_KEY;
-  
-  if (!sendgridAvailable) {
-    try {
-      // Also check if SendGrid is configured in our config file
-      const configured = await isSendGridConfigured();
-      if (configured) {
-        const apiKey = await getSendGridApiKey();
-        sendgridAvailable = !!apiKey;
-        
-        // If key found in config but not in env, set it in env
-        if (sendgridAvailable && !process.env.SENDGRID_API_KEY) {
-          process.env.SENDGRID_API_KEY = apiKey;
-          // Initialize SendGrid with the key
-          sgMail.setApiKey(apiKey);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking SendGrid configuration:', error);
-    }
-  }
+  // Simplified: Nylas is "available" if its ENV vars are set.
+  // Actual connection status per user is checked in nylasRoutes.
+  const nylasAvailable = !!(process.env.NYLAS_CLIENT_ID && process.env.NYLAS_CLIENT_SECRET);
   
   return {
-    sendgridAvailable,
-    nodemailerAvailable: false,
-    queueEnabled: true,
+    nylasAvailable,
+    nodemailerAvailable: false, // Assuming not implemented
+    queueEnabled: true, // Queue is for fallbacks
     queueStats,
-    preferredProvider: providers[0] || EmailProvider.FALLBACK
+    preferredProvider: nylasAvailable ? EmailProvider.NYLAS : EmailProvider.FALLBACK
   };
-}
-
-/**
- * Add a check for SendGrid API key
- * Helper function to ask for API key if not present
- */
-export async function needsSendGridKey(): Promise<boolean> {
-  // First check environment variable
-  if (process.env.SENDGRID_API_KEY) {
-    return false;
-  }
-  
-  // Then check config file
-  try {
-    const configured = await isSendGridConfigured();
-    if (configured) {
-      const apiKey = await getSendGridApiKey();
-      return !apiKey;
-    }
-  } catch (error) {
-    console.error('Error checking SendGrid configuration:', error);
-  }
-  
-  return true;
 }
 
 export default { 
   sendEmail, 
   sendBatchEmails, 
   checkEmailServiceStatus,
-  needsSendGridKey,
-  initializeSendGrid, // Add this function to exports
-  EmailPriority // Export the enum too
+  EmailPriority
 };

@@ -13,12 +13,11 @@ const CONFIG_FILE = path.join(CONFIG_DIR, 'app-config.json');
 // Interface for application configuration
 interface AppConfig {
   emailService: {
-    provider: 'sendgrid' | 'nodemailer' | 'fallback';
-    sendgrid: {
-      apiKey: string;
-      configured: boolean;
+    provider: 'nylas' | 'fallback'; // Only Nylas or fallback
+    nylas: { // Keep Nylas config if you had any, or add placeholder
+      configured: boolean; // Example, adapt as needed
     };
-    nodemailer: {
+    nodemailer: { // Keep if you plan to add it later, else remove
       configured: boolean;
     };
   };
@@ -27,10 +26,9 @@ interface AppConfig {
 // Default configuration
 const DEFAULT_CONFIG: AppConfig = {
   emailService: {
-    provider: 'fallback',
-    sendgrid: {
-      apiKey: '',
-      configured: false
+    provider: 'nylas', // Default to Nylas
+    nylas: {
+      configured: true // Assuming Nylas is primary and always "configured" if credentials are set
     },
     nodemailer: {
       configured: false
@@ -93,7 +91,15 @@ export async function getConfig(): Promise<AppConfig> {
 export async function updateConfig(newConfig: Partial<AppConfig>): Promise<AppConfig> {
   try {
     const currentConfig = await getConfig();
-    const updatedConfig = { ...currentConfig, ...newConfig };
+    // Simple merge, for deeper merges, use a library or implement recursive merge
+    const updatedConfig = { 
+      ...currentConfig, 
+      ...newConfig,
+      emailService: {
+        ...currentConfig.emailService,
+        ...(newConfig.emailService || {}),
+      }
+    };
     
     await ensureConfigDir();
     await writeFileAsync(CONFIG_FILE, JSON.stringify(updatedConfig, null, 2));
@@ -104,36 +110,4 @@ export async function updateConfig(newConfig: Partial<AppConfig>): Promise<AppCo
     console.error('Error updating config:', error);
     throw error;
   }
-}
-
-/**
- * Set the SendGrid API key
- */
-export async function setSendGridApiKey(apiKey: string): Promise<void> {
-  const config = await getConfig();
-  
-  config.emailService.sendgrid.apiKey = apiKey;
-  config.emailService.sendgrid.configured = true;
-  config.emailService.provider = 'sendgrid';
-  
-  await updateConfig(config);
-  
-  // Also set in environment for current session
-  process.env.SENDGRID_API_KEY = apiKey;
-}
-
-/**
- * Get the SendGrid API key
- */
-export async function getSendGridApiKey(): Promise<string> {
-  const config = await getConfig();
-  return config.emailService.sendgrid.apiKey;
-}
-
-/**
- * Check if SendGrid is configured
- */
-export async function isSendGridConfigured(): Promise<boolean> {
-  const config = await getConfig();
-  return config.emailService.sendgrid.configured;
 }

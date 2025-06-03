@@ -130,12 +130,27 @@ export async function exchangeCodeForToken(code, redirectUri) {
       googleClientSecret: '***hidden***'
     });
     
-    const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
+    //const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
     
-    console.log('Successfully exchanged code for grant ID');
+    //console.log('Successfully exchanged code for grant ID', response);
     
     // In V3, we get a grant ID instead of an access token
-    return response.grantId;
+    //return response.grantId;
+
+    const response = await nylasClient.auth.exchangeCodeForToken(exchangeParams);
+
+    // The SDK returns { grantId: '…' }
+    const grantId = response.grantId;
+    if (!grantId) {
+      throw new Error(
+        `Token-exchange succeeded but no grantId was returned: ${JSON.stringify(
+          response,
+        )}`,
+      );
+    }
+    console.log('Successfully obtained grant ID', grantId);
+    return grantId;
+
   } catch (error) {
     console.error('Error exchanging code for token:', error);
     throw error;
@@ -147,18 +162,27 @@ export async function exchangeCodeForToken(code, redirectUri) {
  */
 export async function checkNylasConnection(grantId) {
   if (!grantId || !nylasClient) {
+    console.log('checkNylasConnection: No grantId or Nylas client not initialized.');
     return false;
   }
   
   try {
-    // Attempt to access user account with the grant ID
-    const response = await nylasClient.grants.find({
-      identifier: grantId,
-    });
+    console.log(`checkNylasConnection: Attempting to find grant with ID: ${grantId}`);
+    // Corrected: Pass grantId directly as a string
+    const grant = await nylasClient.grants.find(grantId); 
     
-    return !!response;
+    // If the find method returns a grant object, it means the connection is valid.
+    // If the grant is not found, the SDK should throw an error (typically a 404).
+    console.log(`checkNylasConnection: Grant found:`, grant);
+    return !!grant; // Ensure it's a boolean true if grant object exists
   } catch (error) {
-    console.error('Error checking Nylas connection:', error);
+    // Specifically check for 404 errors, which mean the grant doesn't exist or is invalid
+    if (error.statusCode === 404) {
+      console.log(`checkNylasConnection: Grant ID ${grantId} not found or invalid (404).`);
+      return false;
+    }
+    // Log other errors but still return false as the connection is not verified
+    console.error(`checkNylasConnection: Error checking Nylas connection for grant ID ${grantId}:`, error);
     return false;
   }
 }
@@ -173,9 +197,8 @@ export async function createFolderStructure(grantId) {
   
   try {
     // Get the grant to check provider (Gmail vs other)
-    const grant = await nylasClient.grants.find({
-      identifier: grantId,
-    });
+    // Corrected: Pass grantId directly as a string
+    const grant = await nylasClient.grants.find(grantId);
     
     const isGmail = grant.provider === 'gmail';
     const folderIds = {};
@@ -263,11 +286,11 @@ export async function createFolderStructure(grantId) {
         }
       }
     }
-    
+    console.log("Folder structure creation successful:", folderIds);
     return { success: true, folderIds };
   } catch (error) {
     console.error('Error creating folder structure:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || JSON.stringify(error) };
   }
 }
 
@@ -299,14 +322,14 @@ export async function sendEmailWithNylas(grantId, emailData, category) {
     });
     
     // Try to categorize the message
-    if (category && sentMessage.id) {
-      await categorizeSentMessage(grantId, sentMessage.id, category);
+    if (category && sentMessage.data && sentMessage.data.id) {
+      await categorizeSentMessage(grantId, sentMessage.data.id, category);
     }
     
-    return { success: true, messageId: sentMessage.id };
+    return { success: true, messageId: sentMessage.data ? sentMessage.data.id : null };
   } catch (error) {
     console.error('Error sending email with Nylas:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || JSON.stringify(error) };
   }
 }
 
@@ -316,9 +339,8 @@ export async function sendEmailWithNylas(grantId, emailData, category) {
 async function categorizeSentMessage(grantId, messageId, category) {
   try {
     // Get the grant to check provider (Gmail vs other)
-    const grant = await nylasClient.grants.find({
-      identifier: grantId,
-    });
+    // Corrected: Pass grantId directly as a string
+    const grant = await nylasClient.grants.find(grantId);
     
     const isGmail = grant.provider === 'gmail';
     
@@ -335,7 +357,7 @@ async function categorizeSentMessage(grantId, messageId, category) {
         // Add label to message
         await nylasClient.messages.update({
           identifier: grantId,
-          id: messageId,
+          messageId: messageId, // Corrected: Nylas SDK uses messageId here
           requestBody: {
             labelIds: [categoryLabel.id],
           },
@@ -360,7 +382,7 @@ async function categorizeSentMessage(grantId, messageId, category) {
           // Move message to folder
           await nylasClient.messages.update({
             identifier: grantId,
-            id: messageId,
+            messageId: messageId, // Corrected: Nylas SDK uses messageId here
             requestBody: {
               folderId: categoryFolder.id,
             },
@@ -388,12 +410,10 @@ export async function getMessagesFromCategory(grantId, category, limit = 20) {
   
   try {
     // Get the grant to check provider (Gmail vs other)
-    const grant = await nylasClient.grants.find({
-      identifier: grantId,
-    });
+    // Corrected: Pass grantId directly as a string
+    const grant = await nylasClient.grants.find(grantId);
     
     const isGmail = grant.provider === 'gmail';
-    let containerId = null;
     
     if (isGmail) {
       // For Gmail, find the label
@@ -409,7 +429,7 @@ export async function getMessagesFromCategory(grantId, category, limit = 20) {
         const messagesResponse = await nylasClient.messages.list({
           identifier: grantId,
           queryParams: {
-            labelId: categoryLabel.id,
+            labelId: categoryLabel.id, // SDK uses labelId not label_id
             limit,
           },
         });
@@ -434,7 +454,7 @@ export async function getMessagesFromCategory(grantId, category, limit = 20) {
           const messagesResponse = await nylasClient.messages.list({
             identifier: grantId,
             queryParams: {
-              folderId: categoryFolder.id,
+              folderId: categoryFolder.id, // SDK uses folderId not folder_id
               limit,
             },
           });
