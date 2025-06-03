@@ -150,32 +150,38 @@ export async function exchangeCodeForToken(code, redirectUri) {
   }
 }
 
+
 /**
- * Helper function to fetch a grant directly using nylasClient.request
+ * Helper function to fetch a grant by listing all grants and filtering locally.
+ * This uses the "list" endpoint instead of "find".
  * @param {string} grantId - The ID of the grant to fetch.
  * @returns {Promise<object|null>} The grant object or null if not found/error.
  */
-async function fetchGrantDirectly(grantId) {
+async function fetchGrantViaList(grantId) {
   if (!nylasClient) {
-    throw new Error('Nylas client not initialized for fetchGrantDirctly');
+    throw new Error('Nylas client not initialized for fetchGrantViaList');
   }
   try {
-    const grantResponse = await nylasClient.request({
-      method: 'GET',
-      path: `/v3/grants/${grantId}`,
-    });
-    return grantResponse.data; // Assuming the grant data is in response.data
-  } catch (error) {
-    // Handle 404 specifically for "not found"
-    if (error.statusCode === 404) {
-      console.log(`fetchGrantDiectly: Grant ID ${grantId} not found (404).`);
+    // Call the "list" method (no arguments = default limit/offset)
+    const grantsResponse = await nylasClient.grants.list();
+    
+    // grantsResponse.data is an array of grant objects
+    const grants = grantsResponse.data;
+    
+    // Find the grant with the matching ID
+    const grant = grants.find(g => g.id === grantId);
+    if (!grant) {
+      console.log(`fetchGrantViaList: Grant ID ${grantId} not found in list.`);
       return null;
     }
-    // Re-throw other errors
+    
+    //console.log('fetchGrantViaList: Grant found:', grant);
+    return grant;
+  } catch (error) {
+    console.error('Error fetching grants via list:', error);
     throw error;
   }
 }
-
 
 /**
  * Check if a user has a valid Nylas connection using the grant ID
@@ -187,8 +193,8 @@ export async function checkNylasConnection(grantId) {
   }
   
   try {
-    console.log(`checkNylasCnnection: Attempting to find grant with ID: ${grantId}`);
-    const grant = await fetchGrantDirectly(grantId);
+    console.log(`checkNylasConnection: Fetching grants via list to look for ID ${grantId}`);
+    const grant = await fetchGrantViaList(grantId);
     
     console.log(`checkNylasConection: Grant found:`, grant);
     return !!grant; 
@@ -326,74 +332,77 @@ async function categorizeSentMessage(grantId, messageId) {
 }
 
 /**
- * Get messages from a specific category
+ * Get messages from a specific category folder/label in a provider-agnostic way.
+ * This function attempts to find a folder/label corresponding to the category,
+ * either as a Gmail-style flat label (e.g., "AskEdith/CategoryName")
+ * or as a sub-folder (e.g., "CategoryName" under "AskEdith").
  */
 export async function getMessagesFromCategory(grantId, category, limit = 20) {
   if (!grantId || !nylasClient) {
+    console.warn('getMessagesFromCategory: No grantId or Nylas client not initialized.');
     return [];
   }
   
   try {
-    const grant = await fetchGrantDirectly(grantId);
-    if (!grant) {
-      console.error(`GetMessages: Grant with ID ${grantId} not found.`);
+    // List all folders and labels for the grant.
+    // The Folders API endpoint is unified for both.
+    const allFoldersAndLabelsResponse = await nylasClient.folders.list({
+      identifier: grantId,
+    });
+    const allFoldersAndLabels = allFoldersAndLabelsResponse.data;
+
+    let categoryEntityId = null;
+
+    // Attempt 1: Check for Gmail-style label name (e.g., "AskEdith/Veteran Benefits")
+    // Nylas Folder object 'name' for Gmail labels includes the full path.
+    const gmailStyleName = `${MAIN_FOLDER_NAME}/${category}`;
+    const gmailStyleEntity = allFoldersAndLabels.find(item => item.name === gmailStyleName);
+
+    if (gmailStyleEntity) {
+      categoryEntityId = gmailStyleEntity.id;
+      console.log(`Found Gmail-style label for category '${category}': ID ${categoryEntityId}, Name: ${gmailStyleEntity.name}`);
+    } else {
+      // Attempt 2: Check for other providers (e.g., "AskEdith" as parent, "Veteran Benefits" as child)
+      const mainFolderEntity = allFoldersAndLabels.find(item => item.name === MAIN_FOLDER_NAME);
+      if (mainFolderEntity) {
+        console.log(`Found main folder '${MAIN_FOLDER_NAME}': ID ${mainFolderEntity.id}`);
+        const subFolderEntity = allFoldersAndLabels.find(
+          item => item.name === category && item.parentId === mainFolderEntity.id
+        );
+        if (subFolderEntity) {
+          categoryEntityId = subFolderEntity.id;
+          console.log(`Found sub-folder for category '${category}' under '${MAIN_FOLDER_NAME}': ID ${categoryEntityId}, Name: ${subFolderEntity.name}`);
+        } else {
+          console.warn(`Sub-folder '${category}' not found under '${MAIN_FOLDER_NAME}' (ID: ${mainFolderEntity.id}) for grant ID ${grantId}.`);
+        }
+      } else {
+        console.warn(`Main folder '${MAIN_FOLDER_NAME}' not found for grant ID ${grantId}. Cannot find sub-folder for category '${category}'.`);
+      }
+    }
+    
+    if (categoryEntityId) {
+      // Fetch messages using the unified 'in' parameter with the found folder/label ID
+      const messagesResponse = await nylasClient.messages.list({
+        identifier: grantId,
+        queryParams: {
+          in: [categoryEntityId], 
+          limit,
+        },
+      });
+      console.log(`Found ${messagesResponse.data.length} messages in category '${category}' (Entity ID: ${categoryEntityId}).`);
+      return messagesResponse.data;
+    } else {
+      // This warning is crucial if createFolderStructure isn't creating these category-specific entities
+      console.warn(`Could not find a dedicated folder/label for category: '${category}' (expected structure like '${gmailStyleName}' or as sub-folder under '${MAIN_FOLDER_NAME}') for grant ID ${grantId}. No messages fetched for this specific category query.`);
       return [];
     }
     
-    const isGmail = grant.provider === 'gmail';
-    
-    if (isGmail) {
-      // For Gmail, find the label
-      const labelsResponse = await nylasClient.labels.list({
-        identifier: grantId,
-      });
-      
-      const labelName = `${MAIN_FOLDER_NAME}/${category}`;
-      const categoryLabel = labelsResponse.data.find(label => label.name === labelName);
-      
-      if (categoryLabel) {
-        // Get messages with the label
-        const messagesResponse = await nylasClient.messages.list({
-          identifier: grantId,
-          queryParams: {
-            labelId: categoryLabel.id, 
-            limit,
-          },
-        });
-        
-        return messagesResponse.data;
-      }
-    } else {
-      // For other providers, find the folder
-      const foldersResponse = await nylasClient.folders.list({
-        identifier: grantId,
-      });
-      
-      const mainFolder = foldersResponse.data.find(folder => folder.name === MAIN_FOLDER_NAME);
-      
-      if (mainFolder) {
-        const categoryFolder = foldersResponse.data.find(
-          folder => folder.name === category && folder.parentId === mainFolder.id
-        );
-        
-        if (categoryFolder) {
-          // Get messages in the folder
-          const messagesResponse = await nylasClient.messages.list({
-            identifier: grantId,
-            queryParams: {
-              folderId: categoryFolder.id, 
-              limit,
-            },
-          });
-          
-          return messagesResponse.data;
-        }
-      }
-    }
-    
-    return [];
   } catch (error) {
-    console.error('Error getting messages from category:', error);
+    console.error(`Error getting messages from category '${category}' (unified approach):`, error);
+    // Log more detailed error if available from Nylas API response
+    if (error.response && error.response.data) {
+      console.error('Nylas API Error details:', error.response.data);
+    }
     return [];
   }
 }
