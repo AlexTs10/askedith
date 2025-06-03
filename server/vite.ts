@@ -6,7 +6,7 @@ import { type Server } from "http";
 import viteConfigFunction from "../vite.config";
 import { nanoid } from "nanoid";
 
-const viteLogger = createLogger();
+const viteLogger = createLogger(undefined);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -20,13 +20,19 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  const serverOptions = {
+  const serverOptions: import("vite").ServerOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
+    allowedHosts: true as const,
   };
 
-  const resolvedViteConfig = await viteConfigFunction(); // Call the async function to get the config object
+  const resolvedViteConfig =
+    typeof viteConfigFunction === "function"
+      ? await viteConfigFunction({
+          command: "serve",
+          mode: process.env.NODE_ENV || "development",
+        })
+      : viteConfigFunction;
 
   const vite = await createViteServer({
     ...resolvedViteConfig,

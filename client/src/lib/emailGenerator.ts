@@ -313,7 +313,8 @@ export function generateEmails(
       // Set the reply-to as the user's email so replies go to them
       replyTo: replyToEmail,
       subject: `Seeking ${category} assistance for my ${relationship}`,
-      body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`
+      body: `${emailBody}\n\n[TEST EMAIL] Original recipient: ${templateResource.email} (${templateResource.name})`,
+      category
     });
   });
   
