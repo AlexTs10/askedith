@@ -13,6 +13,7 @@ export interface EmailTemplate {
   replyTo?: string; // User's actual email for replies
   subject: string;
   body: string;
+  category?: string;
 }
 
 // Interface for the global wizard state

@@ -137,8 +137,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Batch email sending endpoint
   app.post("/api/send-batch-emails", async (req, res) => {
+    const { emails } = req.body;
     try {
-      const { emails } = req.body;
       
       if (!emails || !Array.isArray(emails) || emails.length === 0) {
         return res.status(400).json({ message: "Missing or invalid emails array" });
@@ -168,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             const nylasResults = await Promise.all(
               emails.map(email => nylasSDK.sendEmailWithNylas(
-                req.session.nylasGrantId,
+                req.session.nylasGrantId!,
                 {
                   to: email.to,
                   subject: email.subject,
@@ -207,8 +207,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         queued: 0,
         sent: 0,
-        failed: emails?.length || 0,
-        total: emails?.length || 0,
+        failed: Array.isArray(emails) ? emails.length : 0,
+        total: Array.isArray(emails) ? emails.length : 0,
         message: error instanceof Error ? error.message : "Failed to send batch emails" 
       });
     }
@@ -553,23 +553,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Import config module
-      const { setSendGridApiKey } = await import('./config');
-      
-      // Store the API key securely in our config
-      await setSendGridApiKey(apiKey);
-      
-      // Set the API key in the environment for this session as well
+      // Store the API key in the environment for this session
       process.env.SENDGRID_API_KEY = apiKey;
-      
-      // Force reload the email service module
-      delete require.cache[require.resolve('./emailService')];
-      const emailService = await import('./emailService');
-      
-      // Reinitialize the email service with the new key
-      await emailService.initializeSendGrid();
-      
+
       // Check status after setting the key
+      const emailService = await import('./emailService');
       const status = await emailService.checkEmailServiceStatus();
       
       res.json({

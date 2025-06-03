@@ -319,7 +319,20 @@ export default function EmailPreview() {
               </div>
               
               <div className="flex items-center gap-3">
-                <NylasConnect userEmail={currentEmail?.replyTo || state.answers?.q14?.email} />
+                {(() => {
+                  let fallbackEmail: string | undefined = undefined;
+                  try {
+                    if (state.answers?.q14) {
+                      const info = JSON.parse(state.answers.q14 as string);
+                      fallbackEmail = info.email;
+                    }
+                  } catch {
+                    // ignore JSON parse errors
+                  }
+                  return (
+                    <NylasConnect userEmail={currentEmail?.replyTo || fallbackEmail} />
+                  );
+                })()}
                 <NylasGrantIdSetter />
                 
                 <div className="px-4 py-2 backdrop-blur-sm rounded-full text-sm font-medium text-gray-600">
