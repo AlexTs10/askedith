@@ -12,7 +12,7 @@ import {
   checkNylasConnection,
   getMessagesFromCategory
 } from './nylas-sdk-v3';
-import { EmailData } from './emailService';
+import type { EmailData } from './nylas-sdk-v3';
 
 const router = Router();
 
