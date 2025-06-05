@@ -84,7 +84,10 @@ const FolderItem: React.FC<FolderItemProps> = ({
           <span className="flex-1 truncate">{folder.name}</span>
           
           {documentCount > 0 && (
-            <Badge className={`ml-2 bg-gradient-to-r ${folder.color} rounded-full`}> 
+            <Badge 
+              variant="circle"
+              className={`ml-2 bg-gradient-to-r ${folder.color}`}
+            >
               {documentCount}
             </Badge>
           )}

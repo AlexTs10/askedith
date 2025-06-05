@@ -66,12 +66,11 @@ const CalendarDateDisplay = ({
     handleAddAppointmentClick();
   };
 
-  // Check if tooltip should be shown in top row (where we want auto-fade)
   const isTooltipInTopRow = !!(
-    hoveredDate &&
-    hoveredDayRef.current &&
-    hoveredDayRef.current.getBoundingClientRect().y < 150
-  ); // Approximate threshold for top row
+  hoveredDate &&
+  hoveredDayRef.current &&
+  hoveredDayRef.current.getBoundingClientRect().y < 150
+); // Approximate threshold for top row
 
   // Get appointments for the hovered date
   const hoveredDateAppointments = hoveredDate ? getAppointmentsForDate(hoveredDate) : [];

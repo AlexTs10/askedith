@@ -41,8 +41,9 @@ export const useEmailCategoryGridLogic = ({
   const shouldShowAddButton = activePage > totalPages || 
     (activePage === totalPages && totalCategoriesOnPage < CATEGORIES_PER_PAGE);
   
-  let priorityCategories: EmailCategory[] = [];
-  let compactCategories: EmailCategory[] = [];
+let priorityCategories: EmailCategory[] = [];
+let compactCategories: EmailCategory[] = [];
+
   let addButtonInFirstRow = false;
   let addButtonInCompactRows = false;
   
