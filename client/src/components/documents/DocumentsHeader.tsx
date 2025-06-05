@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { Dialog, DialogContent } from '../ui/dialog';
 import CalendarPopup from '../CalendarPopup';
-import IndexActionButtons from '../../pages/IndexActionButtons';
+import IndexActionButtons from '@/hub/pages/IndexActionButtons';
 
 interface DocumentsHeaderProps {
   onNewEmailClick: () => void;

@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { EmailData } from '../../types/email';
 import { getAllCategories } from '../../utils/categoryUtils';
-import IndexActionButtons from '../../pages/IndexActionButtons';
+import IndexActionButtons from '@/hub/pages/IndexActionButtons';
 
 interface EmailDetailHeaderProps {
   email: EmailData;

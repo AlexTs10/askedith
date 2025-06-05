@@ -31,17 +31,15 @@ const EmailCategoryItem: React.FC<EmailCategoryItemProps> = ({
         </div>
         <span>{category.title}</span>
         {category.unread > 0 && (
-          <Badge 
-            variant="circle" 
-            className={`absolute right-2 bg-gradient-to-r ${category.color}`}
+          <Badge
+            className={`absolute right-2 bg-gradient-to-r ${category.color} rounded-full`}
           >
             {category.unread}
           </Badge>
         )}
         {category.pending > 0 && category.unread === 0 && (
-          <Badge 
-            variant="circle" 
-            className={`absolute right-2 bg-gradient-to-r ${category.color} opacity-80`}
+          <Badge
+            className={`absolute right-2 bg-gradient-to-r ${category.color} opacity-80 rounded-full`}
           >
             {category.pending}
           </Badge>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import IndexActionButtons from '../../pages/IndexActionButtons';
+import IndexActionButtons from '@/hub/pages/IndexActionButtons';
 
 interface CaregiverMapHeaderProps {
   isLoading: boolean;

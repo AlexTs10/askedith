@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { getEmailByIdWithAttachments } from '@/utils/emailDataUtils';
-import { EmailData } from '../types/email';
+import { EmailData } from '@/types/email';
 import { useEmailCategoryData } from '@/hooks/useEmailCategoryData';
 import { useSlideOutCalendar } from '@/hooks/useSlideOutCalendar';
 import EmailDetailHeader from '@/components/email-detail/EmailDetailHeader';
