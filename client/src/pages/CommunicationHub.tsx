@@ -26,6 +26,8 @@ export default function CommunicationHub() {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                {/* Support direct navigation to /home */}
+                <Route path="/home" element={<Index />} />
                 <Route path="/emails/:category/:status" element={<EmailList />} />
                 <Route path="/email/:id" element={<EmailDetail />} />
                 <Route path="/documents" element={<Documents />} />
