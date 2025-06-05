@@ -40,6 +40,10 @@ function Router() {
       <Route path="/email-setup" component={EmailSetup} />
       <Route path="/email-connect" component={EmailConnect} />
       <Route path="/home" component={CommunicationHub} />
+      <Route path="/emails/:category/:status" component={CommunicationHub} />
+      <Route path="/email/:id" component={CommunicationHub} />
+      <Route path="/documents" component={CommunicationHub} />
+      <Route path="/map" component={CommunicationHub} />
       <Route component={NotFound} />
     </Switch>
   );

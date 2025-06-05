@@ -86,8 +86,8 @@ const EmailDetail = () => {
               Browse All Emails
             </Button>
             
-            <Button 
-              onClick={() => navigate('/')}
+            <Button
+              onClick={() => navigate('/home')}
               variant="outline"
               className="w-full"
             >

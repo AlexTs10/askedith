@@ -15,7 +15,7 @@ const IndexActionButtons = ({ onNewEmail, onViewDocuments, onCalendarClick }: In
   return (
     <div className="flex items-center justify-center gap-8">
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/home')}
         className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 text-base font-normal underline decoration-gray-400 hover:decoration-blue-600 underline-offset-4"
       >
         <Home className="h-4 w-4" />

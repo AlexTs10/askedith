@@ -23,7 +23,7 @@ export default function CommunicationHub() {
         <DndProvider backend={HTML5Backend}>
           <UserRoleProvider defaultRole="primary-caregiver">
             <Toaster />
-            <BrowserRouter basename="/home">
+            <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/emails/:category/:status" element={<EmailList />} />
