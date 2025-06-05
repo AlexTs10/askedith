@@ -2,8 +2,8 @@ import 'dotenv/config';
 
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { pool } from "./db";
+import connectPgSimple from 'connect-pg-simple';
+import { pool } from './db';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -11,23 +11,27 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configure session middleware for Nylas integration using PostgreSQL store
-const PgSession = connectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      pool,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || 'askedith-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  }),
-);
+const PGStore = connectPgSimple(session);
+
+const sessionStore = new PGStore({
+  pool: pool,
+  tableName: 'user_sessions', // You can change this table name if you want
+  createTableIfMissing: true, // This will create the table if it doesn't exist
+});
+
+
+// Configure session middleware for Nylas integration
+app.use(session({
+  store: sessionStore,
+  secret: process.env.SESSION_SECRET || 'askedith-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
