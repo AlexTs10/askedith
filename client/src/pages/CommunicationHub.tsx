@@ -1,0 +1,41 @@
+import React from 'react';
+import '@/hub/index.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
+import UserRoleProvider from '@/components/UserRoleProvider';
+import Index from '@/hub/pages/Index';
+import EmailList from '@/hub/pages/EmailList';
+import EmailDetail from '@/hub/pages/EmailDetail';
+import Documents from '@/hub/pages/Documents';
+import CaregiverMap from '@/hub/pages/CaregiverMap';
+import NotFound from '@/hub/pages/NotFound';
+
+const queryClient = new QueryClient();
+
+export default function CommunicationHub() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <DndProvider backend={HTML5Backend}>
+          <UserRoleProvider defaultRole="primary-caregiver">
+            <Toaster />
+            <BrowserRouter basename="/home">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/emails/:category/:status" element={<EmailList />} />
+                <Route path="/email/:id" element={<EmailDetail />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/map" element={<CaregiverMap />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </UserRoleProvider>
+        </DndProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
