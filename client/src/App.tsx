@@ -19,6 +19,7 @@ import NylasTest from "@/pages/NylasTest";
 import NylasManualConnect from "@/pages/NylasManualConnect";
 import EmailSetup from "@/pages/EmailSetup";
 import EmailConnect from "@/pages/EmailConnect";
+import CommunicationHub from "@/pages/CommunicationHub";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/nylas-manual-connect" component={NylasManualConnect} />
       <Route path="/email-setup" component={EmailSetup} />
       <Route path="/email-connect" component={EmailConnect} />
+      <Route path="/home" component={CommunicationHub} />
       <Route component={NotFound} />
     </Switch>
   );

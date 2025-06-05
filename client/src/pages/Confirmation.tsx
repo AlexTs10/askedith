@@ -77,10 +77,10 @@ export default function Confirmation() {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
+                <Button
                   variant="outline"
                   className="bg-white border-teal-100 hover:bg-teal-50 text-teal-600 transition-all duration-200"
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => navigate('/home')}
                 >
                   <Home className="mr-2 h-4 w-4" />
                   Go Home
