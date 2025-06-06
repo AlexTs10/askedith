@@ -1,5 +1,5 @@
 import React from 'react';
-import '@/hub/index.css';
+import '@/features/hub/index.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -7,12 +7,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import UserRoleProvider from '@/components/UserRoleProvider';
-import Index from '@/hub/pages/Index';
-import EmailList from '@/hub/pages/EmailList';
-import EmailDetail from '@/hub/pages/EmailDetail';
-import Documents from '@/hub/pages/Documents';
-import CaregiverMap from '@/hub/pages/CaregiverMap';
-import NotFound from '@/hub/pages/NotFound';
+import Index from '@/features/hub/pages/Index';
+import EmailList from '@/features/hub/pages/EmailList';
+import EmailDetail from '@/features/hub/pages/EmailDetail';
+import Documents from '@/features/hub/pages/Documents';
+import CaregiverMap from '@/features/hub/pages/CaregiverMap';
+import NotFound from '@/features/hub/pages/NotFound';
 
 const queryClient = new QueryClient();
 
