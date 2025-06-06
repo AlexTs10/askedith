@@ -104,7 +104,7 @@ export default function CleanResults() {
   };
 
   // Handle continue button
-  const handleContinue = () => {
+  const handleContinue = async () => {
     console.log("Continue button clicked");
 
     if (state.selectedResourceIds.length === 0) {
@@ -131,8 +131,17 @@ export default function CleanResults() {
         currentEmailIndex: 0,
       });
 
-      // Navigate to email preview
-      window.location.href = "/email-preview/0";
+      try {
+        const res = await fetch('/api/auth/status', { credentials: 'include' });
+        const data = await res.json();
+        if (data.user) {
+          window.location.href = "/email-preview/0";
+        } else {
+          window.location.href = `/login?next=${encodeURIComponent('/email-preview/0')}`;
+        }
+      } catch {
+        window.location.href = `/login?next=${encodeURIComponent('/email-preview/0')}`;
+      }
     } catch (error) {
       console.error("Error in handleContinue:", error);
       toast({

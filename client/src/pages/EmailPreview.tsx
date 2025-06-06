@@ -61,6 +61,16 @@ export default function EmailPreview() {
   const [emailBody, setEmailBody] = useState('');
   const [showSendAllOption, setShowSendAllOption] = useState(false);
   const [isSendingAll, setIsSendingAll] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/status', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.user) {
+          navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+        }
+      });
+  }, []);
   
   // Get the current email index
   const currentIndex = parseInt(index, 10);

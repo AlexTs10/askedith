@@ -11,6 +11,7 @@ import Results from "@/pages/Results";
 import CleanResults from "@/pages/CleanResults";
 import CleanResultsPage from "@/pages/CleanResultsPage";
 import EmailPreview from "@/pages/EmailPreview";
+import Login from "@/pages/Login";
 import Callback from "@/pages/Callback";
 import Confirmation from "@/pages/Confirmation";
 import AdminDashboard from "@/pages/Admin";
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/clean-results" component={CleanResults} />
       <Route path="/clean-results-page" component={CleanResultsPage} />
       <Route path="/email-preview/:index?" component={EmailPreview} />
+      <Route path="/login" component={Login} />
       <Route path="/callback" component={Callback} />
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/admin" component={AdminDashboard} />
