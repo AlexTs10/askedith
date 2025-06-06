@@ -1,0 +1,837 @@
+{
+    "name": "My workflow with Recursive Search",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -260,
+          580
+        ],
+        "id": "cb05777d-4a12-456a-9033-77cd2b210fb1",
+        "name": "When clicking 'Test workflow'"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a4bf4b2d-4ea5-43ef-8df8-f14f7edae55e",
+                "name": "rootFolderId",
+                "value": "1Ms0yUEGf-FM0ufGmMtm3990vW89no8vH",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          60,
+          575
+        ],
+        "id": "6f48084e-fbba-4874-abdd-243c69338121",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "url": "=https://www.googleapis.com/drive/v3/files?q='{{ $json.files[1].id }}'+in+parents&fields=files(id,name,mimeType,webViewLink)&pageSize=1000",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDriveOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          500,
+          575
+        ],
+        "id": "50a28346-0b09-4a89-ba47-105df2a48632",
+        "name": "YVS Client",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "3XJjvCID8afg27le",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          940,
+          575
+        ],
+        "id": "61581709-d916-48ef-9b43-7115fce4e84b",
+        "name": "Loop Over Items"
+      },
+      {
+        "parameters": {
+          "url": "=https://www.googleapis.com/drive/v3/files?q='{{ $json.id }}'+in+parents&fields=files(id,name,mimeType,webViewLink)&pageSize=1000",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDriveOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1160,
+          500
+        ],
+        "id": "29d15f5c-4526-4b38-8ee2-652722163a20",
+        "name": "Client",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "3XJjvCID8afg27le",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "files",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          720,
+          575
+        ],
+        "id": "47aeeee0-2936-4ba4-8fb1-f788caa96685",
+        "name": "Split Out"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "files",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          1380,
+          500
+        ],
+        "id": "b6f97fa5-bada-4708-9a9f-dabfa7a72f33",
+        "name": "Split Out1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          1600,
+          575
+        ],
+        "id": "27c2d5e5-f977-4352-903c-734fcb87e17d",
+        "name": "Loop Over Items1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "15384c33-aa5d-4490-8862-3ba441e42845",
+                "leftValue": "={{ $json.name.toLowerCase() }}",
+                "rightValue": "media",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1820,
+          580
+        ],
+        "id": "a2b66842-fce1-497f-9e79-11b5c1c2e4d3",
+        "name": "If folder named media"
+      },
+      {
+        "parameters": {
+          "url": "=https://www.googleapis.com/drive/v3/files?q='{{ $json.id }}'+in+parents&fields=files(id,name,mimeType,webViewLink)&pageSize=1000",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDriveOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2040,
+          380
+        ],
+        "id": "c72b5019-6e5e-4957-8bde-f0a049aa35fe",
+        "name": "Media Content",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "3XJjvCID8afg27le",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "files",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          2260,
+          380
+        ],
+        "id": "981ad028-5be3-4dd1-8eb8-745f17e2c210",
+        "name": "Split Out2"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          2540,
+          460
+        ],
+        "id": "27fb1576-f2b6-4a55-a566-2d5f122737b2",
+        "name": "Loop Over Items2"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "ee9101cd-82bd-4689-a5c6-21714197421a",
+                "leftValue": "={{ $json.name.toLowerCase() }}",
+                "rightValue": "raw",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2740,
+          600
+        ],
+        "id": "36dc518e-23db-4775-ad5f-5d031ad1c474",
+        "name": "If Raw Folder"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Initialize the recursive search function\nconst searchFoldersRecursively = async (folderId, depth = 0) => {\n  const maxDepth = 10; // Prevent infinite recursion\n  if (depth > maxDepth) return [];\n  \n  try {\n    // Get contents of current folder\n    const response = await fetch(\n      `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name,mimeType,webViewLink,createdTime,modifiedTime)&pageSize=1000`,\n      {\n        headers: {\n          'Authorization': `Bearer ${$auth.googleDriveOAuth2Api.access_token}`\n        }\n      }\n    );\n    \n    const data = await response.json();\n    let allFiles = [];\n    \n    if (data.files && data.files.length > 0) {\n      for (const file of data.files) {\n        // If it's a folder, recursively search it\n        if (file.mimeType === 'application/vnd.google-apps.folder') {\n          const subFolderFiles = await searchFoldersRecursively(file.id, depth + 1);\n          allFiles = allFiles.concat(subFolderFiles);\n        } else {\n          // If it's a file, add it to our results\n          allFiles.push(file);\n        }\n      }\n    }\n    \n    return allFiles;\n  } catch (error) {\n    console.error(`Error searching folder ${folderId}:`, error);\n    return [];\n  }\n};\n\n// Start recursive search from the Raw folder\nconst allFiles = await searchFoldersRecursively($json.id);\n\n// Filter for video files uploaded in the last 10 minutes\nconst recentVideos = allFiles.filter(file => {\n  // Check if it's a video file\n  const isVideo = file.mimeType && file.mimeType.startsWith('video/');\n  \n  // Check if uploaded in last 10 minutes\n  const isRecent = file.createdTime && \n    (Date.now() - new Date(file.createdTime).getTime() < 10 * 60 * 1000);\n  \n  return isVideo && isRecent;\n});\n\n// Return all recent videos found\nreturn recentVideos.map(video => ({ json: video }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2940,
+          380
+        ],
+        "id": "recursive-search-node",
+        "name": "Recursive Video Search"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          3160,
+          380
+        ],
+        "id": "video-loop-node",
+        "name": "Loop Over Videos"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://app.castmagic.io/v1/transcripts",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer cast_sk_a2hztrrh2eckwt6bngpces3hh7un7uft7kakv4jppxqzqqsb5jtq"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "url",
+                "value": "={{ $json.webViewLink }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3380,
+          380
+        ],
+        "id": "f5bbf4c1-72b5-4e81-9316-a49299c22cfe",
+        "name": "Castmagic"
+      },
+      {
+        "parameters": {
+          "amount": 30
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          3600,
+          380
+        ],
+        "id": "173cf360-4702-4a99-9bbd-ca6a947f7972",
+        "name": "Wait",
+        "webhookId": "b22a1005-d898-4869-a22d-de26085bf80e"
+      },
+      {
+        "parameters": {
+          "url": "=https://app.castmagic.io/v1/transcripts/{{ $json.id }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer cast_sk_a2hztrrh2eckwt6bngpces3hh7un7uft7kakv4jppxqzqqsb5jtq"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3820,
+          380
+        ],
+        "id": "506024ca-c0e4-4db5-823c-5c67c3235077",
+        "name": "HTTP Request1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "c41e2870-7d96-4d4d-86e5-ad2f643fad3a",
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "completed",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              },
+              {
+                "id": "054fe292-484a-4ff0-a10f-b4600262f5fa",
+                "leftValue": "={{ $json.utterances }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "array",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          4040,
+          380
+        ],
+        "id": "8a0bec03-59b8-4fcd-887b-5f6094f82e57",
+        "name": "finished"
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": "utterances",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          4260,
+          300
+        ],
+        "id": "0b70c910-7809-43af-bc3f-29e77fb7a492",
+        "name": "Split Out4"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Merge all text fields from all input items\nconst mergedText = items.map(item => item.json.text).join(' ');\n\n// Return a single item with the merged text\nreturn [\n  {\n    json: {\n      mergedText,\n    },\n  },\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4480,
+          300
+        ],
+        "id": "89f97795-bffc-4736-bbfb-bb7b79d9acea",
+        "name": "Merge parts"
+      },
+      {
+        "parameters": {
+          "folderId": "default",
+          "title": "=Transcript - {{ $('Recursive Video Search').item.json.name }}"
+        },
+        "type": "n8n-nodes-base.googleDocs",
+        "typeVersion": 2,
+        "position": [
+          4700,
+          300
+        ],
+        "id": "17c05a90-e0d3-4526-b8ad-e61d4c8ddc1f",
+        "name": "Create G Doc",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "gaBhHajkMi2GbJoW",
+            "name": "Google Docs account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.id }}/permissions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDocsOAuth2Api",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"role\": \"reader\",\n  \"type\": \"anyone\"\n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4920,
+          300
+        ],
+        "id": "2ed1b606-79d0-4343-8580-748448c0c328",
+        "name": "make doc public",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "3XJjvCID8afg27le",
+            "name": "Google Drive account"
+          },
+          "googleDocsOAuth2Api": {
+            "id": "gaBhHajkMi2GbJoW",
+            "name": "Google Docs account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentURL": "={{ $('Create G Doc').item.json.id }}",
+          "actionsUi": {
+            "actionFields": [
+              {
+                "action": "insert",
+                "text": "={{ $('Merge parts').item.json.mergedText }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDocs",
+        "typeVersion": 2,
+        "position": [
+          5140,
+          300
+        ],
+        "id": "ab7cd375-0e8a-4384-bc5d-20a49bacd58f",
+        "name": "Write to Doc",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "gaBhHajkMi2GbJoW",
+            "name": "Google Docs account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "=https://www.googleapis.com/drive/v3/files?q='{{ $json.rootFolderId }}'+in+parents&fields=files(id,name,mimeType,webViewLink)&pageSize=1000",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDriveOAuth2Api",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          280,
+          575
+        ],
+        "id": "41bea1a2-0a05-4149-b965-dbe04332be30",
+        "name": "YVS",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "3XJjvCID8afg27le",
+            "name": "Google Drive account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When clicking 'Test workflow'": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "YVS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "YVS": {
+        "main": [
+          [
+            {
+              "node": "YVS Client",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "YVS Client": {
+        "main": [
+          [
+            {
+              "node": "Split Out",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Client",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Client": {
+        "main": [
+          [
+            {
+              "node": "Split Out1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items1": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "If folder named media",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If folder named media": {
+        "main": [
+          [
+            {
+              "node": "Media Content",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Over Items1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Media Content": {
+        "main": [
+          [
+            {
+              "node": "Split Out2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out2": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items2": {
+        "main": [
+          [],
+          [
+            {
+              "node": "If Raw Folder",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If Raw Folder": {
+        "main": [
+          [
+            {
+              "node": "Recursive Video Search",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Loop Over Items2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recursive Video Search": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Videos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Videos": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Castmagic",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Castmagic": {
+        "main": [
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request1": {
+        "main": [
+          [
+            {
+              "node": "finished",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "finished": {
+        "main": [
+          [
+            {
+              "node": "Split Out4",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out4": {
+        "main": [
+          [
+            {
+              "node": "Merge parts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge parts": {
+        "main": [
+          [
+            {
+              "node": "Create G Doc",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create G Doc": {
+        "main": [
+          [
+            {
+              "node": "make doc public",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "make doc public": {
+        "main": [
+          [
+            {
+              "node": "Write to Doc",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write to Doc": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Videos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    }
+  }
