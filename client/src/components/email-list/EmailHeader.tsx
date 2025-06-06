@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { ArrowLeft } from 'lucide-react';
-import IndexActionButtons from '@/hub/pages/IndexActionButtons';
+import IndexActionButtons from '@/features/hub/pages/IndexActionButtons';
 
 interface EmailHeaderProps {
   currentCategory: any;
