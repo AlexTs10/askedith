@@ -13,6 +13,7 @@ import {
   getMessagesFromCategory
 } from './nylas-sdk-v3';
 import type { EmailData } from './nylas-sdk-v3';
+import { ensureAuthenticated } from './auth';
 
 const router = Router();
 
@@ -94,7 +95,7 @@ router.post("/nylas/manual-exchange", async (req: Request, res: Response) => {
 
 
 // Check connection status
-router.get('/nylas/connection-status', async (req: Request, res: Response) => {
+router.get('/nylas/connection-status', ensureAuthenticated, async (req: Request, res: Response) => {
   if (!req.session?.nylasGrantId) {
     return res.json({ connected: false });
   }
@@ -109,7 +110,7 @@ router.get('/nylas/connection-status', async (req: Request, res: Response) => {
 });
 
 // Send email via Nylas (This endpoint is used by client if a connection is established)
-router.post('/nylas/send-email', async (req: Request, res: Response) => {
+router.post('/nylas/send-email', ensureAuthenticated, async (req: Request, res: Response) => {
   const grantId = req.session?.nylasGrantId;
   
   if (!grantId) {
@@ -151,7 +152,7 @@ router.post('/nylas/send-email', async (req: Request, res: Response) => {
 });
 
 // Get messages from a specific category
-router.get('/nylas/messages/:category', async (req: Request, res: Response) => {
+router.get('/nylas/messages/:category', ensureAuthenticated, async (req: Request, res: Response) => {
   const grantId = req.session?.nylasGrantId;
   
   if (!grantId) {
@@ -175,7 +176,7 @@ router.get('/nylas/messages/:category', async (req: Request, res: Response) => {
 });
 
 // Send batch emails through Nylas
-router.post('/nylas/send-batch', async (req: Request, res: Response) => {
+router.post('/nylas/send-batch', ensureAuthenticated, async (req: Request, res: Response) => {
   const grantId = req.session?.nylasGrantId;
   
   if (!grantId) {

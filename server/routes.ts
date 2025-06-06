@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import path from "path";
 import express from "express";
+import authRoutes from "./authRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static assets from public directory
@@ -15,6 +16,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } catch (error) {
     console.error('Failed to load Nylas routes:', error);
   }
+
+  app.use('/api', authRoutes);
   
   // API endpoint to provide Mapbox public key to frontend
   app.get("/api/mapbox-key", (req, res) => {

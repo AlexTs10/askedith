@@ -6,6 +6,8 @@ import connectPgSimple from 'connect-pg-simple';
 import { pool } from './db';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import passport from 'passport';
+import './auth';
 
 const app = express();
 app.set('trust proxy', 1); // trust first proxy for secure cookies
@@ -27,12 +29,15 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'askedith-secret-key',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  cookie: {
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax',
   }
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   const start = Date.now();

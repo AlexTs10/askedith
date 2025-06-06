@@ -6,5 +6,6 @@ declare module 'express-session' {
     username?: string;
     nylasAccessToken?: string; // For backward compatibility
     nylasGrantId?: string; // New V3 Nylas grant ID
+    redirectTo?: string;
   }
 }
