@@ -53,16 +53,5 @@ router.post('/auth/logout', (req, res, next) => {
   });
 });
 
-router.get('/auth/google', (req, res, next) => {
-  const redirect = req.query.next as string | undefined;
-  if (redirect) req.session!.redirectTo = redirect;
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
-});
-
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-  const to = req.session!.redirectTo || '/';
-  delete req.session!.redirectTo;
-  res.redirect(to);
-});
 
 export default router;

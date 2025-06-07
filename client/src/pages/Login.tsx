@@ -49,7 +49,6 @@ export default function Login() {
         </div>
         <Button type="submit" className="w-full">{isRegister ? 'Register' : 'Login'}</Button>
       </form>
-      <Button variant="secondary" className="w-full" onClick={() => { window.location.href = `/api/auth/google?next=${encodeURIComponent(next)}`; }}>Sign in with Google</Button>
       <p className="text-center text-sm">
         {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
         <button className="underline" onClick={() => setIsRegister(!isRegister)}>{isRegister ? 'Login' : 'Create one'}</button>
