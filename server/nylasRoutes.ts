@@ -14,6 +14,7 @@ import {
 } from './nylas-sdk-v3';
 import type { EmailData } from './nylas-sdk-v3';
 import { ensureAuthenticated } from './auth';
+import { storage } from './storage';
 
 const router = Router();
 
@@ -106,6 +107,31 @@ router.get('/nylas/connection-status', ensureAuthenticated, async (req: Request,
   } catch (error) {
     console.error('Error checking connection status:', error);
     res.json({ connected: false, error: 'Failed to verify connection' });
+  }
+});
+
+// Retrieve stored grant ID
+router.get('/nylas/grant-id', ensureAuthenticated, async (req: Request, res: Response) => {
+  try {
+    if (req.session?.nylasGrantId) {
+      return res.json({ grantId: req.session.nylasGrantId });
+    }
+
+    if (req.user) {
+      const user = req.user as any;
+      const dbUser = await storage.getUser(user.id);
+      if (dbUser?.nylasGrantId) {
+        if (req.session) {
+          req.session.nylasGrantId = dbUser.nylasGrantId;
+        }
+        return res.json({ grantId: dbUser.nylasGrantId });
+      }
+    }
+
+    res.json({ grantId: null });
+  } catch (error) {
+    console.error('Error retrieving grant ID:', error);
+    res.status(500).json({ grantId: null, error: 'Failed to retrieve grant ID' });
   }
 });
 
@@ -230,7 +256,7 @@ router.post('/nylas/send-batch', ensureAuthenticated, async (req: Request, res: 
 });
 
 // Set Nylas Grant ID directly
-router.post('/nylas/set-grant-id', async (req: Request, res: Response) => {
+router.post('/nylas/set-grant-id', ensureAuthenticated, async (req: Request, res: Response) => {
   try {
     const { grantId } = req.body;
     
@@ -243,33 +269,31 @@ router.post('/nylas/set-grant-id', async (req: Request, res: Response) => {
     
     console.log('Setting Nylas grant ID manually:', grantId);
     
-    // Store the grant ID in session
-    if (req.session) {
-      req.session.nylasGrantId = grantId;
-      console.log('Saved Nylas grant ID in session');
-      
-      // Verify the connection works
-      const connected = await checkNylasConnection(grantId);
-      
-      if (connected) {
-        // Create folder structure for the user using their grant ID
-        console.log('Creating folder structure in email account...');
-        await createFolderStructure(grantId);
-        
-        return res.json({
-          success: true,
-          message: "Nylas Grant ID set successfully and connection verified"
-        });
-      } else {
-        return res.status(400).json({
-          success: false,
-          error: "The provided Grant ID could not be verified with Nylas"
-        });
-      }
+    if (!req.session || !req.user) {
+      return res.status(500).json({ success: false, error: 'Session not available' });
+    }
+
+    req.session.nylasGrantId = grantId;
+    console.log('Saved Nylas grant ID in session');
+
+    const user = req.user as any;
+    if (user?.id) {
+      await storage.updateUserGrantId(user.id, grantId);
+    }
+
+    const connected = await checkNylasConnection(grantId);
+
+    if (connected) {
+      console.log('Creating folder structure in email account...');
+      await createFolderStructure(grantId);
+      return res.json({
+        success: true,
+        message: 'Nylas Grant ID set successfully and connection verified'
+      });
     } else {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
-        error: "Session not available"
+        error: 'The provided Grant ID could not be verified with Nylas'
       });
     }
   } catch (error) {

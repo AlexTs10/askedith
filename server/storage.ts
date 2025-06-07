@@ -13,6 +13,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserGrantId(userId: number, grantId: string): Promise<User | undefined>;
   
   // Admin methods
   createAdmin(admin: InsertUser): Promise<User>;
@@ -66,6 +67,14 @@ export class DatabaseStorage implements IStorage {
   async createUser(user: InsertUser): Promise<User> {
     const [createdUser] = await db.insert(users).values(user).returning();
     return createdUser;
+  }
+
+  async updateUserGrantId(userId: number, grantId: string): Promise<User | undefined> {
+    const [updated] = await db.update(users)
+      .set({ nylasGrantId: grantId, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return updated;
   }
   
   // ----- Admin methods -----
